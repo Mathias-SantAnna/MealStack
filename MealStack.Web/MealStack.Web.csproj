@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MealStack.Application\MealStack.Application.csproj" />
+      <ProjectReference Include="..\MealStack.Domain\MealStack.Domain.csproj" />
+    </ItemGroup>
+
+</Project>
