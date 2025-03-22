@@ -1,0 +1,26 @@
+@model IEnumerable<IdentityUser>
+@{
+    ViewData["Title"] = "User Management";
+}
+<h2>User Management</h2>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Email</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var user in Model)
+    {
+        <tr>
+            <td>@user.Email</td>
+            <td>
+                <a asp-action="AssignRole" asp-route-userId="@user.Id" asp-route-role="Admin" class="btn btn-sm btn-primary">Make Admin</a>
+                <a asp-action="AssignRole" asp-route-userId="@user.Id" asp-route-role="Guest" class="btn btn-sm btn-secondary">Make Guest</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
