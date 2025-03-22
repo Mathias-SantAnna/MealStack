@@ -1,8 +1,21 @@
-@model IEnumerable<IdentityUser>
+@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser>
+
 @{
-    ViewData["Title"] = "User Management";
+ViewData["Title"] = "User Management";
 }
+
 <h2>User Management</h2>
+
+<div class="alert alert-primary">
+    Welcome to the Admin Panel.
+</div>
+
+@if (TempData["Message"] != null)
+{
+<div class="alert alert-success">
+    @TempData["Message"]
+</div>
+}
 
 <table class="table">
     <thead>
@@ -14,13 +27,13 @@
     <tbody>
     @foreach (var user in Model)
     {
-        <tr>
-            <td>@user.Email</td>
-            <td>
-                <a asp-action="AssignRole" asp-route-userId="@user.Id" asp-route-role="Admin" class="btn btn-sm btn-primary">Make Admin</a>
-                <a asp-action="AssignRole" asp-route-userId="@user.Id" asp-route-role="Guest" class="btn btn-sm btn-secondary">Make Guest</a>
-            </td>
-        </tr>
+    <tr>
+        <td>@user.Email</td>
+        <td>
+            <a asp-action="AssignRole" asp-route-userId="@user.Id" asp-route-role="Admin" class="btn btn-sm btn-primary">Make Admin</a>
+            <a asp-action="AssignRole" asp-route-userId="@user.Id" asp-route-role="Guest" class="btn btn-sm btn-secondary">Make Guest</a>
+        </td>
+    </tr>
     }
     </tbody>
 </table>

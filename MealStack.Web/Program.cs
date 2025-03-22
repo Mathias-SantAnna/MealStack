@@ -30,17 +30,39 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// 5. Create roles at startup
+// 5. Seed roles and default admin user
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    string[] roles = { "Admin", "Guest" };
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
+    string[] roles = { "Admin", "Guest" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
         {
             await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+
+    // Seed default Admin user
+    string adminEmail = "admin@mealstack.com";
+    string adminPassword = "Admin@123";
+
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    if (adminUser == null)
+    {
+        adminUser = new IdentityUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(adminUser, adminPassword);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(adminUser, "Admin");
         }
     }
 }
@@ -67,4 +89,51 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 
+async Task SeedRolesAndAdminAsync(IServiceProvider services)
+{
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+
+    string[] roles = new[] { "Admin", "User", "Guest" };
+
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+
+    string adminEmail = "admin@mealstack.com";
+    string adminPassword = "Admin123!"; // Change this if needed
+
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    if (adminUser == null)
+    {
+        adminUser = new IdentityUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(adminUser, adminPassword);
+        if (!result.Succeeded)
+        {
+            throw new Exception("Failed to create default admin user.");
+        }
+    }
+
+    if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+    {
+        await userManager.AddToRoleAsync(adminUser, "Admin");
+    }
+}
+
+// Call this at the end of your Program.cs
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await SeedRolesAndAdminAsync(services);
+}
 app.Run();

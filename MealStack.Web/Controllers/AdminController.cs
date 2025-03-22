@@ -5,26 +5,41 @@ using MealStack.Infrastructure.Data;
 
 namespace MealStack.Web.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class AdminController : Controller
     {
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly MealStackDbContext _context;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AdminController(
-            RoleManager<IdentityRole> roleManager,
-            UserManager<IdentityUser> userManager,
-            MealStackDbContext context)
+        public AdminController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
         {
-            _roleManager = roleManager;
             _userManager = userManager;
-            _context = context;
+            _roleManager = roleManager;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            Console.WriteLine($"Current user: {User.Identity?.Name}, Authenticated: {User.Identity?.IsAuthenticated}, Roles: Admin => {User.IsInRole("Admin")}");
+
+            if (!User.IsInRole("Admin"))
+            {
+                TempData["Error"] = "You do not have permission to access the Admin Panel.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var users = _userManager.Users.ToList();
+            return View(users);
+        }
+
+        public async Task<IActionResult> AssignRole(string userId, string role)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null && await _roleManager.RoleExistsAsync(role))
+            {
+                await _userManager.AddToRoleAsync(user, role);
+                TempData["Message"] = $"Successfully assigned role '{role}' to user.";
+            }
+            return RedirectToAction("Index");
         }
     }
 }
