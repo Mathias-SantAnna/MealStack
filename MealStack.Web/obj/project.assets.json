@@ -5,18 +5,12 @@
       "MealStack.Application/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
-        "dependencies": {
-          "MealStack.Domain": "1.0.0"
-        },
         "compile": {
           "bin/placeholder/MealStack.Application.dll": {}
         },
         "runtime": {
           "bin/placeholder/MealStack.Application.dll": {}
-        },
-        "frameworkReferences": [
-          "Microsoft.AspNetCore.App"
-        ]
+        }
       },
       "MealStack.Domain/1.0.0": {
         "type": "project",
@@ -26,10 +20,7 @@
         },
         "runtime": {
           "bin/placeholder/MealStack.Domain.dll": {}
-        },
-        "frameworkReferences": [
-          "Microsoft.AspNetCore.App"
-        ]
+        }
       }
     }
   },

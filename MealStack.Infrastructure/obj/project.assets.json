@@ -1,33 +1,11 @@
 {
   "version": 3,
   "targets": {
-    "net8.0": {
-      "MealStack.Domain/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v8.0",
-        "compile": {
-          "bin/placeholder/MealStack.Domain.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/MealStack.Domain.dll": {}
-        },
-        "frameworkReferences": [
-          "Microsoft.AspNetCore.App"
-        ]
-      }
-    }
+    "net8.0": {}
   },
-  "libraries": {
-    "MealStack.Domain/1.0.0": {
-      "type": "project",
-      "path": "../MealStack.Domain/MealStack.Domain.csproj",
-      "msbuildProject": "../MealStack.Domain/MealStack.Domain.csproj"
-    }
-  },
+  "libraries": {},
   "projectFileDependencyGroups": {
-    "net8.0": [
-      "MealStack.Domain >= 1.0.0"
-    ]
+    "net8.0": []
   },
   "packageFolders": {
     "/Users/mathiascagnoni/.nuget/packages/": {}
@@ -53,11 +31,7 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
-          "projectReferences": {
-            "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Domain/MealStack.Domain.csproj": {
-              "projectPath": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Domain/MealStack.Domain.csproj"
-            }
-          }
+          "projectReferences": {}
         }
       },
       "warningProperties": {
@@ -86,9 +60,6 @@
         "assetTargetFallback": true,
         "warn": true,
         "frameworkReferences": {
-          "Microsoft.AspNetCore.App": {
-            "privateAssets": "none"
-          },
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
