@@ -10,3 +10,6 @@
 /Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/refint/MealStack.Infrastructure.dll
 /Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.pdb
 /Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/ref/MealStack.Infrastructure.dll
+/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.csproj.AssemblyReference.cache
+/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/bin/Debug/net8.0/MealStack.Infrastructure.runtimeconfig.json
+/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.genruntimeconfig.cache
