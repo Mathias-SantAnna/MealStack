@@ -4,32 +4,34 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container:
-
 // 1. Configure Entity Framework Core with PostgreSQL
 builder.Services.AddDbContext<MealStackDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         x => x.MigrationsAssembly("MealStack.Infrastructure")));
 
 // 2. Configure ASP.NET Core Identity
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<MealStackDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = false;
+    })
+    .AddEntityFrameworkStores<MealStackDbContext>();
 
 // 3. Configure cookie-based authentication
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login";
-    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
 });
 
 // 4. Add MVC controllers + views
 builder.Services.AddControllersWithViews();
 
+// 5. Add Razor Pages (required for Identity UI)
+builder.Services.AddRazorPages();
+
 var app = builder.Build();
 
-// Enable middleware:
-
+// 6. Use middleware pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -41,12 +43,14 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication(); // Enable Identity
-app.UseAuthorization();  // Enable Role/Auth checks
+app.UseAuthentication();
+app.UseAuthorization();
 
-// Configure route mapping
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// 7. Map Identity Razor Pages
+app.MapRazorPages();
 
 app.Run();
