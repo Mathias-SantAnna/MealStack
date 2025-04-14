@@ -10,11 +10,10 @@ namespace MealStack.Web.Controllers
 {
     public class RecipeController : Controller
     {
-        // Use fully qualified type name to avoid ambiguity
-        private readonly MealStack.Infrastructure.Data.MealStackDbContext _context;
+        private readonly MealStackDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public RecipeController(MealStack.Infrastructure.Data.MealStackDbContext context, UserManager<IdentityUser> userManager)
+        public RecipeController(MealStackDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -24,7 +23,6 @@ namespace MealStack.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var recipes = await _context.Recipes.Include(r => r.CreatedBy).ToListAsync();
-            // Use explicit View method to avoid ambiguity
             return View(model: recipes);
         }
 
@@ -40,8 +38,7 @@ namespace MealStack.Web.Controllers
                 return NotFound();
             }
 
-            // Specify viewName parameter to avoid ambiguity
-            return View(viewName: "Details", model: recipe);
+            return View(model: recipe);
         }
 
         // GET: Recipe/Create
@@ -59,13 +56,8 @@ namespace MealStack.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (User.Identity != null && User.Identity.IsAuthenticated)
-                {
-                    recipe.CreatedById = _userManager.GetUserId(User);
-                }
-                
+                recipe.CreatedById = _userManager.GetUserId(User);
                 recipe.CreatedDate = System.DateTime.UtcNow;
-                // Add to context instead of DbSet directly
                 _context.Add(recipe);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -84,8 +76,7 @@ namespace MealStack.Web.Controllers
             }
 
             // Only allow edit if user created the recipe or is admin
-            if (User.Identity != null && User.Identity.IsAuthenticated && 
-               (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
+            if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
             {
                 return View(recipe);
             }
@@ -111,8 +102,7 @@ namespace MealStack.Web.Controllers
             }
 
             // Only allow edit if user created the recipe or is admin
-            if (User.Identity != null && User.Identity.IsAuthenticated && 
-               (existingRecipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
+            if (existingRecipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
             {
                 if (ModelState.IsValid)
                 {
@@ -149,8 +139,7 @@ namespace MealStack.Web.Controllers
             }
 
             // Only allow delete if user created the recipe or is admin
-            if (User.Identity != null && User.Identity.IsAuthenticated && 
-               (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
+            if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
             {
                 return View(recipe);
             }
@@ -171,8 +160,7 @@ namespace MealStack.Web.Controllers
             }
 
             // Only allow delete if user created the recipe or is admin
-            if (User.Identity != null && User.Identity.IsAuthenticated && 
-               (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
+            if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
             {
                 _context.Recipes.Remove(recipe);
                 await _context.SaveChangesAsync();
