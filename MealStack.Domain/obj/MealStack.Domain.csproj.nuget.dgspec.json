@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Domain/MealStack.Domain.csproj": {}
+    "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Domain/MealStack.Domain.csproj": {}
   },
   "projects": {
-    "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Domain/MealStack.Domain.csproj": {
+    "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Domain/MealStack.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Domain/MealStack.Domain.csproj",
+        "projectUniqueName": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Domain/MealStack.Domain.csproj",
         "projectName": "MealStack.Domain",
-        "projectPath": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Domain/MealStack.Domain.csproj",
+        "projectPath": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Domain/MealStack.Domain.csproj",
         "packagesPath": "/Users/mathiascagnoni/.nuget/packages/",
-        "outputPath": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Domain/obj/",
+        "outputPath": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Domain/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/mathiascagnoni/.nuget/NuGet/NuGet.Config"

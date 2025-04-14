@@ -13,3 +13,18 @@
 /Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.pdb
 /Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.genruntimeconfig.cache
 /Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/ref/MealStack.Infrastructure.dll
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/bin/Debug/net8.0/MealStack.Infrastructure.deps.json
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/bin/Debug/net8.0/MealStack.Infrastructure.runtimeconfig.json
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/bin/Debug/net8.0/MealStack.Infrastructure.dll
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/bin/Debug/net8.0/MealStack.Infrastructure.pdb
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.csproj.AssemblyReference.cache
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.AssemblyInfoInputs.cache
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.AssemblyInfo.cs
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.csproj.CoreCompileInputs.cache
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.sourcelink.json
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.dll
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/refint/MealStack.Infrastructure.dll
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.pdb
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/MealStack.Infrastructure.genruntimeconfig.cache
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/Debug/net8.0/ref/MealStack.Infrastructure.dll

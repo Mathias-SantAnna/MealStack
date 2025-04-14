@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "zAeMcoQoL0Q=",
+  "dgSpecHash": "vOfZzLe9wjI=",
   "success": true,
-  "projectFilePath": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/MealStack.Infrastructure.csproj",
+  "projectFilePath": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/MealStack.Infrastructure.csproj",
   "expectedPackageFiles": [
     "/Users/mathiascagnoni/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
     "/Users/mathiascagnoni/.nuget/packages/microsoft.aspnetcore.cryptography.internal/8.0.0/microsoft.aspnetcore.cryptography.internal.8.0.0.nupkg.sha512",

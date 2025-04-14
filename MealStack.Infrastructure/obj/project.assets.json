@@ -3081,11 +3081,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/MealStack.Infrastructure.csproj",
+      "projectUniqueName": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/MealStack.Infrastructure.csproj",
       "projectName": "MealStack.Infrastructure",
-      "projectPath": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/MealStack.Infrastructure.csproj",
+      "projectPath": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/MealStack.Infrastructure.csproj",
       "packagesPath": "/Users/mathiascagnoni/.nuget/packages/",
-      "outputPath": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/obj/",
+      "outputPath": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/mathiascagnoni/.nuget/NuGet/NuGet.Config"

@@ -6851,11 +6851,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Web/MealStack.Web.csproj",
+      "projectUniqueName": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Web/MealStack.Web.csproj",
       "projectName": "MealStack.Web",
-      "projectPath": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Web/MealStack.Web.csproj",
+      "projectPath": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Web/MealStack.Web.csproj",
       "packagesPath": "/Users/mathiascagnoni/.nuget/packages/",
-      "outputPath": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Web/obj/",
+      "outputPath": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Web/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/mathiascagnoni/.nuget/NuGet/NuGet.Config"
@@ -6870,14 +6870,14 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Application/MealStack.Application.csproj": {
-              "projectPath": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Application/MealStack.Application.csproj"
+            "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Application/MealStack.Application.csproj": {
+              "projectPath": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Application/MealStack.Application.csproj"
             },
-            "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Domain/MealStack.Domain.csproj": {
-              "projectPath": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Domain/MealStack.Domain.csproj"
+            "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Domain/MealStack.Domain.csproj": {
+              "projectPath": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Domain/MealStack.Domain.csproj"
             },
-            "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/MealStack.Infrastructure.csproj": {
-              "projectPath": "/Users/mathiascagnoni/Library/CloudStorage/OneDrive-Personal/WebDev Projects/MealStack/MealStack.Infrastructure/MealStack.Infrastructure.csproj"
+            "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/MealStack.Infrastructure.csproj": {
+              "projectPath": "/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Infrastructure/MealStack.Infrastructure.csproj"
             }
           }
         }
