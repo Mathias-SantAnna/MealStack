@@ -1,6 +1,4 @@
 using System;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace MealStack.Domain.Models
 {
@@ -17,7 +15,7 @@ namespace MealStack.Domain.Models
         public int Servings { get; set; }
         
         public string CreatedById { get; set; }
-        public IdentityUser CreatedBy { get; set; }
+        public string CreatedByName { get; set; }
         
         public DateTime CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }

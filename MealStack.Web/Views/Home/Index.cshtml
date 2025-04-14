@@ -1,8 +1,48 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center mt-5">
+    <h1 class="display-4">🍽️ Welcome to MealStack</h1>
+    <p class="lead mt-3">Your delicious recipes and ingredients — organized, editable, and always at your fingertips.</p>
+</div>
+
+<div class="row mt-5 justify-content-center">
+    <div class="col-md-5 text-center">
+        <a asp-controller="Recipe" asp-action="Index" class="btn btn-primary btn-lg">View Recipes</a>
+    </div>
+    @if (!User.Identity.IsAuthenticated)
+    {
+        <div class="col-md-5 text-center">
+            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-success btn-lg">Sign In</a>
+        </div>
+    }
+</div>
+
+<hr class="my-5" />
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h3 class="card-title text-center">📚 Manage Recipes</h3>
+                <p class="card-text">Add, edit, delete, and view your favorite dishes with step-by-step instructions.</p>
+                <div class="text-center mt-4">
+                    <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary">Add New Recipe</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h3 class="card-title text-center">🥕 Coming Soon</h3>
+                <p class="card-text">More features are on the way as we continue to develop MealStack.</p>
+                <div class="text-center mt-4">
+                    <a asp-controller="Recipe" asp-action="Index" class="btn btn-success">Browse Recipes</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

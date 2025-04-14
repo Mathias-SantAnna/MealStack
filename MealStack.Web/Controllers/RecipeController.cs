@@ -4,18 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MealStack.Web.Controllers
 {
     public class RecipeController : Controller
     {
-        private readonly MealStackDbContext _context;
+        // Use fully qualified type name to avoid ambiguity
+        private readonly MealStack.Infrastructure.Data.MealStackDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public RecipeController(MealStackDbContext context, UserManager<IdentityUser> userManager)
+        public RecipeController(MealStack.Infrastructure.Data.MealStackDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -24,11 +23,9 @@ namespace MealStack.Web.Controllers
         // GET: Recipe
         public async Task<IActionResult> Index()
         {
-            var recipes = await _context.Recipes
-                .Include(r => r.CreatedBy)
-                .ToListAsync();
-            
-            return View(recipes);
+            var recipes = await _context.Recipes.Include(r => r.CreatedBy).ToListAsync();
+            // Use explicit View method to avoid ambiguity
+            return View(model: recipes);
         }
 
         // GET: Recipe/Details/5
@@ -36,14 +33,15 @@ namespace MealStack.Web.Controllers
         {
             var recipe = await _context.Recipes
                 .Include(r => r.CreatedBy)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(r => r.Id == id);
                 
             if (recipe == null)
             {
                 return NotFound();
             }
 
-            return View(recipe);
+            // Specify viewName parameter to avoid ambiguity
+            return View(viewName: "Details", model: recipe);
         }
 
         // GET: Recipe/Create
@@ -57,18 +55,22 @@ namespace MealStack.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Create([Bind("Title,Description,Ingredients,Instructions,PrepTimeMinutes,CookTimeMinutes,Difficulty,Servings")] RecipeEntity recipe)
+        public async Task<IActionResult> Create([Bind("Title,Description,Instructions,PrepTimeMinutes,CookTimeMinutes,Servings,Difficulty,Ingredients")] RecipeEntity recipe)
         {
             if (ModelState.IsValid)
             {
-                recipe.CreatedById = _userManager.GetUserId(User);
-                recipe.CreatedDate = DateTime.UtcNow;
+                if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    recipe.CreatedById = _userManager.GetUserId(User);
+                }
                 
+                recipe.CreatedDate = System.DateTime.UtcNow;
+                // Add to context instead of DbSet directly
                 _context.Add(recipe);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(recipe);
+            return View(model: recipe);
         }
 
         // GET: Recipe/Edit/5
@@ -80,21 +82,22 @@ namespace MealStack.Web.Controllers
             {
                 return NotFound();
             }
-            
-            var currentUserId = _userManager.GetUserId(User);
-            if (recipe.CreatedById != currentUserId && !User.IsInRole("Admin"))
+
+            // Only allow edit if user created the recipe or is admin
+            if (User.Identity != null && User.Identity.IsAuthenticated && 
+               (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
             {
-                return Forbid();
+                return View(recipe);
             }
             
-            return View(recipe);
+            return Forbid();
         }
 
         // POST: Recipe/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Ingredients,Instructions,PrepTimeMinutes,CookTimeMinutes,Difficulty,Servings")] RecipeEntity recipe)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Instructions,PrepTimeMinutes,CookTimeMinutes,Servings,Difficulty,Ingredients")] RecipeEntity recipe)
         {
             if (id != recipe.Id)
             {
@@ -107,42 +110,29 @@ namespace MealStack.Web.Controllers
                 return NotFound();
             }
 
-            var currentUserId = _userManager.GetUserId(User);
-            if (existingRecipe.CreatedById != currentUserId && !User.IsInRole("Admin"))
+            // Only allow edit if user created the recipe or is admin
+            if (User.Identity != null && User.Identity.IsAuthenticated && 
+               (existingRecipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
             {
-                return Forbid();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+                if (ModelState.IsValid)
                 {
                     existingRecipe.Title = recipe.Title;
                     existingRecipe.Description = recipe.Description;
-                    existingRecipe.Ingredients = recipe.Ingredients;
                     existingRecipe.Instructions = recipe.Instructions;
                     existingRecipe.PrepTimeMinutes = recipe.PrepTimeMinutes;
                     existingRecipe.CookTimeMinutes = recipe.CookTimeMinutes;
-                    existingRecipe.Difficulty = recipe.Difficulty;
                     existingRecipe.Servings = recipe.Servings;
-                    existingRecipe.UpdatedDate = DateTime.UtcNow;
+                    existingRecipe.Difficulty = recipe.Difficulty;
+                    existingRecipe.Ingredients = recipe.Ingredients;
+                    existingRecipe.UpdatedDate = System.DateTime.UtcNow;
                     
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!RecipeExists(recipe.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return View(recipe);
             }
-            return View(recipe);
+            
+            return Forbid();
         }
 
         // GET: Recipe/Delete/5
@@ -151,20 +141,21 @@ namespace MealStack.Web.Controllers
         {
             var recipe = await _context.Recipes
                 .Include(r => r.CreatedBy)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(r => r.Id == id);
                 
             if (recipe == null)
             {
                 return NotFound();
             }
 
-            var currentUserId = _userManager.GetUserId(User);
-            if (recipe.CreatedById != currentUserId && !User.IsInRole("Admin"))
+            // Only allow delete if user created the recipe or is admin
+            if (User.Identity != null && User.Identity.IsAuthenticated && 
+               (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
             {
-                return Forbid();
+                return View(recipe);
             }
-
-            return View(recipe);
+            
+            return Forbid();
         }
 
         // POST: Recipe/Delete/5
@@ -179,20 +170,16 @@ namespace MealStack.Web.Controllers
                 return NotFound();
             }
 
-            var currentUserId = _userManager.GetUserId(User);
-            if (recipe.CreatedById != currentUserId && !User.IsInRole("Admin"))
+            // Only allow delete if user created the recipe or is admin
+            if (User.Identity != null && User.Identity.IsAuthenticated && 
+               (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
             {
-                return Forbid();
+                _context.Recipes.Remove(recipe);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
             
-            _context.Recipes.Remove(recipe);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool RecipeExists(int id)
-        {
-            return _context.Recipes.Any(e => e.Id == id);
+            return Forbid();
         }
     }
 }

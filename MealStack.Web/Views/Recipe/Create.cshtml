@@ -1,0 +1,73 @@
+@model MealStack.Infrastructure.Data.Entities.RecipeEntity
+
+@{
+    ViewData["Title"] = "Create Recipe";
+}
+
+<h1>Create Recipe</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label">Recipe Name</label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Instructions" class="form-label"></label>
+                <textarea asp-for="Instructions" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Instructions" class="text-danger"></span>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label asp-for="PrepTimeMinutes" class="form-label">Prep Time (minutes)</label>
+                    <input asp-for="PrepTimeMinutes" class="form-control" type="number" min="1" />
+                    <span asp-validation-for="PrepTimeMinutes" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="CookTimeMinutes" class="form-label">Cook Time (minutes)</label>
+                    <input asp-for="CookTimeMinutes" class="form-control" type="number" min="0" />
+                    <span asp-validation-for="CookTimeMinutes" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Servings" class="form-label"></label>
+                    <input asp-for="Servings" class="form-control" type="number" min="1" />
+                    <span asp-validation-for="Servings" class="text-danger"></span>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Difficulty" class="form-label"></label>
+                <select asp-for="Difficulty" asp-items="Html.GetEnumSelectList<MealStack.Infrastructure.Data.Entities.DifficultyLevel>()" class="form-select"></select>
+                <span asp-validation-for="Difficulty" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Ingredients" class="form-label"></label>
+                <textarea asp-for="Ingredients" class="form-control" rows="5" placeholder="Enter each ingredient on a new line (e.g. 2 cups flour)"></textarea>
+                <span asp-validation-for="Ingredients" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Create</button>
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
