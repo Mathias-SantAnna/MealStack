@@ -3,20 +3,41 @@
 }
 
 <div class="text-center mt-5">
-    <h1 class="display-4">🍽️ Welcome to MealStack</h1>
+    <h1 class="display-4">🍽️ Welcome to the MealStack</h1>
     <p class="lead mt-3">Your delicious recipes and ingredients — organized, editable, and always at your fingertips.</p>
 </div>
 
-<div class="row mt-5 justify-content-center">
-    <div class="col-md-5 text-center">
-        <a asp-controller="Recipe" asp-action="Index" class="btn btn-primary btn-lg">View Recipes</a>
+<div class="row mt-4 justify-content-center">
+    <div class="col-md-2 text-center">
+        <a href="#" class="btn btn-outline-secondary btn-lg w-100">Your Profile</a>
     </div>
-    @if (!User.Identity.IsAuthenticated)
-    {
-        <div class="col-md-5 text-center">
-            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-success btn-lg">Sign In</a>
-        </div>
-    }
+    <div class="col-md-2 text-center">
+        <a asp-controller="Recipe" asp-action="Create" class="btn btn-outline-primary btn-lg w-100">Add New Recipe</a>
+    </div>
+    <div class="col-md-2 text-center">
+        <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary btn-lg w-100">View Recipes</a>
+    </div>
+    <div class="col-md-2 text-center">
+        <a href="#" class="btn btn-outline-success btn-lg w-100">View Ingredients</a>
+    </div>
+    <div class="col-md-2 text-center">
+        <a href="#" class="btn btn-outline-info btn-lg w-100">Community Recipes</a>
+    </div>
+</div>
+
+<div class="row mt-3 justify-content-center">
+    <div class="col-md-2 text-center">
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-danger btn-lg w-100">Manage Users</a>
+    </div>
+    <div class="col-md-2 text-center">
+        <a href="#" class="btn btn-outline-primary btn-lg w-100">Manage Recipes</a>
+    </div>
+    <div class="col-md-2 text-center">
+        <a href="#" class="btn btn-outline-success btn-lg w-100">Manage Ingredients</a>
+    </div>
+    <div class="col-md-2 text-center">
+        <a href="#" class="btn btn-outline-warning btn-lg w-100">Manage Categories</a>
+    </div>
 </div>
 
 <hr class="my-5" />
@@ -28,21 +49,25 @@
                 <h3 class="card-title text-center">📚 Manage Recipes</h3>
                 <p class="card-text">Add, edit, delete, and view your favorite dishes with step-by-step instructions.</p>
                 <div class="text-center mt-4">
-                    <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary">Add New Recipe</a>
+                    <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary btn-lg">Add New Recipe</a>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
             <div class="card-body">
-                <h3 class="card-title text-center">🥕 Coming Soon</h3>
-                <p class="card-text">More features are on the way as we continue to develop MealStack.</p>
+                <h3 class="card-title text-center">🥕 Manage Ingredients</h3>
+                <p class="card-text">Keep your ingredients list tidy and reusable across all your delicious recipes.</p>
                 <div class="text-center mt-4">
-                    <a asp-controller="Recipe" asp-action="Index" class="btn btn-success">Browse Recipes</a>
+                    <a href="#" class="btn btn-success btn-lg">Add New Ingredient</a>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<div class="text-center mt-5">
+    <h3>Your Recipes would appear here</h3>
 </div>
