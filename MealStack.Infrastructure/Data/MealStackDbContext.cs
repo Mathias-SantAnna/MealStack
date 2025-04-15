@@ -14,6 +14,9 @@ namespace MealStack.Infrastructure.Data
         
         // Make sure this property exists and is public
         public DbSet<RecipeEntity> Recipes { get; set; }
+        
+        // Add this property for Ingredients
+        public DbSet<IngredientEntity> Ingredients { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -24,6 +27,13 @@ namespace MealStack.Infrastructure.Data
                 .HasOne(r => r.CreatedBy)
                 .WithMany()
                 .HasForeignKey(r => r.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            // Add this new configuration for IngredientEntity
+            builder.Entity<IngredientEntity>()
+                .HasOne(i => i.CreatedBy)
+                .WithMany()
+                .HasForeignKey(i => i.CreatedById)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

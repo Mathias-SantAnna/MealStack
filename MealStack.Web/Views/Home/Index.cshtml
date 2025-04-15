@@ -7,67 +7,81 @@
     <p class="lead mt-3">Your delicious recipes and ingredients — organized, editable, and always at your fingertips.</p>
 </div>
 
-<div class="row mt-4 justify-content-center">
-    <div class="col-md-2 text-center">
-        <a href="#" class="btn btn-outline-secondary btn-lg w-100">Your Profile</a>
+<div class="row mt-5 justify-content-center">
+    <div class="col-md-auto">
+        <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-secondary btn-lg px-4">Your Profile</a>
     </div>
-    <div class="col-md-2 text-center">
-        <a asp-controller="Recipe" asp-action="Create" class="btn btn-outline-primary btn-lg w-100">Add New Recipe</a>
+    <div class="col-md-auto">
+        <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary btn-lg px-4">Add New Recipe</a>
     </div>
-    <div class="col-md-2 text-center">
-        <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary btn-lg w-100">View Recipes</a>
+    <div class="col-md-auto">
+        <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">My Recipes</a>
     </div>
-    <div class="col-md-2 text-center">
-        <a asp-controller="Ingredient" asp-action="Index" class="btn btn-outline-success btn-lg w-100">View Ingredients</a>
+    <div class="col-md-auto">
+        <a asp-controller="Ingredient" asp-action="Index" class="btn btn-outline-success btn-lg px-4">View Ingredients</a>
     </div>
-    <div class="col-md-2 text-center">
-        <a href="#" class="btn btn-outline-info btn-lg w-100">Community Recipes</a>
+    <div class="col-md-auto">
+        <a asp-controller="Recipe" asp-action="Community" class="btn btn-outline-info btn-lg px-4">Community Recipes</a>
     </div>
 </div>
 
-<div class="row mt-3 justify-content-center">
-    <div class="col-md-2 text-center">
-        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-danger btn-lg w-100">Manage Users</a>
+@if (User.IsInRole("Admin"))
+{
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Only Admin can see:</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row justify-content-center">
+                        <div class="col-md-auto mb-2">
+                            <a asp-controller="Admin" asp-action="Index" class="btn btn-danger">Manage Users</a>
+                        </div>
+                        <div class="col-md-auto mb-2">
+                            <a asp-controller="Admin" asp-action="ManageRecipes" class="btn btn-primary">Manage Recipes</a>
+                        </div>
+                        <div class="col-md-auto mb-2">
+                            <a asp-controller="Admin" asp-action="ManageIngredients" class="btn btn-success">Manage Ingredients</a>
+                        </div>
+                        <div class="col-md-auto mb-2">
+                            <a asp-controller="Admin" asp-action="Categories" class="btn btn-warning">Manage Categories</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-2 text-center">
-        <a href="#" class="btn btn-outline-primary btn-lg w-100">Manage Recipes</a>
-    </div>
-    <div class="col-md-2 text-center">
-        <a asp-controller="Ingredient" asp-action="Index" class="btn btn-outline-success btn-lg w-100">Manage Ingredients</a>
-    </div>
-    <div class="col-md-2 text-center">
-        <a href="#" class="btn btn-outline-warning btn-lg w-100">Manage Categories</a>
-    </div>
-</div>
+}
 
 <hr class="my-5" />
 
-<div class="row mt-4">
-    <div class="col-md-6">
+<div class="row">
+    <div class="col-md-6 mb-4">
         <div class="card shadow-sm h-100">
+            <div class="card-header bg-light">
+                <h3 class="mb-0">📚 Manage Recipes</h3>
+            </div>
             <div class="card-body">
-                <h3 class="card-title text-center">📚 Manage Recipes</h3>
-                <p class="card-text">Add, edit, delete, and view your favorite dishes with step-by-step instructions.</p>
+                <p>Add, edit, delete, and view your favorite dishes with step-by-step instructions.</p>
                 <div class="text-center mt-4">
-                    <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary btn-lg">Add New Recipe</a>
+                    <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary">Add New Recipe</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-6 mb-4">
         <div class="card shadow-sm h-100">
+            <div class="card-header bg-light">
+                <h3 class="mb-0">Community Recipes</h3>
+            </div>
             <div class="card-body">
-                <h3 class="card-title text-center">🥕 Manage Ingredients</h3>
-                <p class="card-text">Keep your ingredients list tidy and reusable across all your delicious recipes.</p>
+                <p>Find amazing recipes from everyone.</p>
                 <div class="text-center mt-4">
-                    <a asp-controller="Ingredient" asp-action="Create" class="btn btn-success btn-lg">Add New Ingredient</a>
+                    <a asp-controller="Ingredient" asp-action="Create" class="btn btn-success">All Recipes</a>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<div class="text-center mt-5">
-    <h3>Your Recipes would appear here</h3>
 </div>

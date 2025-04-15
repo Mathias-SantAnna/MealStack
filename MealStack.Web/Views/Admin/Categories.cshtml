@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Manage Categories";
+}
+
+<h2>Manage Categories</h2>
+
+<div class="alert alert-primary">
+    Welcome to the Category Management panel.
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Message"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-header bg-warning">
+        <h5 class="mb-0">Recipe Categories</h5>
+    </div>
+    <div class="card-body">
+        <p>Here you can manage categories for recipes. Categories help users find related recipes.</p>
+        
+        <div class="alert alert-info">
+            <strong>Coming Soon:</strong> Full category management functionality.
+        </div>
+        
+        <a asp-controller="Category" asp-action="Index" class="btn btn-outline-warning">View All Categories</a>
+        <a asp-controller="Category" asp-action="Create" class="btn btn-warning">Add New Category</a>
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">Back to User Management</a>
+    </div>
+</div>

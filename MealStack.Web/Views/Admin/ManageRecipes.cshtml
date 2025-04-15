@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Manage Recipes";
+}
+
+<h2>Manage Recipes</h2>
+
+<div class="alert alert-primary">
+    Welcome to the Recipe Management panel.
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Message"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">All Recipes</h5>
+    </div>
+    <div class="card-body">
+        <p>Here you can view and manage all recipes in the system, including those created by users.</p>
+        
+        <div class="alert alert-info">
+            <strong>Coming Soon:</strong> Full recipe management functionality.
+        </div>
+        
+        <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary">View All Recipes</a>
+        <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary">Add New Recipe</a>
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">Back to User Management</a>
+    </div>
+</div>
