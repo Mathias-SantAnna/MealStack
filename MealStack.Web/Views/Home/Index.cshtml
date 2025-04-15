@@ -3,7 +3,7 @@
 }
 
 <div class="text-center mt-5">
-    <h1 class="display-4">🍽️ Welcome to the MealStack</h1>
+    <h1 class="display-4">🍽️ Welcome to MealStack</h1>
     <p class="lead mt-3">Your delicious recipes and ingredients — organized, editable, and always at your fingertips.</p>
 </div>
 
@@ -18,7 +18,7 @@
         <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary btn-lg w-100">View Recipes</a>
     </div>
     <div class="col-md-2 text-center">
-        <a href="#" class="btn btn-outline-success btn-lg w-100">View Ingredients</a>
+        <a asp-controller="Ingredient" asp-action="Index" class="btn btn-outline-success btn-lg w-100">View Ingredients</a>
     </div>
     <div class="col-md-2 text-center">
         <a href="#" class="btn btn-outline-info btn-lg w-100">Community Recipes</a>
@@ -33,7 +33,7 @@
         <a href="#" class="btn btn-outline-primary btn-lg w-100">Manage Recipes</a>
     </div>
     <div class="col-md-2 text-center">
-        <a href="#" class="btn btn-outline-success btn-lg w-100">Manage Ingredients</a>
+        <a asp-controller="Ingredient" asp-action="Index" class="btn btn-outline-success btn-lg w-100">Manage Ingredients</a>
     </div>
     <div class="col-md-2 text-center">
         <a href="#" class="btn btn-outline-warning btn-lg w-100">Manage Categories</a>
@@ -61,7 +61,7 @@
                 <h3 class="card-title text-center">🥕 Manage Ingredients</h3>
                 <p class="card-text">Keep your ingredients list tidy and reusable across all your delicious recipes.</p>
                 <div class="text-center mt-4">
-                    <a href="#" class="btn btn-success btn-lg">Add New Ingredient</a>
+                    <a asp-controller="Ingredient" asp-action="Create" class="btn btn-success btn-lg">Add New Ingredient</a>
                 </div>
             </div>
         </div>

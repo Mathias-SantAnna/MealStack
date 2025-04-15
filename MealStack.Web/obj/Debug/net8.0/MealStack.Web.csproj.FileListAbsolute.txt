@@ -302,6 +302,7 @@
 /Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Web/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.dll
 /Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Web/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
 /Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Web/bin/Debug/net8.0/Microsoft.Extensions.DependencyModel.dll
+/Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Web/bin/Debug/net8.0/Microsoft.Extensions.FileProviders.Embedded.dll
 /Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Web/bin/Debug/net8.0/Microsoft.Extensions.Identity.Core.dll
 /Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Web/bin/Debug/net8.0/Microsoft.Extensions.Identity.Stores.dll
 /Users/mathiascagnoni/RiderProjects/MealStack/MealStack.Web/bin/Debug/net8.0/Microsoft.Extensions.Options.dll
