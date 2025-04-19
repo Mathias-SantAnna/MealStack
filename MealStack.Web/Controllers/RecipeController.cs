@@ -24,8 +24,10 @@ namespace MealStack.Web.Controllers
         // GET: Recipe
         public async Task<IActionResult> Index()
         {
+            // Return all recipes for the Index view
             var recipes = await _context.Recipes
                 .Include(r => r.CreatedBy)
+                .OrderByDescending(r => r.CreatedDate)
                 .ToListAsync();
             return View(recipes);
         }
@@ -38,15 +40,7 @@ namespace MealStack.Web.Controllers
             var recipes = await _context.Recipes
                 .Include(r => r.CreatedBy)
                 .Where(r => r.CreatedById == userId)
-                .ToListAsync();
-            return View(recipes);
-        }
-
-        // GET: Recipe/AllRecipes
-        public async Task<IActionResult> AllRecipes()
-        {
-            var recipes = await _context.Recipes
-                .Include(r => r.CreatedBy)
+                .OrderByDescending(r => r.CreatedDate)
                 .ToListAsync();
             return View(recipes);
         }
@@ -100,8 +94,6 @@ namespace MealStack.Web.Controllers
                 {
                     _context.Recipes.Add(recipe);
                     await _context.SaveChangesAsync();
-                    
-                    Console.WriteLine($"Recipe created with ID: {recipe.Id}, Title: {recipe.Title}");
                     
                     TempData["Message"] = "Recipe created successfully!";
                     return RedirectToAction("MyRecipes");
@@ -203,28 +195,6 @@ namespace MealStack.Web.Controllers
                         }
                     }
                 }
-                return View(recipe);
-            }
-            
-            return Forbid();
-        }
-
-        // GET: Recipe/Delete/5
-        [Authorize]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var recipe = await _context.Recipes
-                .Include(r => r.CreatedBy)
-                .FirstOrDefaultAsync(r => r.Id == id);
-                
-            if (recipe == null)
-            {
-                return NotFound();
-            }
-
-            // Only allow delete if user created the recipe or is admin
-            if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
-            {
                 return View(recipe);
             }
             

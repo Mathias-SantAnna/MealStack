@@ -1,32 +1,43 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using MealStack.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using MealStack.Web.Models;
 
-namespace MealStack.Web.Controllers;
-
-public class HomeController : Controller
+namespace MealStack.Web.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
+    public class HomeController : Controller
     {
-        _logger = logger;
-    }
+        private readonly ILogger<HomeController> _logger;
+        private readonly MealStackDbContext _context;
 
-    public IActionResult Index()
-    {
-        return View();
-    }
+        public HomeController(ILogger<HomeController> logger, MealStackDbContext context)
+        {
+            _logger = logger;
+            _context = context;
+        }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        public async Task<IActionResult> Index()
+        {
+            // Get the 3 most recent recipes
+            var latestRecipes = await _context.Recipes
+                .Include(r => r.CreatedBy)
+                .OrderByDescending(r => r.CreatedDate)
+                .Take(3)
+                .ToListAsync();
+            
+            return View(latestRecipes);
+        }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
     }
-    
 }

@@ -1,15 +1,18 @@
 @model IEnumerable<MealStack.Infrastructure.Data.Entities.RecipeEntity>
 
 @{
-    ViewData["Title"] = "Recipes";
+    ViewData["Title"] = "All Recipes";
 }
 
-<h1>Recipes</h1>
+<h1>All Recipes</h1>
 
 <p>
     @if (User.Identity.IsAuthenticated)
     {
-        <a asp-action="Create" class="btn btn-primary">Create New Recipe</a>
+        <div class="d-flex justify-content-between mb-4">
+            <a asp-action="Create" class="btn btn-primary">Create New Recipe</a>
+            <a asp-action="MyRecipes" class="btn btn-outline-secondary">View My Recipes</a>
+        </div>
     }
 </p>
 
@@ -31,8 +34,11 @@ else
                         <p class="card-text">@item.Description</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="badge bg-primary">@item.Difficulty</span>
-                                <small class="text-muted ms-2">@item.PrepTimeMinutes + @item.CookTimeMinutes min</small>
+                                <span class="badge bg-@(item.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" :
+                                                    item.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger")">
+                                    @item.Difficulty
+                                </span>
+                                <small class="text-muted ms-2">@(item.PrepTimeMinutes + item.CookTimeMinutes) min</small>
                             </div>
                             <div>
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">View</a>

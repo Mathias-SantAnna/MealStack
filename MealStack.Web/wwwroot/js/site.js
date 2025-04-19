@@ -2,9 +2,10 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Recipe deletion confirmation
-function confirmDelete(recipeId, recipeName) {
-    if (confirm(`Are you sure you want to delete "${recipeName}"?`)) {
-        document.getElementById(`delete-form-${recipeId}`).submit();
+// Add this to your site.js file
+function confirmDelete(id, name) {
+    if (confirm(`Are you sure you want to delete the recipe "${name}"?`)) {
+        document.getElementById(`delete-form-${id}`).submit();
     }
     return false;
 }

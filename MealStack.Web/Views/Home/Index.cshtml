@@ -1,4 +1,6 @@
-﻿@{
+﻿@model IEnumerable<MealStack.Infrastructure.Data.Entities.RecipeEntity>
+
+@{
     ViewData["Title"] = "Home";
 }
 
@@ -21,7 +23,7 @@
         <a asp-controller="Ingredient" asp-action="Index" class="btn btn-outline-success btn-lg px-4">View Ingredients</a>
     </div>
     <div class="col-md-auto">
-        <a asp-controller="Recipe" asp-action="AllRecipes" class="btn btn-outline-info btn-lg px-4">All Recipes</a>
+        <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-info btn-lg px-4">All Recipes</a>
     </div>
 </div>
 
@@ -86,10 +88,54 @@
     </div>
 </div>
 
-<div class="text-center mt-4">
-    <h2>All Recipes</h2>
+<div class="text-center mt-4 mb-4">
+    <h2>Latest Recipes</h2>
 </div>
 
-<div class="text-center mt-3 mb-5">
-    <h3>Your Recipes would appear here</h3>
-</div>
+@if (Model != null && Model.Any())
+{
+    <div class="row">
+        @foreach (var recipe in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@recipe.Title</h5>
+                        <p class="card-text">@recipe.Description</p>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-@(recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" :
+                                                 recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger") me-2">
+                                @recipe.Difficulty
+                            </span>
+                            <small class="text-muted">@(recipe.PrepTimeMinutes + recipe.CookTimeMinutes) min</small>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <div>
+                            <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-secondary">View</a>
+                            @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || recipe.CreatedById == Context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
+                            {
+                                <a asp-controller="Recipe" asp-action="Edit" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a href="#" onclick="return confirmDelete(@recipe.Id, '@recipe.Title')" class="btn btn-sm btn-outline-danger">Delete</a>
+                                
+                                <!-- Hidden form for delete submission -->
+                                <form id="delete-form-@recipe.Id" asp-controller="Recipe" asp-action="Delete" asp-route-id="@recipe.Id" method="post" style="display: none;">
+                                    @Html.AntiForgeryToken()
+                                </form>
+                            }
+                        </div>
+                        <small class="text-muted">
+                            Created by @(recipe.CreatedBy?.UserName ?? "Unknown") on @recipe.CreatedDate.ToShortDateString()
+                        </small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        No recipes found. Be the first to add a recipe!
+    </div>
+}

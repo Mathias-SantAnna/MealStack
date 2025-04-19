@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MealStack.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ff2bd544d9af22a58022438cd33491fa2a0af79a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b43e2326a579e9daf8547c6ced627a4a6443af46")]
 [assembly: System.Reflection.AssemblyProductAttribute("MealStack.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MealStack.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
