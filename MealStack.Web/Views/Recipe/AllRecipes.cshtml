@@ -1,17 +1,17 @@
 @model IEnumerable<MealStack.Infrastructure.Data.Entities.RecipeEntity>
 
 @{
-    ViewData["Title"] = "Community Recipes";
+    ViewData["Title"] = "All Recipes";
 }
 
-<h1>Community Recipes</h1>
+<h1>All Recipes</h1>
 
-<p>Explore recipes shared by the MealStack community.</p>
+<p>Explore recipes shared by all MealStack users.</p>
 
 @if (!Model.Any())
 {
     <div class="alert alert-info">
-        No community recipes found yet. Be the first to add a recipe!
+        No recipes found yet. Be the first to add a recipe!
     </div>
 }
 else
@@ -52,6 +52,6 @@ else
 else
 {
     <div class="alert alert-secondary mt-4">
-        <a asp-area="Identity" asp-page="/Account/Login">Sign in</a> to add your own recipes to the community.
+        <a asp-area="Identity" asp-page="/Account/Login">Sign in</a> to add your own recipes.
     </div>
 }

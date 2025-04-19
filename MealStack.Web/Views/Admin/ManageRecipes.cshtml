@@ -1,3 +1,5 @@
+@model IEnumerable<MealStack.Infrastructure.Data.Entities.RecipeEntity>
+
 @{
     ViewData["Title"] = "Manage Recipes";
 }
@@ -24,17 +26,94 @@
 
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">All Recipes</h5>
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="mb-0">All Recipes</h5>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    <span class="badge bg-light text-dark me-2">Total: @Model.Count()</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>User</th>
+                    <th>Difficulty</th>
+                    <th>Time</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.OrderByDescending(r => r.CreatedDate))
+                {
+                    <tr>
+                        <td>
+                            <a asp-controller="Recipe" asp-action="Details" asp-route-id="@item.Id" class="fw-bold text-decoration-none">@item.Title</a>
+                        </td>
+                        <td>@(item.CreatedBy?.UserName ?? "Unknown")</td>
+                        <td>
+                            <span class="badge bg-@(item.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" : item.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger")">@item.Difficulty</span>
+                        </td>
+                        <td>@(item.PrepTimeMinutes + item.CookTimeMinutes) min</td>
+                        <td>@item.CreatedDate.ToShortDateString()</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a asp-controller="Recipe" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary">Edit</a>
+                                <a asp-controller="Recipe" asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-secondary">View</a>
+                                <a asp-controller="Recipe" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between">
+            <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary">Add New Recipe</a>
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">Back to User Management</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Recipe Statistics</h5>
     </div>
     <div class="card-body">
-        <p>Here you can view and manage all recipes in the system, including those created by users.</p>
-        
-        <div class="alert alert-info">
-            <strong>Coming Soon:</strong> Full recipe management functionality.
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card bg-light mb-3">
+                    <div class="card-body text-center">
+                        <h3>@Model.Count()</h3>
+                        <p class="mb-0">Total Recipes</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light mb-3">
+                    <div class="card-body text-center">
+                        <h3>@Model.Select(r => r.CreatedById).Distinct().Count()</h3>
+                        <p class="mb-0">Contributing Users</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light mb-3">
+                    <div class="card-body text-center">
+                        <h3>@Model.Where(r => r.CreatedDate > DateTime.Now.AddDays(-7)).Count()</h3>
+                        <p class="mb-0">New This Week</p>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary">View All Recipes</a>
-        <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary">Add New Recipe</a>
-        <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">Back to User Management</a>
     </div>
 </div>

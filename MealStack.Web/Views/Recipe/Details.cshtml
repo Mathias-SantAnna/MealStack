@@ -18,10 +18,10 @@
                         <span class="badge bg-secondary">Cook: @Model.CookTimeMinutes min</span>
                         <span class="badge bg-info">Serves @Model.Servings</span>
                     </div>
-                    
+
                     <h5>Description</h5>
                     <p>@Model.Description</p>
-                    
+
                     <h5>Ingredients</h5>
                     <ul class="list-group mb-4">
                         @foreach (var ingredient in (Model.Ingredients ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries))
@@ -29,14 +29,14 @@
                             <li class="list-group-item">@ingredient.Trim()</li>
                         }
                     </ul>
-                    
+
                     <h5>Instructions</h5>
                     <div class="card bg-light mb-4">
                         <div class="card-body">
                             @Html.Raw(Model.Instructions?.Replace("\n", "<br/>"))
                         </div>
                     </div>
-                    
+
                     <div class="text-muted mb-3">
                         <small>Created on @Model.CreatedDate.ToShortDateString()</small>
                         @if (Model.UpdatedDate.HasValue)
@@ -44,11 +44,19 @@
                             <small>(Updated on @Model.UpdatedDate.Value.ToShortDateString())</small>
                         }
                     </div>
-                    
+
                     <div>
                         <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
-                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
+                        @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || Model.CreatedById == Context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+                            <a href="#" onclick="return confirmDelete(@Model.Id, '@Model.Title')" class="btn btn-danger">Delete</a>
+
+                            <!-- Hidden form for delete submission -->
+                            <form id="delete-form-@Model.Id" asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: none;">
+                                @Html.AntiForgeryToken()
+                            </form>
+                        }
                     </div>
                 </div>
             </div>

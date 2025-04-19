@@ -41,12 +41,12 @@
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info">
-                        <p>Profile stats</p>
-                        <p>Here's your recipes, favorites, and Shopping Lists.</p>
+                        <p>Profile stats coming soon!</p>
+                        <p>You'll be able to see information about your recipes, favorites, and more.</p>
                     </div>
-                    
+
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-md-4">
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
                                     <h6>Your Recipes</h6>
@@ -54,12 +54,21 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="col-6">
+
+                        <div class="col-md-4">
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
                                     <h6>Your Ingredients</h6>
                                     <a asp-controller="Ingredient" asp-action="Index" class="btn btn-outline-success btn-sm">View Ingredients</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body text-center">
+                                    <h6>All Recipes</h6>
+                                    <a asp-controller="Recipe" asp-action="AllRecipes" class="btn btn-outline-info btn-sm">Browse All</a>
                                 </div>
                             </div>
                         </div>

@@ -1,0 +1,105 @@
+@model IEnumerable<MealStack.Infrastructure.Data.Entities.RecipeEntity>
+
+@{
+    ViewData["Title"] = "My Recipes";
+}
+
+<h1>My Recipes</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Recipe Dashboard</h2>
+    <a asp-action="Create" class="btn btn-primary">Add New Recipe</a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Recipe Dashboard</h5>
+        <span class="badge bg-info">Total Recipes: @Model.Count()</span>
+    </div>
+    <div class="card-body">
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                You haven't created any recipes yet. Click "Add New Recipe" to get started!
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Difficulty</th>
+                        <th>Prep + Cook</th>
+                        <th>Servings</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var recipe in Model)
+                    {
+                        <tr>
+                            <td><a asp-action="Details" asp-route-id="@recipe.Id">@recipe.Title</a></td>
+                            <td>
+                                    <span class="badge bg-@(recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" :
+                                                          recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger")">
+                                        @recipe.Difficulty
+                                    </span>
+                            </td>
+                            <td>@(recipe.PrepTimeMinutes + recipe.CookTimeMinutes) min</td>
+                            <td>@recipe.Servings</td>
+                            <td>@recipe.CreatedDate.ToShortDateString()</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a asp-action="Details" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-secondary">View</a>
+                                <a href="#" onclick="return confirmDelete(@recipe.Id, '@recipe.Title')" class="btn btn-sm btn-outline-danger">Delete</a>
+
+                                <!-- Hidden form for delete submission -->
+                                <form id="delete-form-@recipe.Id" asp-action="Delete" asp-route-id="@recipe.Id" method="post" style="display: none;">
+                                    @Html.AntiForgeryToken()
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Card Layout View -->
+<div class="row mt-4">
+    @foreach (var recipe in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@recipe.Title</h5>
+                    <p class="card-text">@(recipe.Description?.Length > 100 ? recipe.Description.Substring(0, 97) + "..." : recipe.Description)</p>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-@(recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" :
+                                              recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger") me-2">
+                            @recipe.Difficulty
+                        </span>
+                        <small class="text-muted">@(recipe.PrepTimeMinutes + recipe.CookTimeMinutes) min</small>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group w-100">
+                        <a asp-action="Edit" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a asp-action="Details" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-secondary">View</a>
+                        <a href="#" onclick="return confirmDelete(@recipe.Id, '@recipe.Title')" class="btn btn-sm btn-outline-danger">Delete</a>
+
+                        <!-- Hidden form for delete submission -->
+                        <form id="delete-form-@recipe.Id" asp-action="Delete" asp-route-id="@recipe.Id" method="post" style="display: none;">
+                            @Html.AntiForgeryToken()
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,53 @@
+@model MealStack.Infrastructure.Data.Entities.RecipeEntity
+
+@{
+    ViewData["Title"] = "Delete Recipe";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="mb-0">Delete Recipe</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h4>Are you sure you want to delete this recipe?</h4>
+                        <p class="mb-0">This action cannot be undone.</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>@Model.Title</h5>
+                        <p>@Model.Description</p>
+
+                        <dl class="row">
+                            <dt class="col-sm-3">Difficulty:</dt>
+                            <dd class="col-sm-9">@Model.Difficulty</dd>
+
+                            <dt class="col-sm-3">Prep Time:</dt>
+                            <dd class="col-sm-9">@Model.PrepTimeMinutes minutes</dd>
+
+                            <dt class="col-sm-3">Cook Time:</dt>
+                            <dd class="col-sm-9">@Model.CookTimeMinutes minutes</dd>
+
+                            <dt class="col-sm-3">Servings:</dt>
+                            <dd class="col-sm-9">@Model.Servings</dd>
+
+                            <dt class="col-sm-3">Created On:</dt>
+                            <dd class="col-sm-9">@Model.CreatedDate.ToShortDateString()</dd>
+                        </dl>
+                    </div>
+
+                    <form asp-action="Delete" method="post" class="mt-4">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-danger">Delete Recipe</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
