@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace MealStack.Web.Controllers
 {
@@ -22,23 +23,39 @@ namespace MealStack.Web.Controllers
         // GET: Recipe
         public async Task<IActionResult> Index()
         {
-            var recipes = await _context.Recipes.Include(r => r.CreatedBy).ToListAsync();
-            return View(model: recipes);
+            // If user is logged in, show their recipes
+            if (User.Identity.IsAuthenticated)
+            {
+                string userId = _userManager.GetUserId(User);
+                var userRecipes = await _context.Recipes
+                    .Where(r => r.CreatedById == userId)
+                    .ToListAsync();
+                return View(userRecipes);
+            }
+            
+            // Otherwise, show all public recipes
+            var recipes = await _context.Recipes.ToListAsync();
+            return View(recipes);
+        }
+        
+        // GET: Recipe/Community
+        public async Task<IActionResult> Community()
+        {
+            // Show all public recipes
+            var recipes = await _context.Recipes.ToListAsync();
+            return View(recipes);
         }
 
         // GET: Recipe/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var recipe = await _context.Recipes
-                .Include(r => r.CreatedBy)
-                .FirstOrDefaultAsync(r => r.Id == id);
-                
+            var recipe = await _context.Recipes.FindAsync(id);
             if (recipe == null)
             {
                 return NotFound();
             }
 
-            return View(model: recipe);
+            return View(recipe);
         }
 
         // GET: Recipe/Create
@@ -58,11 +75,12 @@ namespace MealStack.Web.Controllers
             {
                 recipe.CreatedById = _userManager.GetUserId(User);
                 recipe.CreatedDate = System.DateTime.UtcNow;
+                
                 _context.Add(recipe);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(model: recipe);
+            return View(recipe);
         }
 
         // GET: Recipe/Edit/5
@@ -106,17 +124,31 @@ namespace MealStack.Web.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    existingRecipe.Title = recipe.Title;
-                    existingRecipe.Description = recipe.Description;
-                    existingRecipe.Instructions = recipe.Instructions;
-                    existingRecipe.PrepTimeMinutes = recipe.PrepTimeMinutes;
-                    existingRecipe.CookTimeMinutes = recipe.CookTimeMinutes;
-                    existingRecipe.Servings = recipe.Servings;
-                    existingRecipe.Difficulty = recipe.Difficulty;
-                    existingRecipe.Ingredients = recipe.Ingredients;
-                    existingRecipe.UpdatedDate = System.DateTime.UtcNow;
-                    
-                    await _context.SaveChangesAsync();
+                    try
+                    {
+                        existingRecipe.Title = recipe.Title;
+                        existingRecipe.Description = recipe.Description;
+                        existingRecipe.Instructions = recipe.Instructions;
+                        existingRecipe.PrepTimeMinutes = recipe.PrepTimeMinutes;
+                        existingRecipe.CookTimeMinutes = recipe.CookTimeMinutes;
+                        existingRecipe.Servings = recipe.Servings;
+                        existingRecipe.Difficulty = recipe.Difficulty;
+                        existingRecipe.Ingredients = recipe.Ingredients;
+                        existingRecipe.UpdatedDate = System.DateTime.UtcNow;
+                        
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!RecipeExists(recipe.Id))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                     return RedirectToAction(nameof(Index));
                 }
                 return View(recipe);
@@ -129,10 +161,7 @@ namespace MealStack.Web.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
-            var recipe = await _context.Recipes
-                .Include(r => r.CreatedBy)
-                .FirstOrDefaultAsync(r => r.Id == id);
-                
+            var recipe = await _context.Recipes.FindAsync(id);
             if (recipe == null)
             {
                 return NotFound();
@@ -168,6 +197,11 @@ namespace MealStack.Web.Controllers
             }
             
             return Forbid();
+        }
+
+        private bool RecipeExists(int id)
+        {
+            return _context.Recipes.Any(e => e.Id == id);
         }
     }
 }
