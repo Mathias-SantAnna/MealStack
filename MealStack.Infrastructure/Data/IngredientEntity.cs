@@ -1,6 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MealStack.Infrastructure.Data.Entities
 {
@@ -22,6 +22,8 @@ namespace MealStack.Infrastructure.Data.Entities
         public DateTime CreatedDate { get; set; }
         
         public string CreatedById { get; set; }
-        public IdentityUser CreatedBy { get; set; }
+        
+        [ForeignKey("CreatedById")]
+        public ApplicationUser CreatedBy { get; set; }
     }
 }

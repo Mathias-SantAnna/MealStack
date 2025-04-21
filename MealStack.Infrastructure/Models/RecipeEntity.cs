@@ -1,18 +1,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MealStack.Infrastructure.Data.Entities
 {
-    public enum DifficultyLevel
-    {
-        Easy,
-        Medium,
-        Hard
-    }
-
     public class RecipeEntity
     {
+        [Key]
         public int Id { get; set; }
         
         [Required]
@@ -25,6 +19,8 @@ namespace MealStack.Infrastructure.Data.Entities
         [Required]
         public string Instructions { get; set; }
         
+        public string Ingredients { get; set; }
+        
         [Range(1, 1440)]
         public int PrepTimeMinutes { get; set; }
         
@@ -36,16 +32,21 @@ namespace MealStack.Infrastructure.Data.Entities
         
         public DifficultyLevel Difficulty { get; set; }
         
-        public string Ingredients { get; set; }
-        
-        [Required]
-        public DateTime CreatedDate { get; set; }
-        
-        public DateTime? UpdatedDate { get; set; }
-        
         [Required]
         public string CreatedById { get; set; }
         
-        public virtual IdentityUser CreatedBy { get; set; }
+        [ForeignKey("CreatedById")]
+        public virtual ApplicationUser CreatedBy { get; set; }
+        
+        public DateTime CreatedDate { get; set; }
+        
+        public DateTime? UpdatedDate { get; set; }
+    }
+    
+    public enum DifficultyLevel
+    {
+        Easy,
+        Medium,
+        Hard
     }
 }

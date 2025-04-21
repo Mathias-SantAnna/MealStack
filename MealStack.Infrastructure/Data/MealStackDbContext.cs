@@ -5,7 +5,7 @@ using MealStack.Infrastructure.Data.Entities;
 
 namespace MealStack.Infrastructure.Data
 {
-    public class MealStackDbContext : IdentityDbContext<IdentityUser>
+    public class MealStackDbContext : IdentityDbContext<ApplicationUser>
     {
         public MealStackDbContext(DbContextOptions<MealStackDbContext> options)
             : base(options)
