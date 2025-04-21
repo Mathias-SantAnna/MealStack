@@ -3,6 +3,8 @@ using MealStack.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using MealStack.Web.Models;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MealStack.Web.Controllers
 {
@@ -19,11 +21,11 @@ namespace MealStack.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Get the 3 most recent recipes
+            // Get the 6 most recent recipes for the homepage
             var latestRecipes = await _context.Recipes
                 .Include(r => r.CreatedBy)
                 .OrderByDescending(r => r.CreatedDate)
-                .Take(3)
+                .Take(6)
                 .ToListAsync();
             
             return View(latestRecipes);

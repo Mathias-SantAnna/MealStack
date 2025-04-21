@@ -1,39 +1,82 @@
-@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser>
-
 @{
-ViewData["Title"] = "User Management";
+    ViewData["Title"] = "Admin Dashboard";
 }
 
-<h2>User Management</h2>
-
-<div class="alert alert-primary">
-    Welcome to the Admin Panel.
+<div class="mb-4">
+    <h1>Admin Dashboard</h1>
+    <p class="text-muted">Manage users, recipes, ingredients, and categories.</p>
 </div>
 
-@if (TempData["Message"] != null)
-{
-<div class="alert alert-success">
-    @TempData["Message"]
-</div>
-}
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">User Management</h5>
+            </div>
+            <div class="card-body">
+                <p>Manage user accounts, roles, and permissions.</p>
+                <div class="d-grid gap-2">
+                    <a asp-action="Users" class="btn btn-outline-danger">Manage Users</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<table class="table">
-    <thead>
-    <tr>
-        <th>Email</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var user in Model)
-    {
-    <tr>
-        <td>@user.Email</td>
-        <td>
-            <a asp-action="AssignRole" asp-route-userId="@user.Id" asp-route-role="Admin" class="btn btn-sm btn-primary">Make Admin</a>
-            <a asp-action="AssignRole" asp-route-userId="@user.Id" asp-route-role="Guest" class="btn btn-sm btn-secondary">Make Guest</a>
-        </td>
-    </tr>
-    }
-    </tbody>
-</table>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Recipe Management</h5>
+            </div>
+            <div class="card-body">
+                <p>View, edit, and manage all recipes in the system.</p>
+                <div class="d-grid gap-2">
+                    <a asp-action="ManageRecipes" class="btn btn-outline-primary">Manage Recipes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Ingredient Management</h5>
+            </div>
+            <div class="card-body">
+                <p>Manage ingredients used in recipes.</p>
+                <div class="d-grid gap-2">
+                    <a asp-action="ManageIngredients" class="btn btn-outline-success">Manage Ingredients</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Category Management</h5>
+            </div>
+            <div class="card-body">
+                <p>Manage recipe categories and classifications.</p>
+                <div class="d-grid gap-2">
+                    <a asp-action="Categories" class="btn btn-outline-warning">Manage Categories</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">System Information</h5>
+    </div>
+    <div class="card-body">
+        <p>Current application version: 1.0.0</p>
+        <p>Server time: @DateTime.Now</p>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Back to Home</a>
+</div>

@@ -25,6 +25,82 @@ namespace MealStack.Web.Controllers
             return View(ingredients);
         }
 
+        // API endpoint to get all ingredients for autocomplete
+        [HttpGet]
+        public async Task<IActionResult> GetAllIngredients()
+        {
+            var ingredients = await _context.Ingredients
+                .OrderBy(i => i.Name)
+                .Select(i => new 
+                {
+                    id = i.Id,
+                    name = i.Name,
+                    category = i.Category,
+                    measurement = i.Measurement,
+                    description = i.Description
+                })
+                .ToListAsync();
+                
+            return Json(ingredients);
+        }
+
+        // API endpoint to search ingredients
+        [HttpGet]
+        public async Task<IActionResult> SearchIngredients(string term)
+        {
+            if (string.IsNullOrEmpty(term))
+            {
+                return Json(new List<object>());
+            }
+            
+            var ingredients = await _context.Ingredients
+                .Where(i => i.Name.Contains(term))
+                .OrderBy(i => i.Name)
+                .Select(i => new 
+                {
+                    id = i.Id,
+                    name = i.Name,
+                    category = i.Category,
+                    measurement = i.Measurement,
+                    description = i.Description
+                })
+                .Take(10)
+                .ToListAsync();
+                
+            return Json(ingredients);
+        }
+
+        // API endpoint to add a new ingredient via AJAX
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AddIngredientAjax([FromBody] IngredientEntity ingredient)
+        {
+            if (string.IsNullOrEmpty(ingredient.Name))
+            {
+                return BadRequest(new { success = false, message = "Ingredient name is required" });
+            }
+            
+            // Set required fields
+            ingredient.CreatedById = _userManager.GetUserId(User);
+            ingredient.CreatedDate = DateTime.UtcNow;
+            
+            _context.Ingredients.Add(ingredient);
+            await _context.SaveChangesAsync();
+            
+            return Json(new 
+            {
+                success = true,
+                ingredient = new 
+                {
+                    id = ingredient.Id,
+                    name = ingredient.Name,
+                    category = ingredient.Category,
+                    measurement = ingredient.Measurement,
+                    description = ingredient.Description
+                }
+            });
+        }
+
         // GET: Ingredient/Details/5
         public async Task<IActionResult> Details(int id)
         {

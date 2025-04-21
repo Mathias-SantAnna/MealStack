@@ -1,79 +1,138 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MealStack.Infrastructure.Data;
-using System.Threading.Tasks;
+using MealStack.Infrastructure.Data.Entities;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MealStack.Web.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
+        private readonly MealStackDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly MealStackDbContext _context;
 
         public AdminController(
-            UserManager<IdentityUser> userManager, 
-            RoleManager<IdentityRole> roleManager,
-            MealStackDbContext context)
+            MealStackDbContext context, 
+            UserManager<IdentityUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
+            _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
-            _context = context;
         }
 
-        // User Management
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var users = _userManager.Users.ToList();
-            return View(users);
+            return View();
         }
 
-        public async Task<IActionResult> AssignRole(string userId, string role)
+        public async Task<IActionResult> Users()
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user != null && await _roleManager.RoleExistsAsync(role))
+            var users = await _userManager.Users.ToListAsync();
+            var userViewModels = new List<UserViewModel>();
+
+            foreach (var user in users)
             {
-                // Check if user already has this role
-                if (await _userManager.IsInRoleAsync(user, role))
+                var roles = await _userManager.GetRolesAsync(user);
+                var recipes = await _context.Recipes
+                    .Where(r => r.CreatedById == user.Id)
+                    .CountAsync();
+
+                userViewModels.Add(new UserViewModel
                 {
-                    TempData["Message"] = $"User already has the role '{role}'.";
-                }
-                else
-                {
-                    // Add the role
-                    var result = await _userManager.AddToRoleAsync(user, role);
-                    if (result.Succeeded)
-                    {
-                        TempData["Message"] = $"Successfully assigned role '{role}' to user.";
-                    }
-                    else
-                    {
-                        TempData["Error"] = $"Failed to assign role: {string.Join(", ", result.Errors.Select(e => e.Description))}";
-                    }
-                }
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Roles = roles.ToList(),
+                    RecipesCount = recipes,
+                    EmailConfirmed = user.EmailConfirmed
+                });
             }
-            return RedirectToAction("Index");
+
+            return View(userViewModels);
         }
 
-        // Recipe Management
-        public IActionResult ManageRecipes()
+        public async Task<IActionResult> ManageRecipes()
         {
-            return View();
+            // Get all recipes with their creators
+            var recipes = await _context.Recipes
+                .Include(r => r.CreatedBy)
+                .OrderByDescending(r => r.CreatedDate)
+                .ToListAsync();
+            
+            return View(recipes);
         }
 
-        // Ingredient Management
-        public IActionResult ManageIngredients()
+        public async Task<IActionResult> ManageIngredients()
         {
-            return View();
+            // Get all ingredients with their creators
+            var ingredients = await _context.Set<IngredientEntity>()
+                .Include(i => i.CreatedBy)
+                .OrderBy(i => i.Name)
+                .ToListAsync();
+                
+            return View(ingredients);
         }
 
-        // Category Management
-        public IActionResult Categories()
+        public async Task<IActionResult> Categories()
         {
-            return View();
+            // Forward to the CategoryController's Index action
+            return RedirectToAction("Index", "Category");
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleUserRole(string userId, string roleName)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(roleName))
+            {
+                TempData["Error"] = "User ID and role name are required.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                TempData["Error"] = "User not found.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            // Check if role exists
+            if (!await _roleManager.RoleExistsAsync(roleName))
+            {
+                TempData["Error"] = $"Role '{roleName}' does not exist.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            // Toggle role
+            if (await _userManager.IsInRoleAsync(user, roleName))
+            {
+                await _userManager.RemoveFromRoleAsync(user, roleName);
+                TempData["Message"] = $"Role '{roleName}' removed from user {user.UserName}.";
+            }
+            else
+            {
+                await _userManager.AddToRoleAsync(user, roleName);
+                TempData["Message"] = $"Role '{roleName}' added to user {user.UserName}.";
+            }
+
+            return RedirectToAction(nameof(Users));
+        }
+    }
+
+    public class UserViewModel
+    {
+        public string Id { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public List<string> Roles { get; set; } = new List<string>();
+        public int RecipesCount { get; set; }
+        public bool EmailConfirmed { get; set; }
     }
 }

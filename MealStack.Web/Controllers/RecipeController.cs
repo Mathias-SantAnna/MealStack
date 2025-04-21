@@ -22,26 +22,143 @@ namespace MealStack.Web.Controllers
         }
 
         // GET: Recipe
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, string difficulty, int? timeFilter, string sortBy, string category)
         {
-            // Return all recipes for the Index view
-            var recipes = await _context.Recipes
+            // Start with all recipes
+            var query = _context.Recipes
                 .Include(r => r.CreatedBy)
-                .OrderByDescending(r => r.CreatedDate)
-                .ToListAsync();
+                .AsQueryable();
+
+            // Apply search filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(r => 
+                    r.Title.Contains(searchTerm) || 
+                    r.Description.Contains(searchTerm) || 
+                    r.Ingredients.Contains(searchTerm)
+                );
+                ViewData["SearchTerm"] = searchTerm;
+            }
+
+            // Apply difficulty filter
+            if (!string.IsNullOrEmpty(difficulty))
+            {
+                if (Enum.TryParse<DifficultyLevel>(difficulty, out var difficultyLevel))
+                {
+                    query = query.Where(r => r.Difficulty == difficultyLevel);
+                }
+                ViewData["Difficulty"] = difficulty;
+            }
+
+            // Apply time filter (total prep + cook time)
+            if (timeFilter.HasValue)
+            {
+                query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= timeFilter.Value);
+                ViewData["TimeFilter"] = timeFilter;
+            }
+
+            // Apply category filter
+            if (!string.IsNullOrEmpty(category))
+            {
+                // Placeholder for category implementation
+                // This will be updated when categories are fully implemented
+                ViewData["Category"] = category;
+            }
+
+            // Apply sorting
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLower())
+                {
+                    case "oldest":
+                        query = query.OrderBy(r => r.CreatedDate);
+                        break;
+                    case "fastest":
+                        query = query.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
+                        break;
+                    default: // "newest" is default
+                        query = query.OrderByDescending(r => r.CreatedDate);
+                        break;
+                }
+                ViewData["SortBy"] = sortBy;
+            }
+            else
+            {
+                // Default sort - newest first
+                query = query.OrderByDescending(r => r.CreatedDate);
+                ViewData["SortBy"] = "newest";
+            }
+
+            // Execute query and return results
+            var recipes = await query.ToListAsync();
             return View(recipes);
         }
 
         // GET: Recipe/MyRecipes
         [Authorize]
-        public async Task<IActionResult> MyRecipes()
+        public async Task<IActionResult> MyRecipes(string searchTerm, string difficulty, int? timeFilter, string sortBy)
         {
             var userId = _userManager.GetUserId(User);
-            var recipes = await _context.Recipes
+            
+            // Start with user's recipes
+            var query = _context.Recipes
                 .Include(r => r.CreatedBy)
                 .Where(r => r.CreatedById == userId)
-                .OrderByDescending(r => r.CreatedDate)
-                .ToListAsync();
+                .AsQueryable();
+
+            // Apply search filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(r => 
+                    r.Title.Contains(searchTerm) || 
+                    r.Description.Contains(searchTerm) || 
+                    r.Ingredients.Contains(searchTerm)
+                );
+                ViewData["SearchTerm"] = searchTerm;
+            }
+
+            // Apply difficulty filter
+            if (!string.IsNullOrEmpty(difficulty))
+            {
+                if (Enum.TryParse<DifficultyLevel>(difficulty, out var difficultyLevel))
+                {
+                    query = query.Where(r => r.Difficulty == difficultyLevel);
+                }
+                ViewData["Difficulty"] = difficulty;
+            }
+
+            // Apply time filter (total prep + cook time)
+            if (timeFilter.HasValue)
+            {
+                query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= timeFilter.Value);
+                ViewData["TimeFilter"] = timeFilter;
+            }
+
+            // Apply sorting
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLower())
+                {
+                    case "oldest":
+                        query = query.OrderBy(r => r.CreatedDate);
+                        break;
+                    case "fastest":
+                        query = query.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
+                        break;
+                    default: // "newest" is default
+                        query = query.OrderByDescending(r => r.CreatedDate);
+                        break;
+                }
+                ViewData["SortBy"] = sortBy;
+            }
+            else
+            {
+                // Default sort - newest first
+                query = query.OrderByDescending(r => r.CreatedDate);
+                ViewData["SortBy"] = "newest";
+            }
+
+            var recipes = await query.ToListAsync();
             return View(recipes);
         }
 
@@ -195,6 +312,28 @@ namespace MealStack.Web.Controllers
                         }
                     }
                 }
+                return View(recipe);
+            }
+            
+            return Forbid();
+        }
+
+        // GET: Recipe/Delete
+        [Authorize]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var recipe = await _context.Recipes
+                .Include(r => r.CreatedBy)
+                .FirstOrDefaultAsync(m => m.Id == id);
+                
+            if (recipe == null)
+            {
+                return NotFound();
+            }
+            
+            // Only allow delete if user created the recipe or is admin
+            if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+            {
                 return View(recipe);
             }
             

@@ -1,40 +1,145 @@
+@model IEnumerable<MealStack.Infrastructure.Data.Entities.IngredientEntity>
+
 @{
     ViewData["Title"] = "Manage Ingredients";
 }
 
-<h2>Manage Ingredients</h2>
-
-<div class="alert alert-primary">
-    Welcome to the Ingredient Management panel.
+<div class="mb-4">
+    <h1>Ingredient Management</h1>
+    <p class="text-muted">Manage all ingredients in the system.</p>
 </div>
 
 @if (TempData["Message"] != null)
 {
-    <div class="alert alert-success">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
         @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
         @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
-<div class="card mb-4">
-    <div class="card-header bg-success text-white">
-        <h5 class="mb-0">All Ingredients</h5>
+<div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center bg-light">
+        <h5 class="mb-0">Ingredient Dashboard</h5>
+        <span class="badge bg-success rounded-pill">Total Ingredients: @Model.Count()</span>
     </div>
-    <div class="card-body">
-        <p>Here you can view and manage all ingredients in the system.</p>
-        
-        <div class="alert alert-info">
-            <strong>Coming Soon:</strong> Full ingredient management functionality.
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Measurement</th>
+                    <th>Created By</th>
+                    <th>Created Date</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var ingredient in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">@ingredient.Name</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(ingredient.Category))
+                            {
+                                <span class="badge bg-info text-dark">@ingredient.Category</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(ingredient.Description))
+                            {
+                                @ingredient.Description
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(ingredient.Measurement))
+                            {
+                                @ingredient.Measurement
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>@(ingredient.CreatedBy?.UserName ?? "Unknown")</td>
+                        <td>@ingredient.CreatedDate.ToShortDateString()</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a asp-controller="Ingredient" asp-action="Edit" asp-route-id="@ingredient.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a asp-controller="Ingredient" asp-action="Details" asp-route-id="@ingredient.Id" class="btn btn-sm btn-outline-secondary">View</a>
+                                <a href="#" onclick="return confirmDelete(@ingredient.Id, '@ingredient.Name')" class="btn btn-sm btn-outline-danger">Delete</a>
+
+                                <!-- Hidden form for delete submission -->
+                                <form id="delete-form-@ingredient.Id" asp-controller="Ingredient" asp-action="Delete" asp-route-id="@ingredient.Id" method="post" style="display: none;">
+                                    @Html.AntiForgeryToken()
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
         </div>
-        
-        <a asp-controller="Ingredient" asp-action="Index" class="btn btn-outline-success">View All Ingredients</a>
-        <a asp-controller="Ingredient" asp-action="Create" class="btn btn-success">Add New Ingredient</a>
-        <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">Back to User Management</a>
     </div>
 </div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h3>@Model.Count()</h3>
+                <p class="mb-0">Total Ingredients</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h3>@Model.Select(i => i.Category).Where(c => !string.IsNullOrEmpty(c)).Distinct().Count()</h3>
+                <p class="mb-0">Ingredient Categories</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h3>@Model.Select(i => i.CreatedById).Distinct().Count()</h3>
+                <p class="mb-0">Contributing Users</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between">
+    <a asp-controller="Ingredient" asp-action="Create" class="btn btn-success">Add New Ingredient</a>
+    <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">Back to Admin Dashboard</a>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id, name) {
+            if (confirm(`Are you sure you want to delete the ingredient "${name}"?`)) {
+                document.getElementById(`delete-form-${id}`).submit();
+            }
+            return false;
+        }
+    </script>
+}
