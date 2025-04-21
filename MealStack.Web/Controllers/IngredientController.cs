@@ -7,12 +7,15 @@ using MealStack.Infrastructure.Data.Entities;
 
 namespace MealStack.Web.Controllers
 {
-    public class IngredientController : Controller
+    public class IngredientController : BaseController
     {
         private readonly MealStackDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public IngredientController(MealStackDbContext context, UserManager<IdentityUser> userManager)
+        public IngredientController(
+            MealStackDbContext context, 
+            UserManager<ApplicationUser> userManager) 
+            : base(userManager)
         {
             _context = context;
             _userManager = userManager;

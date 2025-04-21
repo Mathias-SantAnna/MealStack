@@ -1,21 +1,24 @@
 using MealStack.Infrastructure.Data;
+using MealStack.Infrastructure.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configure EF Core + PostgreSQL - Use fully qualified namespace to avoid ambiguity
-builder.Services.AddDbContext<MealStack.Infrastructure.Data.MealStackDbContext>(options =>
+// 1. Configure EF Core + PostgreSQL
+builder.Services.AddDbContext<MealStackDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         x => x.MigrationsAssembly("MealStack.Infrastructure")));
 
-// 2. Add Identity with Role support - Use fully qualified namespace here too
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+// 2. Add Identity with Role support
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
+        options.User.RequireUniqueEmail = true;
+        options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     })
     .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<MealStack.Infrastructure.Data.MealStackDbContext>();
+    .AddEntityFrameworkStores<MealStackDbContext>();
 
 // 3. Configure cookie login paths
 builder.Services.ConfigureApplicationCookie(options =>
@@ -30,33 +33,34 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// 5. Seed roles and default admin user
+// 5. Seed roles and default admin user (only create if missing)
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
+    var services    = scope.ServiceProvider;
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
+    // ensure roles exist
     string[] roles = { "Admin", "User", "Guest" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
-        {
             await roleManager.CreateAsync(new IdentityRole(role));
-        }
     }
 
-    // Seed default Admin user
-    string adminEmail = "admin@mealstack.com";
+    // admin credentials
+    string adminEmail    = "admin@mealstack.com";
     string adminPassword = "Admin@123";
+    string adminUsername = adminEmail;   // use email as the username
 
+    // find or create admin user
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
     if (adminUser == null)
     {
-        adminUser = new IdentityUser
+        adminUser = new ApplicationUser
         {
-            UserName = adminEmail,
-            Email = adminEmail,
+            UserName       = adminUsername,
+            Email          = adminEmail,
             EmailConfirmed = true
         };
 
@@ -77,17 +81,14 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 7. Default route and Identity Razor Pages
+// 7. Routing
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
 app.MapRazorPages();
 
 app.Run();

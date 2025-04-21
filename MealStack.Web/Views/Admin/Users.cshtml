@@ -34,131 +34,133 @@
         <div class="table-responsive">
             <table class="table table-hover table-striped mb-0">
                 <thead class="table-light">
-                    <tr>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Roles</th>
-                        <th>Recipes</th>
-                        <th>Email Confirmed</th>
-                        <th>Actions</th>
-                    </tr>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Roles</th>
+                    <th>Recipes</th>
+                    <th>Email Confirmed</th>
+                    <th>Actions</th>
+                </tr>
                 </thead>
                 <tbody>
-                    @foreach (var user in Model)
-                    {
-                        <tr>
-                            <td>@user.UserName</td>
-                            <td>@user.Email</td>
-                            <td>
-                                @foreach (var role in user.Roles)
-                                {
-                                    <span class="badge bg-@(role == "Admin" ? "danger" : role == "User" ? "primary" : "secondary") me-1">@role</span>
-                                }
-                            </td>
-                            <td>
-                                @if (user.RecipesCount > 0)
-                                {
-                                    <span class="badge bg-success">@user.RecipesCount</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">0</span>
-                                }
-                            </td>
-                            <td>
-                                @if (user.EmailConfirmed)
-                                {
-                                    <span class="badge bg-success">Yes</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-warning text-dark">No</span>
-                                }
-                            </td>
-                            <td>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        Manage Roles
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <form asp-action="ToggleUserRole" method="post">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="userId" value="@user.Id" />
-                                                <input type="hidden" name="roleName" value="Admin" />
-                                                <button type="submit" class="dropdown-item">
-                                                    @if (user.Roles.Contains("Admin"))
-                                                    {
-                                                        <span>Remove Admin Role</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span>Add Admin Role</span>
-                                                    }
-                                                </button>
-                                            </form>
-                                        </li>
-                                        <li>
-                                            <form asp-action="ToggleUserRole" method="post">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="userId" value="@user.Id" />
-                                                <input type="hidden" name="roleName" value="User" />
-                                                <button type="submit" class="dropdown-item">
-                                                    @if (user.Roles.Contains("User"))
-                                                    {
-                                                        <span>Remove User Role</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span>Add User Role</span>
-                                                    }
-                                                </button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                    }
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>
+                            <form asp-action="UpdateUserUsername" method="post" class="d-flex">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <input type="text" name="username" value="@user.UserName" class="form-control form-control-sm" style="width: 120px;"
+                                       placeholder="Set username" maxlength="10" pattern="[a-zA-Z]+" title="3-10 letters only" />
+                                <button type="submit" class="btn btn-sm btn-outline-primary ms-2">Update</button>
+                            </form>
+                        </td>
+                        <td>@user.Email</td>
+                        <td>
+                            @foreach (var role in user.Roles)
+                            {
+                                <span class="badge bg-@(role == "Admin" ? "danger" : role == "User" ? "primary" : "secondary") me-1">@role</span>
+                            }
+                        </td>
+                        <td>
+                            @if (user.RecipesCount > 0)
+                            {
+                                <span class="badge bg-success">@user.RecipesCount</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">0</span>
+                            }
+                        </td>
+                        <td>
+                            @if (user.EmailConfirmed)
+                            {
+                                <span class="badge bg-success">Yes</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">No</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Manage Roles
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <form asp-action="ToggleUserRole" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <input type="hidden" name="roleName" value="Admin" />
+                                            <button type="submit" class="dropdown-item">
+                                                @if (user.Roles.Contains("Admin"))
+                                                {
+                                                    <span>Remove Admin Role</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Add Admin Role</span>
+                                                }
+                                            </button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form asp-action="ToggleUserRole" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <input type="hidden" name="roleName" value="User" />
+                                            <button type="submit" class="dropdown-item">
+                                                @if (user.Roles.Contains("User"))
+                                                {
+                                                    <span>Remove User Role</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Add User Role</span>
+                                                }
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                }
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card bg-light">
-            <div class="card-body text-center">
-                <h3>@Model.Count()</h3>
-                <p class="mb-0">Total Users</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-light">
-            <div class="card-body text-center">
-                <h3>@Model.Count(u => u.Roles.Contains("Admin"))</h3>
-                <p class="mb-0">Admin Users</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-light">
-            <div class="card-body text-center">
-                <h3>@Model.Sum(u => u.RecipesCount)</h3>
-                <p class="mb-0">Total Recipes</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="d-flex justify-content-end">
-    <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">Back to Admin Dashboard</a>
-</div>
-
 @section Scripts {
     <script>
-        // Any additional JavaScript you need for this page
+        // Validate username input
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameInputs = document.querySelectorAll('input[name="username"]');
+
+            usernameInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    // Remove any non-alphabet characters
+                    this.value = this.value.replace(/[^a-zA-Z]/g, '');
+
+                    // Check length
+                    if (this.value.length > 0 && this.value.length < 3) {
+                        this.setCustomValidity('Username must be at least 3 characters');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                });
+
+                input.addEventListener('invalid', function() {
+                    if (this.value.length > 0 && this.value.length < 3) {
+                        this.setCustomValidity('Username must be at least 3 characters');
+                    } else if (!this.value.match(/^[a-zA-Z]+$/)) {
+                        this.setCustomValidity('Username can only contain letters');
+                    }
+                });
+            });
+        });
     </script>
 }

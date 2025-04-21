@@ -1,4 +1,4 @@
-@model Microsoft.AspNetCore.Identity.IdentityUser
+@model MealStack.Web.Models.ProfileViewModel
 
 @{
     ViewData["Title"] = "Your Profile";
@@ -12,6 +12,14 @@
         </div>
     </div>
 
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row">
         <div class="col-md-4">
             <div class="card mb-4">
@@ -24,11 +32,18 @@
                         <p>@Model.Email</p>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Username</label>
-                        <p>@Model.UserName</p>
+                        <form asp-action="UpdateUsername" method="post">
+                            <div class="form-group mb-3">
+                                <label asp-for="UserName" class="form-label fw-bold"></label>
+                                <input asp-for="UserName" class="form-control" placeholder="Enter a username" />
+                                <span asp-validation-for="UserName" class="text-danger"></span>
+                                <small class="form-text text-muted">3-10 letters only, no numbers or special characters.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Username</button>
+                        </form>
                     </div>
                     <div class="mb-3">
-                        <a asp-area="Identity" asp-page="/Account/Manage/Index" class="btn btn-primary">Manage Account</a>
+                        <a asp-area="Identity" asp-page="/Account/Manage/Index" class="btn btn-outline-secondary">Manage Account</a>
                     </div>
                 </div>
             </div>
@@ -50,7 +65,7 @@
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
                                     <h6>Your Recipes</h6>
-                                    <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary btn-sm">View Recipes</a>
+                                    <a asp-controller="Recipe" asp-action="MyRecipes" class="btn btn-outline-primary btn-sm">View Recipes</a>
                                 </div>
                             </div>
                         </div>
@@ -68,7 +83,7 @@
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
                                     <h6>All Recipes</h6>
-                                    <a asp-controller="Recipe" asp-action="AllRecipes" class="btn btn-outline-info btn-sm">Browse All</a>
+                                    <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-info btn-sm">Browse All</a>
                                 </div>
                             </div>
                         </div>
@@ -78,3 +93,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

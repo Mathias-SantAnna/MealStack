@@ -1,19 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using MealStack.Infrastructure.Data;
+using MealStack.Infrastructure.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using MealStack.Web.Models;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MealStack.Web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         private readonly ILogger<HomeController> _logger;
         private readonly MealStackDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger, MealStackDbContext context)
+        public HomeController(
+            ILogger<HomeController> logger, 
+            MealStackDbContext context,
+            UserManager<ApplicationUser> userManager) : base(userManager)
         {
             _logger = logger;
             _context = context;
@@ -21,11 +24,11 @@ namespace MealStack.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Get the 6 most recent recipes for the homepage
+            // Get the 3 most recent recipes
             var latestRecipes = await _context.Recipes
                 .Include(r => r.CreatedBy)
                 .OrderByDescending(r => r.CreatedDate)
-                .Take(6)
+                .Take(3)
                 .ToListAsync();
             
             return View(latestRecipes);

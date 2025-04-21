@@ -11,16 +11,17 @@ using System.Threading.Tasks;
 namespace MealStack.Web.Controllers
 {
     [Authorize(Roles = "Admin")]
-    public class AdminController : Controller
+    public class AdminController : BaseController
     {
         private readonly MealStackDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
         public AdminController(
             MealStackDbContext context, 
-            UserManager<IdentityUser> userManager,
+            UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager)
+            : base(userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -58,34 +59,6 @@ namespace MealStack.Web.Controllers
             return View(userViewModels);
         }
 
-        public async Task<IActionResult> ManageRecipes()
-        {
-            // Get all recipes with their creators
-            var recipes = await _context.Recipes
-                .Include(r => r.CreatedBy)
-                .OrderByDescending(r => r.CreatedDate)
-                .ToListAsync();
-            
-            return View(recipes);
-        }
-
-        public async Task<IActionResult> ManageIngredients()
-        {
-            // Get all ingredients with their creators
-            var ingredients = await _context.Set<IngredientEntity>()
-                .Include(i => i.CreatedBy)
-                .OrderBy(i => i.Name)
-                .ToListAsync();
-                
-            return View(ingredients);
-        }
-
-        public async Task<IActionResult> Categories()
-        {
-            // Forward to the CategoryController's Index action
-            return RedirectToAction("Index", "Category");
-        }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleUserRole(string userId, string roleName)
@@ -120,6 +93,61 @@ namespace MealStack.Web.Controllers
             {
                 await _userManager.AddToRoleAsync(user, roleName);
                 TempData["Message"] = $"Role '{roleName}' added to user {user.UserName}.";
+            }
+
+            return RedirectToAction(nameof(Users));
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateUserUsername(string userId, string username)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["Error"] = "User ID is required.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                TempData["Error"] = "User not found.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            // Validate username
+            if (string.IsNullOrEmpty(username) || username.Length < 3 || username.Length > 10)
+            {
+                TempData["Error"] = "Username must be between 3 and 10 characters.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(username, @"^[a-zA-Z]+$"))
+            {
+                TempData["Error"] = "Username can only contain letters (no numbers or special characters).";
+                return RedirectToAction(nameof(Users));
+            }
+
+            // Check if username is already taken
+            var existingUser = await _userManager.FindByNameAsync(username);
+            if (existingUser != null && existingUser.Id != userId)
+            {
+                TempData["Error"] = "This username is already taken.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            // Update username
+            user.UserName = username;
+            user.NormalizedUserName = _userManager.NormalizeName(username);
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                TempData["Message"] = $"Username for {user.Email} updated to '{username}'.";
+            }
+            else
+            {
+                TempData["Error"] = "Failed to update username: " + string.Join(", ", result.Errors.Select(e => e.Description));
             }
 
             return RedirectToAction(nameof(Users));

@@ -10,155 +10,41 @@ using System.Threading.Tasks;
 
 namespace MealStack.Web.Controllers
 {
-    public class RecipeController : Controller
+    public class RecipeController : BaseController
     {
         private readonly MealStackDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public RecipeController(MealStackDbContext context, UserManager<IdentityUser> userManager)
+        public RecipeController(
+            MealStackDbContext context, 
+            UserManager<ApplicationUser> userManager) 
+            : base(userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
         // GET: Recipe
-        public async Task<IActionResult> Index(string searchTerm, string difficulty, int? timeFilter, string sortBy, string category)
+        public async Task<IActionResult> Index()
         {
-            // Start with all recipes
-            var query = _context.Recipes
+            // Return all recipes for the Index view
+            var recipes = await _context.Recipes
                 .Include(r => r.CreatedBy)
-                .AsQueryable();
-
-            // Apply search filter
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                query = query.Where(r => 
-                    r.Title.Contains(searchTerm) || 
-                    r.Description.Contains(searchTerm) || 
-                    r.Ingredients.Contains(searchTerm)
-                );
-                ViewData["SearchTerm"] = searchTerm;
-            }
-
-            // Apply difficulty filter
-            if (!string.IsNullOrEmpty(difficulty))
-            {
-                if (Enum.TryParse<DifficultyLevel>(difficulty, out var difficultyLevel))
-                {
-                    query = query.Where(r => r.Difficulty == difficultyLevel);
-                }
-                ViewData["Difficulty"] = difficulty;
-            }
-
-            // Apply time filter (total prep + cook time)
-            if (timeFilter.HasValue)
-            {
-                query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= timeFilter.Value);
-                ViewData["TimeFilter"] = timeFilter;
-            }
-
-            // Apply category filter
-            if (!string.IsNullOrEmpty(category))
-            {
-                // Placeholder for category implementation
-                // This will be updated when categories are fully implemented
-                ViewData["Category"] = category;
-            }
-
-            // Apply sorting
-            if (!string.IsNullOrEmpty(sortBy))
-            {
-                switch (sortBy.ToLower())
-                {
-                    case "oldest":
-                        query = query.OrderBy(r => r.CreatedDate);
-                        break;
-                    case "fastest":
-                        query = query.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
-                        break;
-                    default: // "newest" is default
-                        query = query.OrderByDescending(r => r.CreatedDate);
-                        break;
-                }
-                ViewData["SortBy"] = sortBy;
-            }
-            else
-            {
-                // Default sort - newest first
-                query = query.OrderByDescending(r => r.CreatedDate);
-                ViewData["SortBy"] = "newest";
-            }
-
-            // Execute query and return results
-            var recipes = await query.ToListAsync();
+                .OrderByDescending(r => r.CreatedDate)
+                .ToListAsync();
             return View(recipes);
         }
 
         // GET: Recipe/MyRecipes
         [Authorize]
-        public async Task<IActionResult> MyRecipes(string searchTerm, string difficulty, int? timeFilter, string sortBy)
+        public async Task<IActionResult> MyRecipes()
         {
             var userId = _userManager.GetUserId(User);
-            
-            // Start with user's recipes
-            var query = _context.Recipes
+            var recipes = await _context.Recipes
                 .Include(r => r.CreatedBy)
                 .Where(r => r.CreatedById == userId)
-                .AsQueryable();
-
-            // Apply search filter
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                query = query.Where(r => 
-                    r.Title.Contains(searchTerm) || 
-                    r.Description.Contains(searchTerm) || 
-                    r.Ingredients.Contains(searchTerm)
-                );
-                ViewData["SearchTerm"] = searchTerm;
-            }
-
-            // Apply difficulty filter
-            if (!string.IsNullOrEmpty(difficulty))
-            {
-                if (Enum.TryParse<DifficultyLevel>(difficulty, out var difficultyLevel))
-                {
-                    query = query.Where(r => r.Difficulty == difficultyLevel);
-                }
-                ViewData["Difficulty"] = difficulty;
-            }
-
-            // Apply time filter (total prep + cook time)
-            if (timeFilter.HasValue)
-            {
-                query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= timeFilter.Value);
-                ViewData["TimeFilter"] = timeFilter;
-            }
-
-            // Apply sorting
-            if (!string.IsNullOrEmpty(sortBy))
-            {
-                switch (sortBy.ToLower())
-                {
-                    case "oldest":
-                        query = query.OrderBy(r => r.CreatedDate);
-                        break;
-                    case "fastest":
-                        query = query.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
-                        break;
-                    default: // "newest" is default
-                        query = query.OrderByDescending(r => r.CreatedDate);
-                        break;
-                }
-                ViewData["SortBy"] = sortBy;
-            }
-            else
-            {
-                // Default sort - newest first
-                query = query.OrderByDescending(r => r.CreatedDate);
-                ViewData["SortBy"] = "newest";
-            }
-
-            var recipes = await query.ToListAsync();
+                .OrderByDescending(r => r.CreatedDate)
+                .ToListAsync();
             return View(recipes);
         }
 
@@ -312,28 +198,6 @@ namespace MealStack.Web.Controllers
                         }
                     }
                 }
-                return View(recipe);
-            }
-            
-            return Forbid();
-        }
-
-        // GET: Recipe/Delete
-        [Authorize]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var recipe = await _context.Recipes
-                .Include(r => r.CreatedBy)
-                .FirstOrDefaultAsync(m => m.Id == id);
-                
-            if (recipe == null)
-            {
-                return NotFound();
-            }
-            
-            // Only allow delete if user created the recipe or is admin
-            if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
-            {
                 return View(recipe);
             }
             
