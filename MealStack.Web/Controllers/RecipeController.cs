@@ -7,6 +7,7 @@ using MealStack.Infrastructure.Data.Entities;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace MealStack.Web.Controllers
 {
@@ -25,26 +26,141 @@ namespace MealStack.Web.Controllers
         }
 
         // GET: Recipe
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, string difficulty, string timeFilter, string sortBy, int? categoryId)
         {
-            // Return all recipes for the Index view
-            var recipes = await _context.Recipes
+            var recipesQuery = _context.Recipes
                 .Include(r => r.CreatedBy)
-                .OrderByDescending(r => r.CreatedDate)
-                .ToListAsync();
+                .Include(r => r.RecipeCategories)
+                .ThenInclude(rc => rc.Category)
+                .AsQueryable();
+            
+            // Apply search filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                recipesQuery = recipesQuery.Where(r => 
+                    r.Title.Contains(searchTerm) || 
+                    r.Description.Contains(searchTerm) ||
+                    r.Ingredients.Contains(searchTerm));
+            }
+            
+            // Apply difficulty filter
+            if (!string.IsNullOrEmpty(difficulty))
+            {
+                if (Enum.TryParse<DifficultyLevel>(difficulty, out var difficultyLevel))
+                {
+                    recipesQuery = recipesQuery.Where(r => r.Difficulty == difficultyLevel);
+                }
+            }
+            
+            // Apply time filter
+            if (!string.IsNullOrEmpty(timeFilter) && int.TryParse(timeFilter, out var minutes))
+            {
+                recipesQuery = recipesQuery.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= minutes);
+            }
+            
+            // Apply category filter
+            if (categoryId.HasValue)
+            {
+                recipesQuery = recipesQuery.Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == categoryId.Value));
+            }
+            
+            // Apply sorting
+            switch (sortBy)
+            {
+                case "oldest":
+                    recipesQuery = recipesQuery.OrderBy(r => r.CreatedDate);
+                    break;
+                case "fastest":
+                    recipesQuery = recipesQuery.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
+                    break;
+                case "newest":
+                default:
+                    recipesQuery = recipesQuery.OrderByDescending(r => r.CreatedDate);
+                    break;
+            }
+            
+            // Get categories for filter buttons
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+            ViewBag.SelectedCategoryId = categoryId;
+            
+            // Store filter values for the view
+            ViewData["SearchTerm"] = searchTerm;
+            ViewData["Difficulty"] = difficulty;
+            ViewData["TimeFilter"] = timeFilter;
+            ViewData["SortBy"] = sortBy ?? "newest";
+            
+            var recipes = await recipesQuery.ToListAsync();
             return View(recipes);
         }
 
         // GET: Recipe/MyRecipes
         [Authorize]
-        public async Task<IActionResult> MyRecipes()
+        public async Task<IActionResult> MyRecipes(string searchTerm, string difficulty, string timeFilter, string sortBy, int? categoryId)
         {
             var userId = _userManager.GetUserId(User);
-            var recipes = await _context.Recipes
+            var recipesQuery = _context.Recipes
                 .Include(r => r.CreatedBy)
+                .Include(r => r.RecipeCategories)
+                .ThenInclude(rc => rc.Category)
                 .Where(r => r.CreatedById == userId)
-                .OrderByDescending(r => r.CreatedDate)
-                .ToListAsync();
+                .AsQueryable();
+            
+            // Apply search filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                recipesQuery = recipesQuery.Where(r => 
+                    r.Title.Contains(searchTerm) || 
+                    r.Description.Contains(searchTerm) ||
+                    r.Ingredients.Contains(searchTerm));
+            }
+            
+            // Apply difficulty filter
+            if (!string.IsNullOrEmpty(difficulty))
+            {
+                if (Enum.TryParse<DifficultyLevel>(difficulty, out var difficultyLevel))
+                {
+                    recipesQuery = recipesQuery.Where(r => r.Difficulty == difficultyLevel);
+                }
+            }
+            
+            // Apply time filter
+            if (!string.IsNullOrEmpty(timeFilter) && int.TryParse(timeFilter, out var minutes))
+            {
+                recipesQuery = recipesQuery.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= minutes);
+            }
+            
+            // Apply category filter
+            if (categoryId.HasValue)
+            {
+                recipesQuery = recipesQuery.Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == categoryId.Value));
+            }
+            
+            // Apply sorting
+            switch (sortBy)
+            {
+                case "oldest":
+                    recipesQuery = recipesQuery.OrderBy(r => r.CreatedDate);
+                    break;
+                case "fastest":
+                    recipesQuery = recipesQuery.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
+                    break;
+                case "newest":
+                default:
+                    recipesQuery = recipesQuery.OrderByDescending(r => r.CreatedDate);
+                    break;
+            }
+            
+            // Get categories for filter buttons
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+            ViewBag.SelectedCategoryId = categoryId;
+            
+            // Store filter values for the view
+            ViewData["SearchTerm"] = searchTerm;
+            ViewData["Difficulty"] = difficulty;
+            ViewData["TimeFilter"] = timeFilter;
+            ViewData["SortBy"] = sortBy ?? "newest";
+            
+            var recipes = await recipesQuery.ToListAsync();
             return View(recipes);
         }
 
@@ -53,6 +169,8 @@ namespace MealStack.Web.Controllers
         {
             var recipe = await _context.Recipes
                 .Include(r => r.CreatedBy)
+                .Include(r => r.RecipeCategories)
+                .ThenInclude(rc => rc.Category)
                 .FirstOrDefaultAsync(r => r.Id == id);
                 
             if (recipe == null)
@@ -75,6 +193,9 @@ namespace MealStack.Web.Controllers
                 Servings = 4
             };
             
+            // Get categories for dropdown
+            ViewBag.Categories = _context.Categories.OrderBy(c => c.Name).ToList();
+            
             return View(recipe);
         }
 
@@ -82,7 +203,7 @@ namespace MealStack.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Create(RecipeEntity recipe)
+        public async Task<IActionResult> Create(RecipeEntity recipe, int[] selectedCategories)
         {
             try
             {
@@ -98,31 +219,31 @@ namespace MealStack.Web.Controllers
                     _context.Recipes.Add(recipe);
                     await _context.SaveChangesAsync();
                     
+                    // Add categories
+                    if (selectedCategories != null && selectedCategories.Length > 0)
+                    {
+                        foreach (var categoryId in selectedCategories)
+                        {
+                            _context.Add(new RecipeCategoryEntity
+                            {
+                                RecipeId = recipe.Id,
+                                CategoryId = categoryId
+                            });
+                        }
+                        await _context.SaveChangesAsync();
+                    }
+                    
                     TempData["Message"] = "Recipe created successfully!";
                     return RedirectToAction("MyRecipes");
-                }
-                else
-                {
-                    foreach (var state in ModelState)
-                    {
-                        foreach (var error in state.Value.Errors)
-                        {
-                            Console.WriteLine($"Model error for {state.Key}: {error.ErrorMessage}");
-                        }
-                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error creating recipe: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                }
-                
                 ModelState.AddModelError("", $"An error occurred: {ex.Message}");
             }
             
+            // If we got this far, something failed, redisplay form
+            ViewBag.Categories = _context.Categories.OrderBy(c => c.Name).ToList();
             return View(recipe);
         }
 
@@ -130,7 +251,10 @@ namespace MealStack.Web.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
-            var recipe = await _context.Recipes.FindAsync(id);
+            var recipe = await _context.Recipes
+                .Include(r => r.RecipeCategories)
+                .FirstOrDefaultAsync(r => r.Id == id);
+                
             if (recipe == null)
             {
                 return NotFound();
@@ -139,6 +263,10 @@ namespace MealStack.Web.Controllers
             // Only allow edit if user created the recipe or is admin
             if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
             {
+                // Get categories for dropdown and mark the selected ones
+                ViewBag.Categories = _context.Categories.OrderBy(c => c.Name).ToList();
+                ViewBag.SelectedCategories = recipe.RecipeCategories?.Select(rc => rc.CategoryId).ToList() ?? new List<int>();
+                
                 return View(recipe);
             }
             
@@ -149,14 +277,17 @@ namespace MealStack.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Edit(int id, RecipeEntity recipe)
+        public async Task<IActionResult> Edit(int id, RecipeEntity recipe, int[] selectedCategories)
         {
             if (id != recipe.Id)
             {
                 return NotFound();
             }
 
-            var existingRecipe = await _context.Recipes.FindAsync(id);
+            var existingRecipe = await _context.Recipes
+                .Include(r => r.RecipeCategories)
+                .FirstOrDefaultAsync(r => r.Id == id);
+                
             if (existingRecipe == null)
             {
                 return NotFound();
@@ -180,7 +311,25 @@ namespace MealStack.Web.Controllers
                         existingRecipe.Difficulty = recipe.Difficulty;
                         existingRecipe.UpdatedDate = DateTime.UtcNow;
                         
-                        _context.Update(existingRecipe);
+                        // Update categories
+                        // First, remove existing categories
+                        var existingCategories = _context.RecipeCategories
+                            .Where(rc => rc.RecipeId == id);
+                        _context.RemoveRange(existingCategories);
+                        
+                        // Then add selected categories
+                        if (selectedCategories != null && selectedCategories.Length > 0)
+                        {
+                            foreach (var categoryId in selectedCategories)
+                            {
+                                _context.Add(new RecipeCategoryEntity
+                                {
+                                    RecipeId = recipe.Id,
+                                    CategoryId = categoryId
+                                });
+                            }
+                        }
+                        
                         await _context.SaveChangesAsync();
                         
                         TempData["Message"] = "Recipe updated successfully!";
@@ -198,6 +347,10 @@ namespace MealStack.Web.Controllers
                         }
                     }
                 }
+                
+                // If we got this far, something failed, redisplay form
+                ViewBag.Categories = _context.Categories.OrderBy(c => c.Name).ToList();
+                ViewBag.SelectedCategories = existingRecipe.RecipeCategories?.Select(rc => rc.CategoryId).ToList() ?? new List<int>();
                 return View(recipe);
             }
             

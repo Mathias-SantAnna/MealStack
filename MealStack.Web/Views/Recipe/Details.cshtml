@@ -36,6 +36,21 @@
                             @Model.Difficulty
                         </span>
                     </div>
+
+                    @if (Model.RecipeCategories != null && Model.RecipeCategories.Any())
+                    {
+                        <div class="recipe-meta-item">
+                            <i class="bi bi-tags text-primary"></i>
+                            <div>
+                                @foreach (var recipeCategory in Model.RecipeCategories)
+                                {
+                                    <span class="badge me-1" style="background-color: @(string.IsNullOrEmpty(recipeCategory.Category.Color) ? "#6c757d" : recipeCategory.Category.Color)">
+                                        @recipeCategory.Category.Name
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
             <div class="col-lg-4 mt-4 mt-lg-0">
@@ -226,7 +241,7 @@
 
     <style>
         /* Print styles */
-        media print {
+        @@media print {
             header, footer, .recipe-header .col-lg-4, .cooking-tools, .btn {
                 display: none !important;
             }

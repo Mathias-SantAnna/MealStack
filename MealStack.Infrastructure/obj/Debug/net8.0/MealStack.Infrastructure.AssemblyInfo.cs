@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MealStack.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5722b190583df674361725ec10249ce30402e507")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+89e2f790887e8830479cdbf48ec2d49166df66c5")]
 [assembly: System.Reflection.AssemblyProductAttribute("MealStack.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MealStack.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

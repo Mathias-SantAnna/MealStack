@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -41,6 +42,8 @@ namespace MealStack.Infrastructure.Data.Entities
         public DateTime CreatedDate { get; set; }
         
         public DateTime? UpdatedDate { get; set; }
+        
+        public virtual ICollection<RecipeCategoryEntity> RecipeCategories { get; set; } = new List<RecipeCategoryEntity>();
     }
     
     public enum DifficultyLevel

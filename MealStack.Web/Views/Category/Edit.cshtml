@@ -1,0 +1,72 @@
+<!-- Edit.cshtml for Category -->
+@model MealStack.Infrastructure.Data.Entities.CategoryEntity
+
+@{
+    ViewData["Title"] = "Edit Category";
+}
+
+<div class="container py-4">
+    <h1>Edit Category</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Category Name</label>
+                            <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Color" class="form-label">Color</label>
+                            <div class="input-group">
+                                <input type="color" id="colorPicker" class="form-control form-control-color" value="@(string.IsNullOrEmpty(Model.Color) ? "#6c757d" : Model.Color)" title="Choose a color">
+                                <input asp-for="Color" class="form-control" placeholder="#6c757d" />
+                            </div>
+                            <small class="text-muted">Choose a color for the category badge or leave blank for default</small>
+                            <span asp-validation-for="Color" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Sync the color picker with the text input
+            $('#colorPicker').on('input', function() {
+                $('#Color').val($(this).val());
+            });
+            
+            $('#Color').on('input', function() {
+                $('#colorPicker').val($(this).val());
+            });
+            
+            // Initialize color picker with current value if exists
+            if ($('#Color').val()) {
+                $('#colorPicker').val($('#Color').val());
+            }
+        });
+    </script>
+}
