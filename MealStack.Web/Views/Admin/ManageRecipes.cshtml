@@ -5,8 +5,76 @@
 }
 
 <div class="mb-4">
-    <h1>Admin Recipe Management</h1>
+    <h1>Recipes</h1>
     <p class="text-muted">Manage all recipes from all users in the system.</p>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <!-- Search and filtering options -->
+        <form id="filterForm" method="get" class="row g-3">
+            <div class="d-flex">
+                <div class="me-2">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="searchTerm" name="searchTerm" placeholder="Search recipes..." value="@ViewData["SearchTerm"]">
+                    </div>
+                </div>
+
+                <div class="me-2">
+                    <select class="form-select" id="difficulty" name="difficulty">
+                        <option value="">Any difficulty</option>
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+
+                <div class="me-2">
+                    <select class="form-select" id="timeFilter" name="timeFilter">
+                        <option value="">Any time</option>
+                        <option value="15">Under 15 min</option>
+                        <option value="30">Under 30 min</option>
+                        <option value="60">Under 1 hour</option>
+                    </select>
+                </div>
+
+                <div class="me-2">
+                    <select class="form-select" id="sortBy" name="sortBy">
+                        <option value="newest">Newest first</option>
+                        <option value="oldest">Oldest first</option>
+                        <option value="fastest">Quickest prep</option>
+                    </select>
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <a asp-controller="Recipe" asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle me-1"></i> Create New Recipe
+    </a>
+</div>
+
+<!-- Categories Quick Nav -->
+<div class="mb-4">
+    <div class="d-flex overflow-auto pb-2">
+        <a href="@Url.Action("Index", "Recipe")" class="btn @(ViewBag.SelectedCategoryId == null ? "btn-primary" : "btn-outline-primary") me-2 rounded-pill">All</a>
+        @if (ViewBag.Categories != null)
+        {
+            foreach (var category in ViewBag.Categories)
+            {
+                <a href="@Url.Action("Index", "Recipe", new { categoryId = category.Id })"
+                   class="btn @(ViewBag.SelectedCategoryId == category.Id ? "btn-primary" : "btn-outline-primary") me-2 rounded-pill"
+                   style="@(string.IsNullOrEmpty(category.ColorClass) ? "" : $"background-color: var(--bs-{category.ColorClass}); border-color: var(--bs-{category.ColorClass}); color: #fff;")">
+                    @category.Name
+                </a>
+            }
+        }
+    </div>
 </div>
 
 @if (TempData["Message"] != null)
@@ -25,22 +93,96 @@
     </div>
 }
 
-<div class="card shadow-sm mb-4">
+<!-- Bulk Category Management Panel -->
+<div class="card shadow-sm mb-4 collapse" id="bulkCategoryPanel">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Bulk Category Management</h5>
+    </div>
+    <div class="card-body">
+        <form id="bulkCategoryForm" asp-controller="Admin" asp-action="ApplyBulkCategories" method="post">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>1. Select Recipes</h6>
+                    <div class="d-flex justify-content-end mb-2">
+                        <button type="button" id="selectAllRecipes" class="btn btn-sm btn-outline-primary me-2">Select All</button>
+                        <button type="button" id="deselectAllRecipes" class="btn btn-sm btn-outline-secondary">Deselect All</button>
+                    </div>
+                    <div class="recipe-list border rounded p-2" style="max-height: 200px; overflow-y: auto;">
+                        <div class="row">
+                            @foreach (var recipe in Model)
+                            {
+                                <div class="col-md-4 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input recipe-checkbox" type="checkbox" name="selectedRecipes" value="@recipe.Id" id="recipe-@recipe.Id">
+                                        <label class="form-check-label text-truncate" for="recipe-@recipe.Id" title="@recipe.Title">
+                                            @recipe.Title
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>2. Choose Categories</h6>
+                    <div class="row mb-3">
+                        @if (ViewBag.Categories != null)
+                        {
+                            foreach (var category in ViewBag.Categories)
+                            {
+                                <div class="col-md-6 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input category-checkbox" type="checkbox" name="selectedCategories" value="@category.Id" id="bulk-category-@category.Id">
+                                        <label class="form-check-label" for="bulk-category-@category.Id">
+                                            <span class="badge" style="background-color: @(string.IsNullOrEmpty(category.ColorClass) ? "#6c757d" : "var(--bs-" + category.ColorClass + ")")">
+                                                @category.Name
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-plus-circle me-1"></i> Add Selected Categories
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-danger w-100" formaction="@Url.Action("RemoveBulkCategories", "Admin")">
+                        <i class="bi bi-dash-circle me-1"></i> Remove Selected Categories
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Main Recipe Table -->
+<div class="card shadow-sm">
     <div class="card-header d-flex justify-content-between align-items-center bg-light">
         <h5 class="mb-0">Recipe Dashboard</h5>
-        <span class="badge bg-primary rounded-pill">Total Recipes: @Model.Count()</span>
+        <div class="d-flex align-items-center">
+            <span class="badge bg-primary rounded-pill me-3">Total Recipes: @Model.Count()</span>
+            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#bulkCategoryPanel" aria-expanded="false" aria-controls="bulkCategoryPanel">
+                <i class="bi bi-tags me-1"></i> Bulk Manage Categories
+            </button>
+        </div>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover table-striped mb-0">
-                <thead class="table-light">
+            <table class="table table-hover">
+                <thead>
                 <tr>
                     <th>Title</th>
                     <th>Difficulty</th>
+                    <th>Categories</th>
                     <th>Prep + Cook</th>
-                    <th>Servings</th>
-                    <th>Created</th>
                     <th>Created By</th>
+                    <th>Created Date</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -48,19 +190,31 @@
                 @foreach (var recipe in Model)
                 {
                     <tr>
-                        <td>
-                            <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.Id" class="text-decoration-none fw-bold">@recipe.Title</a>
-                        </td>
+                        <td><a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.Id" class="text-decoration-none fw-bold">@recipe.Title</a></td>
                         <td>
                                 <span class="badge bg-@(recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" :
                                                       recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger")">
                                     @recipe.Difficulty
                                 </span>
                         </td>
+                        <td>
+                            @if (recipe.RecipeCategories != null && recipe.RecipeCategories.Any())
+                            {
+                                foreach (var rc in recipe.RecipeCategories)
+                                {
+                                    <span class="badge me-1" style="background-color: @(string.IsNullOrEmpty(rc.Category.ColorClass) ? "#6c757d" : "var(--bs-" + rc.Category.ColorClass + ")")">
+                                            @rc.Category.Name
+                                        </span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
                         <td>@(recipe.PrepTimeMinutes + recipe.CookTimeMinutes) min</td>
-                        <td>@recipe.Servings</td>
-                        <td>@recipe.CreatedDate.ToShortDateString()</td>
                         <td>@(recipe.CreatedBy?.UserName ?? "Unknown")</td>
+                        <td>@recipe.CreatedDate.ToShortDateString()</td>
                         <td>
                             <div class="btn-group" role="group">
                                 <a asp-controller="Recipe" asp-action="Edit" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-primary">Edit</a>
@@ -81,36 +235,10 @@
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card bg-light">
-            <div class="card-body text-center">
-                <h3>@Model.Count()</h3>
-                <p class="mb-0">Total Recipes</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-light">
-            <div class="card-body text-center">
-                <h3>@Model.Select(r => r.CreatedById).Distinct().Count()</h3>
-                <p class="mb-0">Contributing Users</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-light">
-            <div class="card-body text-center">
-                <h3>@Model.Where(r => r.CreatedDate > DateTime.Now.AddDays(-7)).Count()</h3>
-                <p class="mb-0">New This Week</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="d-flex justify-content-between">
-    <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary">Add New Recipe</a>
-    <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">Back to Admin Dashboard</a>
+<div class="text-center mt-4">
+    <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Admin Dashboard
+    </a>
 </div>
 
 @section Scripts {
@@ -121,5 +249,53 @@
             }
             return false;
         }
+
+        // Apply stored filter values on page load
+        $(document).ready(function() {
+            // Get URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // Set form values based on URL parameters
+            if (urlParams.has('difficulty')) {
+                $('#difficulty').val(urlParams.get('difficulty'));
+            }
+
+            if (urlParams.has('timeFilter')) {
+                $('#timeFilter').val(urlParams.get('timeFilter'));
+            }
+
+            if (urlParams.has('sortBy')) {
+                $('#sortBy').val(urlParams.get('sortBy'));
+            }
+
+            // Bulk Category Management
+            $('#selectAllRecipes').click(function() {
+                $('.recipe-checkbox').prop('checked', true);
+            });
+
+            $('#deselectAllRecipes').click(function() {
+                $('.recipe-checkbox').prop('checked', false);
+            });
+
+            // Form validation
+            $('#bulkCategoryForm').on('submit', function(event) {
+                const selectedRecipes = document.querySelectorAll('.recipe-checkbox:checked');
+                const selectedCategories = document.querySelectorAll('.category-checkbox:checked');
+
+                if (selectedRecipes.length === 0) {
+                    event.preventDefault();
+                    alert('Please select at least one recipe');
+                    return false;
+                }
+
+                if (selectedCategories.length === 0) {
+                    event.preventDefault();
+                    alert('Please select at least one category');
+                    return false;
+                }
+
+                return true;
+            });
+        });
     </script>
 }

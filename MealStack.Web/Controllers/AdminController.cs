@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -153,16 +154,173 @@ namespace MealStack.Web.Controllers
             return RedirectToAction(nameof(Users));
         }
 
+        // Updated ManageRecipes method with filtering support
+        public async Task<IActionResult> ManageRecipes(string searchTerm, string difficulty, string timeFilter, string sortBy, int? categoryId)
+        {
+            var recipesQuery = _context.Recipes
+                .Include(r => r.CreatedBy)
+                .Include(r => r.RecipeCategories)
+                .ThenInclude(rc => rc.Category)
+                .AsQueryable();
+            
+            // Apply search filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                recipesQuery = recipesQuery.Where(r => 
+                    r.Title.Contains(searchTerm) || 
+                    r.Description.Contains(searchTerm) ||
+                    r.Ingredients.Contains(searchTerm));
+            }
+            
+            // Apply difficulty filter
+            if (!string.IsNullOrEmpty(difficulty))
+            {
+                if (Enum.TryParse<DifficultyLevel>(difficulty, out var difficultyLevel))
+                {
+                    recipesQuery = recipesQuery.Where(r => r.Difficulty == difficultyLevel);
+                }
+            }
+            
+            // Apply time filter
+            if (!string.IsNullOrEmpty(timeFilter) && int.TryParse(timeFilter, out var minutes))
+            {
+                recipesQuery = recipesQuery.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= minutes);
+            }
+            
+            // Apply category filter
+            if (categoryId.HasValue)
+            {
+                recipesQuery = recipesQuery.Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == categoryId.Value));
+            }
+            
+            // Apply sorting
+            switch (sortBy)
+            {
+                case "oldest":
+                    recipesQuery = recipesQuery.OrderBy(r => r.CreatedDate);
+                    break;
+                case "fastest":
+                    recipesQuery = recipesQuery.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
+                    break;
+                case "newest":
+                default:
+                    recipesQuery = recipesQuery.OrderByDescending(r => r.CreatedDate);
+                    break;
+            }
+            
+            // Get categories for filter buttons
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+            ViewBag.SelectedCategoryId = categoryId;
+            
+            // Store filter values for the view
+            ViewData["SearchTerm"] = searchTerm;
+            ViewData["Difficulty"] = difficulty;
+            ViewData["TimeFilter"] = timeFilter;
+            ViewData["SortBy"] = sortBy ?? "newest";
+            
+            var recipes = await recipesQuery.ToListAsync();
+            return View(recipes);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplyBulkCategories(int[] selectedRecipes, int[] selectedCategories)
+        {
+            if (selectedRecipes == null || selectedRecipes.Length == 0)
+            {
+                TempData["Error"] = "No recipes were selected.";
+                return RedirectToAction(nameof(ManageRecipes));
+            }
+            
+            if (selectedCategories == null || selectedCategories.Length == 0)
+            {
+                TempData["Error"] = "No categories were selected.";
+                return RedirectToAction(nameof(ManageRecipes));
+            }
+            
+            try
+            {
+                // Process each selected recipe
+                foreach (var recipeId in selectedRecipes)
+                {
+                    var recipe = await _context.Recipes
+                        .Include(r => r.RecipeCategories)
+                        .FirstOrDefaultAsync(r => r.Id == recipeId);
+                        
+                    if (recipe != null)
+                    {
+                        // Add new categories (avoiding duplicates)
+                        foreach (var categoryId in selectedCategories)
+                        {
+                            // Check if this category is already assigned to the recipe
+                            bool categoryExists = recipe.RecipeCategories
+                                .Any(rc => rc.CategoryId == categoryId);
+                                
+                            if (!categoryExists)
+                            {
+                                _context.Add(new RecipeCategoryEntity
+                                {
+                                    RecipeId = recipe.Id,
+                                    CategoryId = categoryId
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                await _context.SaveChangesAsync();
+                
+                TempData["Message"] = $"Categories successfully applied to {selectedRecipes.Length} recipe(s).";
+                return RedirectToAction(nameof(ManageRecipes));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"An error occurred: {ex.Message}";
+                return RedirectToAction(nameof(ManageRecipes));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveBulkCategories(int[] selectedRecipes, int[] selectedCategories)
+        {
+            if (selectedRecipes == null || selectedRecipes.Length == 0)
+            {
+                TempData["Error"] = "No recipes were selected.";
+                return RedirectToAction(nameof(ManageRecipes));
+            }
+            
+            if (selectedCategories == null || selectedCategories.Length == 0)
+            {
+                TempData["Error"] = "No categories were selected.";
+                return RedirectToAction(nameof(ManageRecipes));
+            }
+            
+            try
+            {
+                // Find all recipe-category relationships to remove
+                var recipeCategoryRelations = await _context.RecipeCategories
+                    .Where(rc => selectedRecipes.Contains(rc.RecipeId) && selectedCategories.Contains(rc.CategoryId))
+                    .ToListAsync();
+                    
+                // Remove them all
+                _context.RecipeCategories.RemoveRange(recipeCategoryRelations);
+                await _context.SaveChangesAsync();
+                
+                TempData["Message"] = $"Categories successfully removed from {selectedRecipes.Length} recipe(s).";
+                return RedirectToAction(nameof(ManageRecipes));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"An error occurred: {ex.Message}";
+                return RedirectToAction(nameof(ManageRecipes));
+            }
+        }
+
         // Redirect old ManageIngredients action to Ingredient/Index
         public IActionResult ManageIngredients()
         {
             return RedirectToAction("Index", "Ingredient");
-        }
-
-        // Redirect old ManageRecipes action to Recipe/Index
-        public IActionResult ManageRecipes()
-        {
-            return RedirectToAction("Index", "Recipe");
         }
 
         // Categories action remains as a menu page that links to the Category controller

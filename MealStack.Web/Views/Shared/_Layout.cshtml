@@ -54,6 +54,7 @@
                     </li>
                     @if (User.IsInRole("Admin"))
                     {
+                        <!-- Admin Dropdown Menu -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-shield-lock me-1"></i> Admin
@@ -70,7 +71,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" asp-controller="Recipe" asp-action="Index">
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="ManageRecipes">
                                         <i class="bi bi-journal-bookmark me-2"></i> Manage Recipes
                                     </a>
                                 </li>
@@ -82,6 +83,12 @@
                                 <li>
                                     <a class="dropdown-item" asp-controller="Category" asp-action="Index">
                                         <i class="bi bi-tags me-2"></i> Manage Categories
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="BulkCategoryAssignment">
+                                        <i class="bi bi-layers me-2"></i> Bulk Category Assignment
                                     </a>
                                 </li>
                             </ul>

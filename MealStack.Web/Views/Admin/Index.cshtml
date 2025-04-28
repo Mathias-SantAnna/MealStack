@@ -30,7 +30,7 @@
             <div class="card-body">
                 <p>View, edit, and manage all recipes in the system.</p>
                 <div class="d-grid gap-2">
-                    <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary">Manage Recipes</a>
+                    <a asp-action="ManageRecipes" class="btn btn-outline-primary">Manage Recipes</a>
                 </div>
             </div>
         </div>
@@ -61,6 +61,24 @@
                 <p>Manage recipe categories and classifications.</p>
                 <div class="d-grid gap-2">
                     <a asp-controller="Category" asp-action="Index" class="btn btn-outline-warning">Manage Categories</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Bulk Operations</h5>
+    </div>
+    <div class="card-body">
+        <p>Perform batch operations across multiple recipes or ingredients.</p>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="d-grid">
+                    <a asp-action="BulkCategoryAssignment" class="btn btn-outline-info">
+                        <i class="bi bi-tags me-1"></i> Bulk Category Assignment
+                    </a>
                 </div>
             </div>
         </div>
