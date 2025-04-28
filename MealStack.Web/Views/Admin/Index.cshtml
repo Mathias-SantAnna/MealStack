@@ -30,7 +30,7 @@
             <div class="card-body">
                 <p>View, edit, and manage all recipes in the system.</p>
                 <div class="d-grid gap-2">
-                    <a asp-action="ManageRecipes" class="btn btn-outline-primary">Manage Recipes</a>
+                    <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary">Manage Recipes</a>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
             <div class="card-body">
                 <p>Manage ingredients used in recipes.</p>
                 <div class="d-grid gap-2">
-                    <a asp-action="ManageIngredients" class="btn btn-outline-success">Manage Ingredients</a>
+                    <a asp-controller="Ingredient" asp-action="Index" class="btn btn-outline-success">Manage Ingredients</a>
                 </div>
             </div>
         </div>
@@ -60,7 +60,7 @@
             <div class="card-body">
                 <p>Manage recipe categories and classifications.</p>
                 <div class="d-grid gap-2">
-                    <a asp-action="Categories" class="btn btn-outline-warning">Manage Categories</a>
+                    <a asp-controller="Category" asp-action="Index" class="btn btn-outline-warning">Manage Categories</a>
                 </div>
             </div>
         </div>

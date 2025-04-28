@@ -71,7 +71,7 @@
                                     <input class="form-check-input" type="checkbox" name="selectedCategories" value="@category.Id" id="category-@category.Id"
                                            @(ViewBag.SelectedCategories != null && ViewBag.SelectedCategories.Contains(category.Id) ? "checked" : "")>
                                     <label class="form-check-label" for="category-@category.Id">
-                            <span class="badge" style="background-color: @(string.IsNullOrEmpty(category.Color) ? "#6c757d" : category.Color)">
+                            <span class="badge bg-@(string.IsNullOrEmpty(category.ColorClass) ? "secondary" : category.ColorClass)">
                                 @category.Name
                             </span>
                                     </label>

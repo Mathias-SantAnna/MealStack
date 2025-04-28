@@ -22,17 +22,17 @@
                         <dl class="row">
                             <dt class="col-sm-4">Name:</dt>
                             <dd class="col-sm-8">
-                                <span class="badge" style="background-color: @(string.IsNullOrEmpty(Model.Color) ? "#6c757d" : Model.Color)">
+                                <span class="badge bg-@(string.IsNullOrEmpty(Model.ColorClass) ? "secondary" : Model.ColorClass)">
                                     @Model.Name
                                 </span>
                             </dd>
-                            
+
                             <dt class="col-sm-4">Description:</dt>
                             <dd class="col-sm-8">@Model.Description</dd>
-                            
+
                             <dt class="col-sm-4">Created By:</dt>
                             <dd class="col-sm-8">@(Model.CreatedBy?.UserName ?? "Unknown")</dd>
-                            
+
                             <dt class="col-sm-4">Created Date:</dt>
                             <dd class="col-sm-8">@Model.CreatedDate.ToShortDateString()</dd>
                         </dl>

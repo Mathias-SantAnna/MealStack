@@ -152,6 +152,24 @@ namespace MealStack.Web.Controllers
 
             return RedirectToAction(nameof(Users));
         }
+
+        // Redirect old ManageIngredients action to Ingredient/Index
+        public IActionResult ManageIngredients()
+        {
+            return RedirectToAction("Index", "Ingredient");
+        }
+
+        // Redirect old ManageRecipes action to Recipe/Index
+        public IActionResult ManageRecipes()
+        {
+            return RedirectToAction("Index", "Recipe");
+        }
+
+        // Categories action remains as a menu page that links to the Category controller
+        public IActionResult Categories()
+        {
+            return View();
+        }
     }
 
     public class UserViewModel
@@ -162,5 +180,6 @@ namespace MealStack.Web.Controllers
         public List<string> Roles { get; set; } = new List<string>();
         public int RecipesCount { get; set; }
         public bool EmailConfirmed { get; set; }
+        public string DisplayName { get; set; }
     }
 }

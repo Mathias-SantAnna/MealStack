@@ -1,0 +1,47 @@
+# --- Build outputs ---
+**/bin/
+**/obj/
+out/
+
+# --- Visual Studio ---
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# --- Rider / IntelliJ ---
+.idea/
+*.iml
+
+# --- Entity Framework Migrations snapshots ---
+**/Migrations/*Snapshot.cs
+
+# --- DLLs, PDBs, executables ---
+*.dll
+*.pdb
+*.exe
+
+# --- User-specific files ---
+*.rsuser
+*.DotSettings.user
+*.dbmdl
+
+# --- Test results ---
+TestResults/
+
+# --- Logs ---
+*.log
+
+# --- User secrets (if used) ---
+secrets.json
+appsettings.Development.json
+
+# --- Rider caches ---
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+
+# --- OS files ---
+Thumbs.db
+.DS_Store

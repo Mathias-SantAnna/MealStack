@@ -57,15 +57,15 @@
                             {
                                 <tr>
                                     <td>
-                                        <span class="badge" style="background-color: @(string.IsNullOrEmpty(category.Color) ? "#6c757d" : category.Color)">
+                                        <span class="badge bg-@(string.IsNullOrEmpty(category.ColorClass) ? "secondary" : category.ColorClass)">
                                             @category.Name
                                         </span>
                                     </td>
                                     <td>@category.Description</td>
                                     <td>
-                                        @if (!string.IsNullOrEmpty(category.Color))
+                                        @if (!string.IsNullOrEmpty(category.ColorClass))
                                         {
-                                            <div class="color-preview" style="background-color: @category.Color; width: 24px; height: 24px; border-radius: 4px;"></div>
+                                            <div class="badge bg-@category.ColorClass">@category.ColorClass</div>
                                         }
                                         else
                                         {

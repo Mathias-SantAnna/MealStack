@@ -44,7 +44,7 @@
                             <div>
                                 @foreach (var recipeCategory in Model.RecipeCategories)
                                 {
-                                    <span class="badge me-1" style="background-color: @(string.IsNullOrEmpty(recipeCategory.Category.Color) ? "#6c757d" : recipeCategory.Category.Color)">
+                                    <span class="badge bg-@(string.IsNullOrEmpty(recipeCategory.Category.ColorClass) ? "secondary" : recipeCategory.Category.ColorClass) me-1">
                                         @recipeCategory.Category.Name
                                     </span>
                                 }

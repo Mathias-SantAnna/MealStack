@@ -28,13 +28,11 @@
     </div>
     <div class="card-body">
         <p>Here you can manage categories for recipes. Categories help users find related recipes.</p>
-        
-        <div class="alert alert-info">
-            <strong>Coming Soon:</strong> Full category management functionality.
+
+        <div class="d-flex mt-3">
+            <a asp-controller="Category" asp-action="Index" class="btn btn-outline-warning me-2">View All Categories</a>
+            <a asp-controller="Category" asp-action="Create" class="btn btn-warning me-2">Add New Category</a>
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">Back to Admin Dashboard</a>
         </div>
-        
-        <a asp-controller="Category" asp-action="Index" class="btn btn-outline-warning">View All Categories</a>
-        <a asp-controller="Category" asp-action="Create" class="btn btn-warning">Add New Category</a>
-        <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">Back to User Management</a>
     </div>
 </div>

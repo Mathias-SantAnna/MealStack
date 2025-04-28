@@ -15,7 +15,8 @@ namespace MealStack.Infrastructure.Data.Entities
         
         public string Description { get; set; }
         
-        public string Color { get; set; }
+        // Changed from Color to ColorClass
+        public string ColorClass { get; set; }
         
         public DateTime CreatedDate { get; set; }
         

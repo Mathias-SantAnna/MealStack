@@ -87,8 +87,7 @@
             foreach (var category in ViewBag.Categories)
             {
                 <a href="@Url.Action("Index", new { categoryId = category.Id })"
-                   class="btn @(ViewBag.SelectedCategoryId == category.Id ? "btn-primary" : "btn-outline-primary") me-2 rounded-pill"
-                   style="@(string.IsNullOrEmpty(category.Color) ? "" : $"background-color: {(ViewBag.SelectedCategoryId == category.Id ? category.Color : "transparent")}; border-color: {category.Color}; color: {(ViewBag.SelectedCategoryId == category.Id ? "#fff" : category.Color)};")">
+                   class="btn @(ViewBag.SelectedCategoryId == category.Id ? "btn-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass) : "btn-outline-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass)) me-2 rounded-pill">
                     @category.Name
                 </a>
             }
@@ -130,7 +129,7 @@
                                 <div class="mb-2">
                                     @foreach (var recipeCategory in item.RecipeCategories)
                                     {
-                                        <span class="badge me-1" style="background-color: @(string.IsNullOrEmpty(recipeCategory.Category.Color) ? "#6c757d" : recipeCategory.Category.Color)">
+                                        <span class="badge bg-@(string.IsNullOrEmpty(recipeCategory.Category.ColorClass) ? "secondary" : recipeCategory.Category.ColorClass) me-1">
                                             @recipeCategory.Category.Name
                                         </span>
                                     }
