@@ -17,7 +17,7 @@ namespace MealStack.Infrastructure.Data.Entities
         [StringLength(50)]
         public string Category { get; set; }
         
-        public string Measurement { get; set; } // e.g., "cups", "tablespoons", "grams"
+        public string Measurement { get; set; }
         
         public DateTime CreatedDate { get; set; }
         

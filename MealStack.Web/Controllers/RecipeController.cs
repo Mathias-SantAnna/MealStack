@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
+using MealStack.Web.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,78 +27,52 @@ namespace MealStack.Web.Controllers
         }
 
         // GET: Recipe
-        public async Task<IActionResult> Index(string searchTerm, string difficulty, string timeFilter, string sortBy, int? categoryId)
+        public async Task<IActionResult> Index(RecipeSearchViewModel searchModel)
         {
+            // Save search parameters to ViewData for form repopulation
+            ViewData["SearchTerm"] = searchModel.SearchTerm;
+            ViewData["SearchType"] = searchModel.SearchType ?? "all";
+            ViewData["Difficulty"] = searchModel.Difficulty;
+            ViewData["SortBy"] = searchModel.SortBy ?? "newest";
+            ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
+            ViewData["CategoryId"] = searchModel.CategoryId;
+            
+            // Create a query for recipes
             var recipesQuery = _context.Recipes
                 .Include(r => r.CreatedBy)
                 .Include(r => r.RecipeCategories)
                 .ThenInclude(rc => rc.Category)
                 .AsQueryable();
             
-            // Apply search filter
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                recipesQuery = recipesQuery.Where(r => 
-                    r.Title.Contains(searchTerm) || 
-                    r.Description.Contains(searchTerm) ||
-                    r.Ingredients.Contains(searchTerm));
-            }
-            
-            // Apply difficulty filter
-            if (!string.IsNullOrEmpty(difficulty))
-            {
-                if (Enum.TryParse<DifficultyLevel>(difficulty, out var difficultyLevel))
-                {
-                    recipesQuery = recipesQuery.Where(r => r.Difficulty == difficultyLevel);
-                }
-            }
-            
-            // Apply time filter
-            if (!string.IsNullOrEmpty(timeFilter) && int.TryParse(timeFilter, out var minutes))
-            {
-                recipesQuery = recipesQuery.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= minutes);
-            }
-            
-            // Apply category filter
-            if (categoryId.HasValue)
-            {
-                recipesQuery = recipesQuery.Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == categoryId.Value));
-            }
-            
-            // Apply sorting
-            switch (sortBy)
-            {
-                case "oldest":
-                    recipesQuery = recipesQuery.OrderBy(r => r.CreatedDate);
-                    break;
-                case "fastest":
-                    recipesQuery = recipesQuery.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
-                    break;
-                case "newest":
-                default:
-                    recipesQuery = recipesQuery.OrderByDescending(r => r.CreatedDate);
-                    break;
-            }
+            // Apply search filters based on the search model
+            recipesQuery = ApplySearchFilters(recipesQuery, searchModel);
             
             // Get categories for filter buttons
             ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-            ViewBag.SelectedCategoryId = categoryId;
+            ViewBag.SelectedCategoryId = searchModel.CategoryId;
+            ViewData["SearchAction"] = "Index";
             
-            // Store filter values for the view
-            ViewData["SearchTerm"] = searchTerm;
-            ViewData["Difficulty"] = difficulty;
-            ViewData["TimeFilter"] = timeFilter;
-            ViewData["SortBy"] = sortBy ?? "newest";
-            
+            // Store search model for the view
             var recipes = await recipesQuery.ToListAsync();
             return View(recipes);
         }
 
         // GET: Recipe/MyRecipes
         [Authorize]
-        public async Task<IActionResult> MyRecipes(string searchTerm, string difficulty, string timeFilter, string sortBy, int? categoryId)
+        public async Task<IActionResult> MyRecipes(RecipeSearchViewModel searchModel)
         {
+            // Save search parameters to ViewData for form repopulation
+            ViewData["SearchTerm"] = searchModel.SearchTerm;
+            ViewData["SearchType"] = searchModel.SearchType ?? "all";
+            ViewData["Difficulty"] = searchModel.Difficulty;
+            ViewData["SortBy"] = searchModel.SortBy ?? "newest";
+            ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
+            ViewData["CategoryId"] = searchModel.CategoryId;
+            
+            // Get the current user ID
             var userId = _userManager.GetUserId(User);
+            
+            // Create a query for the user's recipes
             var recipesQuery = _context.Recipes
                 .Include(r => r.CreatedBy)
                 .Include(r => r.RecipeCategories)
@@ -105,65 +80,248 @@ namespace MealStack.Web.Controllers
                 .Where(r => r.CreatedById == userId)
                 .AsQueryable();
             
-            // Apply search filter
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                recipesQuery = recipesQuery.Where(r => 
-                    r.Title.Contains(searchTerm) || 
-                    r.Description.Contains(searchTerm) ||
-                    r.Ingredients.Contains(searchTerm));
-            }
-            
-            // Apply difficulty filter
-            if (!string.IsNullOrEmpty(difficulty))
-            {
-                if (Enum.TryParse<DifficultyLevel>(difficulty, out var difficultyLevel))
-                {
-                    recipesQuery = recipesQuery.Where(r => r.Difficulty == difficultyLevel);
-                }
-            }
-            
-            // Apply time filter
-            if (!string.IsNullOrEmpty(timeFilter) && int.TryParse(timeFilter, out var minutes))
-            {
-                recipesQuery = recipesQuery.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= minutes);
-            }
-            
-            // Apply category filter
-            if (categoryId.HasValue)
-            {
-                recipesQuery = recipesQuery.Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == categoryId.Value));
-            }
-            
-            // Apply sorting
-            switch (sortBy)
-            {
-                case "oldest":
-                    recipesQuery = recipesQuery.OrderBy(r => r.CreatedDate);
-                    break;
-                case "fastest":
-                    recipesQuery = recipesQuery.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
-                    break;
-                case "newest":
-                default:
-                    recipesQuery = recipesQuery.OrderByDescending(r => r.CreatedDate);
-                    break;
-            }
+            // Apply search filters based on the search model
+            recipesQuery = ApplySearchFilters(recipesQuery, searchModel);
             
             // Get categories for filter buttons
             ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-            ViewBag.SelectedCategoryId = categoryId;
+            ViewBag.SelectedCategoryId = searchModel.CategoryId;
+            ViewData["SearchAction"] = "MyRecipes";
             
-            // Store filter values for the view
-            ViewData["SearchTerm"] = searchTerm;
-            ViewData["Difficulty"] = difficulty;
-            ViewData["TimeFilter"] = timeFilter;
-            ViewData["SortBy"] = sortBy ?? "newest";
-            
+            // Store search model for the view
             var recipes = await recipesQuery.ToListAsync();
             return View(recipes);
         }
 
+        // Helper method to apply search filters to a recipe query
+        private IQueryable<RecipeEntity> ApplySearchFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
+        {
+            // Apply search term filtering
+            if (!string.IsNullOrEmpty(searchModel.SearchTerm))
+            {
+                // Split search term into individual terms
+                var searchTerms = searchModel.SearchTerm.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(t => t.Trim().ToLower()) // Convert to lowercase for case-insensitive search
+                    .Where(t => !string.IsNullOrEmpty(t))
+                    .ToList();
+                
+                if (searchTerms.Any())
+                {
+                    switch (searchModel.SearchType)
+                    {
+                        case "title":
+                            // Search only in titles
+                            foreach (var term in searchTerms)
+                            {
+                                query = query.Where(r => r.Title.ToLower().Contains(term));
+                            }
+                            break;
+                            
+                        case "ingredients":
+                            // Search only in ingredients
+                            if (searchModel.MatchAllIngredients)
+                            {
+                                // AND logic - must contain all terms
+                                foreach (var term in searchTerms)
+                                {
+                                    query = query.Where(r => r.Ingredients.ToLower().Contains(term));
+                                }
+                            }
+                            else
+                            {
+                                // OR logic - must contain any of the terms
+                                query = query.Where(r => 
+                                    searchTerms.Any(term => r.Ingredients.ToLower().Contains(term)));
+                            }
+                            break;
+                            
+                        case "all":
+                        default:
+                            // Search in title, description and ingredients
+                            if (searchTerms.Count == 1)
+                            {
+                                // Single term search
+                                var term = searchTerms[0];
+                                query = query.Where(r => 
+                                    r.Title.ToLower().Contains(term) || 
+                                    r.Description.ToLower().Contains(term) || 
+                                    r.Ingredients.ToLower().Contains(term));
+                            }
+                            else
+                            {
+                                // Multi-term search with comma or space separated terms
+                                if (searchModel.MatchAllIngredients)
+                                {
+                                    // AND logic for ingredients, OR logic for title/description
+                                    var ingredientMatches = query.Where(r => true);
+                                    foreach (var term in searchTerms)
+                                    {
+                                        ingredientMatches = ingredientMatches.Where(r => r.Ingredients.ToLower().Contains(term));
+                                    }
+                                    
+                                    var titleDescMatches = query.Where(r => 
+                                        searchTerms.Any(term => 
+                                            r.Title.ToLower().Contains(term) || r.Description.ToLower().Contains(term)));
+                                            
+                                    // Union doesn't work well with EF, so we'll use a different approach
+                                    var ingredientIds = ingredientMatches.Select(r => r.Id).ToList();
+                                    var titleDescIds = titleDescMatches.Select(r => r.Id).ToList();
+                                    var allIds = ingredientIds.Union(titleDescIds).ToList();
+                                    
+                                    query = query.Where(r => allIds.Contains(r.Id));
+                                }
+                                else
+                                {
+                                    // OR logic for everything
+                                    query = query.Where(r => 
+                                        searchTerms.Any(term => 
+                                            r.Title.ToLower().Contains(term) || 
+                                            r.Description.ToLower().Contains(term) || 
+                                            r.Ingredients.ToLower().Contains(term)));
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+            
+            // Apply ingredients filter if specified
+            if (searchModel.Ingredients != null && searchModel.Ingredients.Any())
+            {
+                if (searchModel.MatchAllIngredients)
+                {
+                    // AND logic - must contain all ingredients
+                    foreach (var ingredient in searchModel.Ingredients)
+                    {
+                        query = query.Where(r => r.Ingredients.ToLower().Contains(ingredient.ToLower()));
+                    }
+                }
+                else
+                {
+                    // OR logic - must contain any of the ingredients
+                    var ingredients = searchModel.Ingredients.Select(i => i.ToLower()).ToList();
+                    query = query.Where(r => 
+                        ingredients.Any(ingredient => r.Ingredients.ToLower().Contains(ingredient)));
+                }
+            }
+            
+            // Apply difficulty filter
+            if (!string.IsNullOrEmpty(searchModel.Difficulty))
+            {
+                if (Enum.TryParse<DifficultyLevel>(searchModel.Difficulty, out var difficultyLevel))
+                {
+                    query = query.Where(r => r.Difficulty == difficultyLevel);
+                }
+            }
+            
+            // Apply servings range filter
+            if (searchModel.MinServings.HasValue)
+            {
+                query = query.Where(r => r.Servings >= searchModel.MinServings.Value);
+            }
+            
+            if (searchModel.MaxServings.HasValue)
+            {
+                query = query.Where(r => r.Servings <= searchModel.MaxServings.Value);
+            }
+            
+            // Apply preparation time range filter
+            if (searchModel.MinPrepTime.HasValue)
+            {
+                query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) >= searchModel.MinPrepTime.Value);
+            }
+            
+            if (searchModel.MaxPrepTime.HasValue)
+            {
+                query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= searchModel.MaxPrepTime.Value);
+            }
+            
+            // Apply category filter
+            if (searchModel.CategoryId.HasValue)
+            {
+                query = query.Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == searchModel.CategoryId.Value));
+            }
+            
+            // Apply sorting
+            switch (searchModel.SortBy)
+            {
+                case "oldest":
+                    query = query.OrderBy(r => r.CreatedDate);
+                    break;
+                case "fastest":
+                    query = query.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
+                    break;
+                case "easiest":
+                    query = query.OrderBy(r => r.Difficulty);
+                    break;
+                case "newest":
+                default:
+                    query = query.OrderByDescending(r => r.CreatedDate);
+                    break;
+            }
+            
+            return query;
+        }
+
+        // API endpoint for recipe name autocomplete
+        [HttpGet]
+        public async Task<IActionResult> GetRecipeSuggestions(string term)
+        {
+            if (string.IsNullOrEmpty(term))
+            {
+                return Json(new List<string>());
+            }
+            
+            var lowerTerm = term.ToLower();
+            var suggestions = await _context.Recipes
+                .Where(r => r.Title.ToLower().Contains(lowerTerm))
+                .Select(r => r.Title)
+                .Distinct()
+                .Take(10)
+                .ToListAsync();
+                
+            return Json(suggestions);
+        }
+        
+        // API endpoint for search suggestions (both recipes and ingredients)
+        [HttpGet]
+        public async Task<IActionResult> GetSearchSuggestions(string term)
+        {
+            if (string.IsNullOrEmpty(term))
+            {
+                return Json(new List<string>());
+            }
+            
+            var lowerTerm = term.ToLower();
+            
+            // Get recipe title suggestions
+            var recipeSuggestions = await _context.Recipes
+                .Where(r => r.Title.ToLower().Contains(lowerTerm))
+                .Select(r => r.Title)
+                .Distinct()
+                .Take(5)
+                .ToListAsync();
+            
+            // Get ingredient suggestions
+            var ingredientSuggestions = await _context.Ingredients
+                .Where(i => i.Name.ToLower().Contains(lowerTerm))
+                .Select(i => i.Name)
+                .Distinct()
+                .Take(5)
+                .ToListAsync();
+            
+            // Combine and return suggestions
+            var allSuggestions = recipeSuggestions
+                .Union(ingredientSuggestions)
+                .OrderBy(s => s)
+                .Take(10)
+                .ToList();
+            
+            return Json(allSuggestions);
+        }
+
+        // Existing methods (Details, Create, Edit, Delete, etc.) remain unchanged
+        
         // GET: Recipe/Details/5
         public async Task<IActionResult> Details(int id)
         {

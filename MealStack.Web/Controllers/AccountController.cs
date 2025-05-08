@@ -50,7 +50,7 @@ namespace MealStack.Web.Controllers
             
             if (ModelState.IsValid)
             {
-                // Check if the username is already taken by someone else
+                // Check if the username is already taken
                 var existingUser = await _userManager.FindByNameAsync(model.UserName);
                 if (existingUser != null && existingUser.Id != user.Id)
                 {
@@ -60,7 +60,7 @@ namespace MealStack.Web.Controllers
                 }
                 
                 user.UserName = model.UserName;
-                user.NormalizedUserName = _userManager.NormalizeName(model.UserName); // Properly normalize the username
+                user.NormalizedUserName = _userManager.NormalizeName(model.UserName);
                 
                 var result = await _userManager.UpdateAsync(user);
                 

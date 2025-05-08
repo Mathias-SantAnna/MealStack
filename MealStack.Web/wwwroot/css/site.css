@@ -127,16 +127,21 @@ body {
   color: white;
 }
 
-/* Search bar */
+/* Search bar - Updated for wider size and no rounded corners */
 .search-container {
-  max-width: 500px;
+  width: 70%;
   margin: 0 auto;
 }
 
 .search-container .input-group {
-  border-radius: 50rem;
   overflow: hidden;
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.search-container .form-control,
+.search-container .input-group-text,
+.search-container .btn {
+  border-radius: 0 !important;
 }
 
 .search-container .form-control {
@@ -145,6 +150,28 @@ body {
 
 .search-container .btn {
   border-left: none;
+}
+
+/* UI Autocomplete styling */
+.ui-autocomplete {
+  border-radius: 0 !important;
+  background: white;
+  padding: 8px 0;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1100 !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.ui-menu-item {
+  padding: 6px 12px;
+}
+
+.ui-menu-item:hover,
+.ui-menu-item-wrapper.ui-state-active {
+  background-color: #f8f9fa !important;
+  border: none !important;
+  margin: 0 !important;
 }
 
 /* Category pills */
@@ -206,6 +233,11 @@ body {
   /* Ensure content doesn't overlap with footer on small screens */
   body {
     margin-bottom: 100px;
+  }
+
+  /* Make search container wider on mobile */
+  .search-container {
+    width: 100%;
   }
 }
 

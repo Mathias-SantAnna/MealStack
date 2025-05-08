@@ -27,55 +27,69 @@
     </div>
 </div>
 
-<!-- Filters and Search Section -->
-<div class="container mb-4">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <form id="filterForm" method="get" class="row g-3">
-                <!-- Search Input -->
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" id="searchTerm" name="searchTerm" placeholder="Search recipes..." value="@ViewData["SearchTerm"]">
+<!-- Enhanced Search Bar -->
+<div class="search-container mb-4">
+    <form id="searchForm" asp-controller="Recipe" asp-action="@ViewData["SearchAction"]" method="get">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="searchTerm" name="searchTerm"
+                   placeholder="Search recipes or ingredients (e.g., 'pasta' or 'chicken, garlic')"
+                   value="@ViewData["SearchTerm"]">
+            <button class="btn btn-primary" type="submit">Search</button>
+            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#advancedSearchOptions" aria-expanded="false">
+                <i class="bi bi-sliders"></i>
+            </button>
+        </div>
+
+        <!-- Advanced Search Options (Collapsed) -->
+        <div class="collapse mt-3" id="advancedSearchOptions">
+            <div class="card card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Search Type</label>
+                        <select class="form-select" id="searchType" name="searchType">
+                            <option value="all" selected="@(ViewData["SearchType"]?.ToString() == "all")">All (Title, Description, Ingredients)</option>
+                            <option value="title" selected="@(ViewData["SearchType"]?.ToString() == "title")">Title Only</option>
+                            <option value="ingredients" selected="@(ViewData["SearchType"]?.ToString() == "ingredients")">Ingredients Only</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Difficulty</label>
+                        <select class="form-select" id="difficulty" name="difficulty">
+                            <option value="">Any difficulty</option>
+                            <option value="Easy" selected="@(ViewData["Difficulty"]?.ToString() == "Easy")">Easy</option>
+                            <option value="Medium" selected="@(ViewData["Difficulty"]?.ToString() == "Medium")">Medium</option>
+                            <option value="Hard" selected="@(ViewData["Difficulty"]?.ToString() == "Hard")">Hard</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Sort By</label>
+                        <select class="form-select" id="sortBy" name="sortBy">
+                            <option value="newest" selected="@(ViewData["SortBy"]?.ToString() == "newest" || ViewData["SortBy"] == null)">Newest first</option>
+                            <option value="oldest" selected="@(ViewData["SortBy"]?.ToString() == "oldest")">Oldest first</option>
+                            <option value="fastest" selected="@(ViewData["SortBy"]?.ToString() == "fastest")">Quickest prep</option>
+                            <option value="easiest" selected="@(ViewData["SortBy"]?.ToString() == "easiest")">Easiest first</option>
+                        </select>
                     </div>
                 </div>
 
-                <!-- Difficulty Filter -->
-                <div class="col-md-2">
-                    <select class="form-select" id="difficulty" name="difficulty">
-                        <option value="">Any difficulty</option>
-                        <option value="Easy">Easy</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Hard">Hard</option>
-                    </select>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="matchAllIngredients" name="matchAllIngredients" value="true"
+                           checked="@(ViewData["MatchAllIngredients"]?.ToString() == "true")">
+                    <label class="form-check-label" for="matchAllIngredients">
+                        Match all ingredients (when searching by ingredients)
+                    </label>
                 </div>
-
-                <!-- Time Filter -->
-                <div class="col-md-2">
-                    <select class="form-select" id="timeFilter" name="timeFilter">
-                        <option value="">Any time</option>
-                        <option value="15">Under 15 min</option>
-                        <option value="30">Under 30 min</option>
-                        <option value="60">Under 1 hour</option>
-                    </select>
-                </div>
-
-                <!-- Sort Option -->
-                <div class="col-md-2">
-                    <select class="form-select" id="sortBy" name="sortBy">
-                        <option value="newest">Newest first</option>
-                        <option value="oldest">Oldest first</option>
-                        <option value="fastest">Quickest prep</option>
-                    </select>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+
+        <!-- Fix: Changed .HasValue to != null check -->
+        @if (ViewBag.SelectedCategoryId != null)
+        {
+            <input type="hidden" name="categoryId" value="@ViewBag.SelectedCategoryId">
+        }
+    </form>
 </div>
 
 <!-- Categories Quick Nav -->
@@ -87,7 +101,7 @@
             foreach (var category in ViewBag.Categories)
             {
                 <a href="@Url.Action("Index", new { categoryId = category.Id })"
-                   class="btn @(ViewBag.SelectedCategoryId == category.Id ? "btn-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass) : "btn-outline-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass)) me-2 rounded-pill">
+                   class="btn @(ViewBag.SelectedCategoryId != null && ViewBag.SelectedCategoryId == category.Id ? "btn-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass) : "btn-outline-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass)) me-2 rounded-pill">
                     @category.Name
                 </a>
             }
@@ -189,6 +203,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/search.js"></script>
     <script>
         function confirmDelete(id, name) {
             if (confirm(`Are you sure you want to delete the recipe "${name}"?`)) {
@@ -222,6 +237,7 @@
             );
         });
     </script>
+
 
     <style>
         .hover-scale {

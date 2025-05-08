@@ -22,11 +22,33 @@ namespace MealStack.Web.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, string searchType = "all", bool matchAllIngredients = true)
         {
+            // If search is performed, redirect to Recipe/Index
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                return RedirectToAction("Index", "Recipe", new { 
+                    searchTerm, 
+                    searchType,
+                    matchAllIngredients
+                });
+            }
+            
+            // Add these lines to fix the null reference errors
+            ViewData["SearchAction"] = "Index"; 
+            ViewData["SearchTerm"] = "";
+            ViewData["SearchType"] = "all";
+            ViewData["MatchAllIngredients"] = "true";
+            ViewBag.SelectedCategoryId = null;
+    
+            // Get categories for the navigation menu
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+            
             // Get the 3 most recent recipes
             var latestRecipes = await _context.Recipes
                 .Include(r => r.CreatedBy)
+                .Include(r => r.RecipeCategories)
+                .ThenInclude(rc => rc.Category)
                 .OrderByDescending(r => r.CreatedDate)
                 .Take(3)
                 .ToListAsync();
