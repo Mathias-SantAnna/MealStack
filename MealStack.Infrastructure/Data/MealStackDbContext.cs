@@ -40,7 +40,6 @@ namespace MealStack.Infrastructure.Data
             builder.Entity<CategoryEntity>()
                 .HasOne(c => c.CreatedBy)
                 .WithMany()
-                .HasForeignKey(c => c.CreatedById)
                 .OnDelete(DeleteBehavior.Restrict);
                 
             // Configure many-to-many relationship
@@ -58,6 +57,10 @@ namespace MealStack.Infrastructure.Data
                 .WithMany(c => c.RecipeCategories)
                 .HasForeignKey(rc => rc.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            // Configure composite key for UserFavorites
+            builder.Entity<UserFavoriteEntity>()
+                .HasKey(uf => new { uf.UserId, uf.RecipeId });
         }
     }
 }

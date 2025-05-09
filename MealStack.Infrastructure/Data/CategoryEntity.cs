@@ -20,9 +20,6 @@ namespace MealStack.Infrastructure.Data.Entities
         
         public DateTime CreatedDate { get; set; }
         
-        public string CreatedById { get; set; }
-        
-        [ForeignKey("CreatedById")]
         public ApplicationUser CreatedBy { get; set; }
         
         public virtual ICollection<RecipeCategoryEntity> RecipeCategories { get; set; } = new List<RecipeCategoryEntity>();
