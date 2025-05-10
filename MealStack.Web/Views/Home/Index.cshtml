@@ -1,5 +1,4 @@
 ﻿@model IEnumerable<MealStack.Infrastructure.Data.Entities.RecipeEntity>
-
 @{
     ViewData["Title"] = "Home";
 }
@@ -38,70 +37,10 @@
         </div>
     </div>
 </div>
-<!-- Enhanced Search Bar -->
-<div class="search-container mb-4">
-    <form id="searchForm" asp-controller="Recipe" asp-action="@ViewData["SearchAction"]" method="get">
-        <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control" id="searchTerm" name="searchTerm"
-                   placeholder="Search recipes or ingredients (e.g., 'pasta' or 'chicken, garlic')"
-                   value="@ViewData["SearchTerm"]">
-            <button class="btn btn-primary" type="submit">Search</button>
-            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#advancedSearchOptions" aria-expanded="false">
-                <i class="bi bi-sliders"></i>
-            </button>
-        </div>
 
-        <!-- Advanced Search Options (Collapsed) -->
-        <div class="collapse mt-3" id="advancedSearchOptions">
-            <div class="card card-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Search Type</label>
-                        <select class="form-select" id="searchType" name="searchType">
-                            <option value="all" selected="@(ViewData["SearchType"]?.ToString() == "all")">All (Title, Description, Ingredients)</option>
-                            <option value="title" selected="@(ViewData["SearchType"]?.ToString() == "title")">Title Only</option>
-                            <option value="ingredients" selected="@(ViewData["SearchType"]?.ToString() == "ingredients")">Ingredients Only</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Difficulty</label>
-                        <select class="form-select" id="difficulty" name="difficulty">
-                            <option value="">Any difficulty</option>
-                            <option value="Easy" selected="@(ViewData["Difficulty"]?.ToString() == "Easy")">Easy</option>
-                            <option value="Medium" selected="@(ViewData["Difficulty"]?.ToString() == "Medium")">Medium</option>
-                            <option value="Hard" selected="@(ViewData["Difficulty"]?.ToString() == "Hard")">Hard</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Sort By</label>
-                        <select class="form-select" id="sortBy" name="sortBy">
-                            <option value="newest" selected="@(ViewData["SortBy"]?.ToString() == "newest" || ViewData["SortBy"] == null)">Newest first</option>
-                            <option value="oldest" selected="@(ViewData["SortBy"]?.ToString() == "oldest")">Oldest first</option>
-                            <option value="fastest" selected="@(ViewData["SortBy"]?.ToString() == "fastest")">Quickest prep</option>
-                            <option value="easiest" selected="@(ViewData["SortBy"]?.ToString() == "easiest")">Easiest first</option>
-                        </select>
-                    </div>
-                </div>
+<!-- Search Bar -->
+<partial name="_SearchBar" model="@null" />
 
-                <div class="form-check mt-3">
-                    <input class="form-check-input" type="checkbox" id="matchAllIngredients" name="matchAllIngredients" value="true"
-                           checked="@(ViewData["MatchAllIngredients"]?.ToString() == "true")">
-                    <label class="form-check-label" for="matchAllIngredients">
-                        Match all ingredients (when searching by ingredients)
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <!-- Fix: Changed .HasValue to != null check -->
-        @if (ViewBag.SelectedCategoryId != null)
-        {
-            <input type="hidden" name="categoryId" value="@ViewBag.SelectedCategoryId">
-        }
-    </form>
-</div>
 <!-- Categories Section -->
 <div class="container mb-5">
     <h2 class="text-center mb-4">Explore Recipe Categories</h2>
@@ -165,25 +104,7 @@
         <div class="row g-4">
             @foreach (var recipe in Model)
             {
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge bg-@(recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" :
-                                                      recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger")">
-                                    @recipe.Difficulty
-                                </span>
-                                <small class="text-muted">@(recipe.PrepTimeMinutes + recipe.CookTimeMinutes) min</small>
-                            </div>
-                            <h5 class="card-title">@recipe.Title</h5>
-                            <p class="card-text text-muted">@(recipe.Description?.Length > 80 ? recipe.Description.Substring(0, 77) + "..." : recipe.Description)</p>
-                        </div>
-                        <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-                            <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-primary">View Recipe</a>
-                            <small class="text-muted">By @(recipe.CreatedBy?.UserName ?? "Unknown")</small>
-                        </div>
-                    </div>
-                </div>
+                <partial name="_RecipeCard" model="recipe" />
             }
         </div>
     }

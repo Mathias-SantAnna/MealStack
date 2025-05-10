@@ -93,7 +93,7 @@ namespace MealStack.Web.Controllers
                 .Where(r => r.CreatedById == userId)
                 .AsQueryable();
             
-            // Apply search filters based on the search model
+            // Apply search filters - search model
             recipesQuery = ApplySearchFilters(recipesQuery, searchModel);
             
             // Get categories for filter buttons
@@ -129,7 +129,6 @@ namespace MealStack.Web.Controllers
             ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
             ViewData["CategoryId"] = searchModel.CategoryId;
             
-            // Get the current user ID
             var userId = _userManager.GetUserId(User);
             
             // Get user's favorite recipes
@@ -143,7 +142,7 @@ namespace MealStack.Web.Controllers
                 .Select(uf => uf.Recipe)
                 .AsQueryable();
             
-            // Apply search filters based on the search model
+            // Apply search filters based search model
             favoriteRecipesQuery = ApplySearchFilters(favoriteRecipesQuery, searchModel);
             
             // Get categories for filter buttons
@@ -151,10 +150,10 @@ namespace MealStack.Web.Controllers
             ViewBag.SelectedCategoryId = searchModel.CategoryId;
             ViewData["SearchAction"] = "MyFavorites";
             
-            // Store search model for the view
+            // Store search model
             var recipes = await favoriteRecipesQuery.ToListAsync();
             
-            // Pass the favorite IDs (all recipes in this view are favorites, but we need it for the partial view)
+            // Pass the favorite IDs
             if (User.Identity.IsAuthenticated)
             {
                 var favoriteRecipeIds = await _context.UserFavorites
@@ -174,39 +173,47 @@ namespace MealStack.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleFavorite(int recipeId)
         {
-            var userId = _userManager.GetUserId(User);
-            
-            // Check if recipe exists
-            var recipe = await _context.Recipes.FindAsync(recipeId);
-            if (recipe == null)
+            try
             {
-                return Json(new { success = false, message = "Recipe not found" });
-            }
-            
-            // Check if already favorited
-            var existingFavorite = await _context.UserFavorites
-                .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.RecipeId == recipeId);
-            
-            if (existingFavorite != null)
-            {
-                // Remove favorite
-                _context.UserFavorites.Remove(existingFavorite);
-                await _context.SaveChangesAsync();
-                return Json(new { success = true, isFavorite = false });
-            }
-            else
-            {
-                // Add favorite
-                var favorite = new UserFavoriteEntity
+                var userId = _userManager.GetUserId(User);
+        
+                // Check if recipe exists
+                var recipe = await _context.Recipes.FindAsync(recipeId);
+                if (recipe == null)
                 {
-                    UserId = userId,
-                    RecipeId = recipeId,
-                    DateAdded = DateTime.UtcNow
-                };
-                
-                _context.UserFavorites.Add(favorite);
-                await _context.SaveChangesAsync();
-                return Json(new { success = true, isFavorite = true });
+                    return Json(new { success = false, message = "Recipe not found" });
+                }
+        
+                // Check if already favorited
+                var existingFavorite = await _context.UserFavorites
+                    .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.RecipeId == recipeId);
+        
+                if (existingFavorite != null)
+                {
+                    // Remove favorite
+                    _context.UserFavorites.Remove(existingFavorite);
+                    await _context.SaveChangesAsync();
+                    return Json(new { success = true, isFavorite = false });
+                }
+                else
+                {
+                    // Add favorite
+                    var favorite = new UserFavoriteEntity
+                    {
+                        UserId = userId,
+                        RecipeId = recipeId,
+                        DateAdded = DateTime.UtcNow
+                    };
+            
+                    _context.UserFavorites.Add(favorite);
+                    await _context.SaveChangesAsync();
+                    return Json(new { success = true, isFavorite = true });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error if you have logging
+                return Json(new { success = false, message = "An error occurred: " + ex.Message });
             }
         }
 
@@ -290,8 +297,7 @@ namespace MealStack.Web.Controllers
                                     var titleDescMatches = query.Where(r => 
                                         searchTerms.Any(term => 
                                             r.Title.ToLower().Contains(term) || r.Description.ToLower().Contains(term)));
-                                            
-                                    // Union doesn't work well with EF, so we'll use a different approach
+                                    
                                     var ingredientIds = ingredientMatches.Select(r => r.Id).ToList();
                                     var titleDescIds = titleDescMatches.Select(r => r.Id).ToList();
                                     var allIds = ingredientIds.Union(titleDescIds).ToList();

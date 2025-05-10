@@ -213,10 +213,8 @@
 </div>
 
 @section Scripts {
-    <!-- Add CSRF token in form for AJAX usage -->
-    <form id="__AjaxAntiForgeryForm">
-        @Html.AntiForgeryToken()
-    </form>
+    <!-- AJAX token -->
+    <partial name="_AjaxAntiForgeryToken" />
 
     <script>
         function confirmDelete(id, name) {

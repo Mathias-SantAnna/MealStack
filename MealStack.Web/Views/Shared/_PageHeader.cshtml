@@ -1,0 +1,30 @@
+@{
+    var title = ViewData["PageTitle"] as string;
+    var description = ViewData["PageDescription"] as string;
+    var buttonText = ViewData["ActionButtonText"] as string;
+    var buttonAction = ViewData["ActionButtonAction"] as string;
+    var buttonController = ViewData["ActionButtonController"] as string;
+    var buttonIcon = ViewData["ActionButtonIcon"] as string ?? "bi-plus-circle";
+}
+
+<div class="container-fluid bg-light py-4 mb-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">@title</h1>
+                <p class="text-muted">@description</p>
+            </div>
+            @if (!string.IsNullOrEmpty(buttonText))
+            {
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    @if (User.Identity.IsAuthenticated || ViewData["ShowButtonForAnonymous"]?.ToString() == "true")
+                    {
+                        <a asp-action="@buttonAction" asp-controller="@buttonController" class="btn btn-primary">
+                            <i class="bi @buttonIcon me-1"></i> @buttonText
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

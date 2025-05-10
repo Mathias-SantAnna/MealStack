@@ -1,0 +1,30 @@
+@model IEnumerable<MealStack.Infrastructure.Data.Entities.RecipeEntity>
+@{
+    var emptyMessage = ViewData["EmptyMessage"] as string ?? "No recipes found!";
+    var emptyDescription = ViewData["EmptyDescription"] as string ?? "We couldn't find any recipes matching your criteria.";
+    var emptyButtonText = ViewData["EmptyButtonText"] as string;
+    var emptyButtonAction = ViewData["EmptyButtonAction"] as string;
+}
+
+<div class="container mb-5">
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <h5 class="alert-heading">@emptyMessage</h5>
+            <p>@emptyDescription</p>
+            @if (!string.IsNullOrEmpty(emptyButtonText) && !string.IsNullOrEmpty(emptyButtonAction))
+            {
+                <a asp-action="@emptyButtonAction" class="btn btn-primary">@emptyButtonText</a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var recipe in Model)
+            {
+                <partial name="_RecipeCard" model="recipe" />
+            }
+        </div>
+    }
+</div>

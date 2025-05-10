@@ -1,0 +1,17 @@
+<!-- Categories Quick Nav -->
+<div class="container mb-4">
+    <div class="d-flex overflow-auto pb-2">
+        <a href="@Url.Action(ViewData["SearchAction"]?.ToString() ?? "Index", "Recipe")" 
+           class="btn @(ViewBag.SelectedCategoryId == null ? "btn-primary" : "btn-outline-primary") me-2 rounded-pill">All</a>
+        @if (ViewBag.Categories != null)
+        {
+            foreach (var category in ViewBag.Categories)
+            {
+                <a href="@Url.Action(ViewData["SearchAction"]?.ToString() ?? "Index", "Recipe", new { categoryId = category.Id })"
+                   class="btn @(ViewBag.SelectedCategoryId != null && ViewBag.SelectedCategoryId == category.Id ? "btn-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass) : "btn-outline-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass)) me-2 rounded-pill">
+                    @category.Name
+                </a>
+            }
+        }
+    </div>
+</div>

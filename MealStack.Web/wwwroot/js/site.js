@@ -1,6 +1,4 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
+﻿// site.js
 // Recipe deletion confirmation
 function confirmDelete(id, name) {
     if (confirm(`Are you sure you want to delete the recipe "${name}"?`)) {
@@ -11,7 +9,8 @@ function confirmDelete(id, name) {
 
 // Favorites functionality
 $(document).ready(function() {
-    $('.favorite-btn').on('click', function() {
+    // Use event delegation to handle dynamically loaded content
+    $(document).on('click', '.favorite-btn', function() {
         const btn = $(this);
         const recipeId = btn.closest('.favorite-container').data('recipe-id');
         const isFavorite = btn.data('is-favorite') === true;
@@ -32,10 +31,10 @@ $(document).ready(function() {
                     // Update button appearance
                     if (result.isFavorite) {
                         btn.data('is-favorite', true);
-                        btn.html('<i class="bi bi-heart-fill me-1"></i>');
+                        btn.find('i').removeClass('bi-heart').addClass('bi-heart-fill text-danger');
                     } else {
                         btn.data('is-favorite', false);
-                        btn.html('<i class="bi bi-heart me-1"></i>');
+                        btn.find('i').removeClass('bi-heart-fill text-danger').addClass('bi-heart');
 
                         // If on favorites page, fade out the card
                         if (window.location.pathname.includes('/Recipe/MyFavorites')) {
@@ -50,6 +49,10 @@ $(document).ready(function() {
                         }
                     }
                 }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error toggling favorite:', error);
+                alert('Failed to update favorite status. Please try again.');
             }
         });
     });

@@ -1,0 +1,30 @@
+@model dynamic
+@{
+    var headers = ViewData["TableHeaders"] as string[];
+    var tableName = ViewData["TableName"] as string ?? "Items";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center bg-light">
+        <h5 class="mb-0">@tableName Dashboard</h5>
+        <span class="badge bg-primary rounded-pill">Total @tableName: @Model.Count()</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                <tr>
+                    @foreach (var header in headers)
+                    {
+                        <th>@header</th>
+                    }
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @RenderBody()
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

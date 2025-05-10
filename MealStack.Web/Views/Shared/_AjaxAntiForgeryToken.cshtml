@@ -1,0 +1,6 @@
+@if (User.Identity.IsAuthenticated)
+{
+    <form id="__AjaxAntiForgeryForm">
+        @Html.AntiForgeryToken()
+    </form>
+}
