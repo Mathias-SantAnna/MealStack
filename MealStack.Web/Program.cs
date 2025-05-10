@@ -10,15 +10,21 @@ builder.Services.AddDbContext<MealStackDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         x => x.MigrationsAssembly("MealStack.Infrastructure")));
 
-// 2. Add Identity with Role support
-builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+// 2. Add Identity with Role support - SINGLE REGISTRATION
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
+        // Combine your desired options here
         options.SignIn.RequireConfirmedAccount = false;
         options.User.RequireUniqueEmail = true;
         options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequiredLength = 8;
     })
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<MealStackDbContext>();
+    .AddEntityFrameworkStores<MealStackDbContext>()
+    .AddDefaultTokenProviders();
 
 // 3. Configure cookie login paths
 builder.Services.ConfigureApplicationCookie(options =>
@@ -82,6 +88,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+// Authentication & Authorization middleware - SINGLE REGISTRATION
 app.UseAuthentication();
 app.UseAuthorization();
 

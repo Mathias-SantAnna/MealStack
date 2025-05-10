@@ -11,6 +11,14 @@
             <div class="col-lg-8">
                 <h1 class="mb-3">@Model.Title</h1>
                 <p class="lead">@Model.Description</p>
+                
+                <!-- Favorite Button -->
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="favorite-container mb-3" data-recipe-id="@Model.Id">
+                        @await Component.InvokeAsync("IsFavorite", new { recipeId = Model.Id })
+                    </div>
+                }
 
                 <!-- Recipe Meta Information -->
                 <div class="recipe-meta">
@@ -205,6 +213,11 @@
 </div>
 
 @section Scripts {
+    <!-- Add CSRF token in form for AJAX usage -->
+    <form id="__AjaxAntiForgeryForm">
+        @Html.AntiForgeryToken()
+    </form>
+
     <script>
         function confirmDelete(id, name) {
             if (confirm(`Are you sure you want to delete the recipe "${name}"?`)) {
@@ -237,6 +250,40 @@
                 alert('Share feature coming soon!');
             }
         }
+
+        // Favorites functionality
+        $(document).ready(function() {
+            $('.favorite-btn').on('click', function() {
+                const btn = $(this);
+                const recipeId = btn.closest('.favorite-container').data('recipe-id');
+                const isFavorite = btn.data('is-favorite') === true;
+                
+                // Prepare anti-forgery token
+                const token = $('input[name="__RequestVerificationToken"]').val();
+                
+                // AJAX call to toggle favorite status
+                $.ajax({
+                    url: '/Recipe/ToggleFavorite',
+                    type: 'POST',
+                    data: { 
+                        recipeId: recipeId,
+                        __RequestVerificationToken: token 
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            // Update button appearance
+                            if (result.isFavorite) {
+                                btn.data('is-favorite', true);
+                                btn.html('<i class="bi bi-heart-fill me-1"></i> Remove from Favorites');
+                            } else {
+                                btn.data('is-favorite', false);
+                                btn.html('<i class="bi bi-heart me-1"></i> Add to Favorites');
+                            }
+                        }
+                    }
+                });
+            });
+        });
     </script>
 
     <style>

@@ -1,0 +1,14 @@
+@model bool
+
+@if (Model)
+{
+    <button class="btn btn-outline-danger favorite-btn" data-is-favorite="true">
+        <i class="bi bi-heart-fill me-1"></i>
+    </button>
+}
+else
+{
+    <button class="btn btn-outline-danger favorite-btn" data-is-favorite="false">
+        <i class="bi bi-heart me-1"></i>
+    </button>
+}

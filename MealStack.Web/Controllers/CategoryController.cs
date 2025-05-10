@@ -27,7 +27,6 @@ namespace MealStack.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var categories = await _context.Categories
-                .Include(c => c.CreatedBy)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
                 
@@ -49,8 +48,6 @@ namespace MealStack.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                category.CreatedById = _userManager.GetUserId(User);
-                category.CreatedDate = DateTime.UtcNow;
                 
                 _context.Add(category);
                 await _context.SaveChangesAsync();

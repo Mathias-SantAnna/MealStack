@@ -6,11 +6,12 @@ namespace MealStack.Infrastructure.Data.Entities
 {
     public class UserFavoriteEntity
     {
-        // Composite primary key
-        [Key, Column(Order = 0)]
+        [Key]
+        [Column(Order = 0)]
         public string UserId { get; set; }
         
-        [Key, Column(Order = 1)]
+        [Key]
+        [Column(Order = 1)]
         public int RecipeId { get; set; }
         
         public DateTime DateAdded { get; set; }

@@ -15,12 +15,8 @@ namespace MealStack.Infrastructure.Data.Entities
         
         public string Description { get; set; }
         
-        
         public string ColorClass { get; set; }
-        
-        public DateTime CreatedDate { get; set; }
-        
-        public ApplicationUser CreatedBy { get; set; }
+
         
         public virtual ICollection<RecipeCategoryEntity> RecipeCategories { get; set; } = new List<RecipeCategoryEntity>();
     }

@@ -1,32 +1,32 @@
 @model IEnumerable<MealStack.Infrastructure.Data.Entities.RecipeEntity>
 @{
-    ViewData["Title"] = "My Recipes";
+ViewData["Title"] = "My Recipes";
 
-    // Initialize search model for the form
-    var searchModel = new MealStack.Web.Models.RecipeSearchViewModel
-    {
-        SearchTerm = Context.Request.Query["searchTerm"],
-        SearchType = Context.Request.Query["searchType"],
-        Difficulty = Context.Request.Query["difficulty"],
-        SortBy = Context.Request.Query["sortBy"].ToString() ?? "newest",
-        CategoryId = !string.IsNullOrEmpty(Context.Request.Query["categoryId"]) ?
-        int.Parse(Context.Request.Query["categoryId"]) : null,
-        MinServings = !string.IsNullOrEmpty(Context.Request.Query["minServings"]) ?
-        int.Parse(Context.Request.Query["minServings"]) : null,
-        MaxServings = !string.IsNullOrEmpty(Context.Request.Query["maxServings"]) ?
-        int.Parse(Context.Request.Query["maxServings"]) : null,
-        MinPrepTime = !string.IsNullOrEmpty(Context.Request.Query["minPrepTime"]) ?
-        int.Parse(Context.Request.Query["minPrepTime"]) : null,
-        MaxPrepTime = !string.IsNullOrEmpty(Context.Request.Query["maxPrepTime"]) ?
-        int.Parse(Context.Request.Query["maxPrepTime"]) : null,
-        MatchAllIngredients = Context.Request.Query["matchAllIngredients"] == "true"
-    };
+// Initialize search model for the form
+var searchModel = new MealStack.Web.Models.RecipeSearchViewModel
+{
+SearchTerm = Context.Request.Query["searchTerm"],
+SearchType = Context.Request.Query["searchType"],
+Difficulty = Context.Request.Query["difficulty"],
+SortBy = Context.Request.Query["sortBy"].ToString() ?? "newest",
+CategoryId = !string.IsNullOrEmpty(Context.Request.Query["categoryId"]) ?
+int.Parse(Context.Request.Query["categoryId"]) : null,
+MinServings = !string.IsNullOrEmpty(Context.Request.Query["minServings"]) ?
+int.Parse(Context.Request.Query["minServings"]) : null,
+MaxServings = !string.IsNullOrEmpty(Context.Request.Query["maxServings"]) ?
+int.Parse(Context.Request.Query["maxServings"]) : null,
+MinPrepTime = !string.IsNullOrEmpty(Context.Request.Query["minPrepTime"]) ?
+int.Parse(Context.Request.Query["minPrepTime"]) : null,
+MaxPrepTime = !string.IsNullOrEmpty(Context.Request.Query["maxPrepTime"]) ?
+int.Parse(Context.Request.Query["maxPrepTime"]) : null,
+MatchAllIngredients = Context.Request.Query["matchAllIngredients"] == "true"
+};
 
-    // Parse ingredients from query string
-    if (!string.IsNullOrEmpty(Context.Request.Query["ingredients"]))
-    {
-        searchModel.SetIngredientsFromString(Context.Request.Query["ingredients"]);
-    }
+// Parse ingredients from query string
+if (!string.IsNullOrEmpty(Context.Request.Query["ingredients"]))
+{
+searchModel.SetIngredientsFromString(Context.Request.Query["ingredients"]);
+}
 }
 
 <!-- Page Header -->
@@ -103,10 +103,9 @@
             </div>
         </div>
 
-        <!-- Fix: Changed .HasValue to != null check -->
         @if (ViewBag.SelectedCategoryId != null)
         {
-            <input type="hidden" name="categoryId" value="@ViewBag.SelectedCategoryId">
+        <input type="hidden" name="categoryId" value="@ViewBag.SelectedCategoryId">
         }
     </form>
 </div>
@@ -117,13 +116,13 @@
         <a href="@Url.Action("MyRecipes")" class="btn @(ViewBag.SelectedCategoryId == null ? "btn-primary" : "btn-outline-primary") me-2 rounded-pill">All</a>
         @if (ViewBag.Categories != null)
         {
-            foreach (var category in ViewBag.Categories)
-            {
-                <a href="@Url.Action("MyRecipes", new { categoryId = category.Id })"
-                   class="btn @(ViewBag.SelectedCategoryId != null && ViewBag.SelectedCategoryId == category.Id ? "btn-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass) : "btn-outline-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass)) me-2 rounded-pill">
-                    @category.Name
-                </a>
-            }
+        foreach (var category in ViewBag.Categories)
+        {
+        <a href="@Url.Action("MyRecipes", new { categoryId = category.Id })"
+           class="btn @(ViewBag.SelectedCategoryId != null && ViewBag.SelectedCategoryId == category.Id ? "btn-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass) : "btn-outline-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass)) me-2 rounded-pill">
+            @category.Name
+        </a>
+        }
         }
     </div>
 </div>
@@ -131,120 +130,116 @@
 <!-- Message Alerts -->
 @if (TempData["Message"] != null)
 {
-    <div class="container">
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Message"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+<div class="container">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
+</div>
 }
 
 <!-- Recipe Grid -->
 <div class="container mb-5">
     @if (!Model.Any())
     {
-        <div class="alert alert-info">
-            <h5 class="alert-heading">No recipes found!</h5>
-            <p>You haven't created any recipes yet. Click "Add New Recipe" to get started!</p>
-            <a asp-action="Create" class="btn btn-success">Add Your First Recipe</a>
-        </div>
+    <div class="alert alert-info">
+        <h5 class="alert-heading">No recipes found!</h5>
+        <p>You haven't created any recipes yet. Click "Add New Recipe" to get started!</p>
+        <a asp-action="Create" class="btn btn-success">Add Your First Recipe</a>
+    </div>
     }
     else
     {
-        <div class="row g-4">
-            @foreach (var recipe in Model)
-            {
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm hover-scale">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge bg-@(recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" :
-                                                      recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger")">
-                                    @recipe.Difficulty
-                                </span>
-                                <small class="text-muted">@(recipe.PrepTimeMinutes + recipe.CookTimeMinutes) min</small>
-                            </div>
-
-                            @if (recipe.RecipeCategories != null && recipe.RecipeCategories.Any())
-                            {
-                                <div class="mb-2">
-                                    @foreach (var recipeCategory in recipe.RecipeCategories)
-                                    {
-                                        <span class="badge bg-@(string.IsNullOrEmpty(recipeCategory.Category.ColorClass) ? "secondary" : recipeCategory.Category.ColorClass) me-1">
-                                            @recipeCategory.Category.Name
-                                        </span>
-                                    }
-                                </div>
-                            }
-
-                            <h5 class="card-title">@recipe.Title</h5>
-                            <p class="card-text text-truncate-3">@recipe.Description</p>
-
-                            <div class="mt-3">
-                                @if (!string.IsNullOrEmpty(recipe.Ingredients))
-                                {
-                                    var ingredients = recipe.Ingredients.Split('\n').Length;
-                                    <span class="badge bg-light text-dark me-2">@ingredients ingredients</span>
-                                }
-                                <span class="badge bg-light text-dark">@recipe.Servings servings</span>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-                            <div class="btn-group" role="group">
-                                <a asp-action="Edit" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-pencil me-1"></i> Edit
-                                </a>
-                                <a asp-action="Details" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-eye me-1"></i> View
-                                </a>
-                                <a href="#" onclick="return confirmDelete(@recipe.Id, '@recipe.Title')" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash me-1"></i> Delete
-                                </a>
-
-                                <!-- Hidden form for delete submission -->
-                                <form id="delete-form-@recipe.Id" asp-action="Delete" asp-route-id="@recipe.Id" method="post" style="display: none;">
-                                    @Html.AntiForgeryToken()
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
+    <div class="row g-4">
+        @foreach (var recipe in Model)
+        {
+        <partial name="_RecipeCard" model="recipe" />
+        }
+    </div>
     }
 </div>
 
+<!-- Add this for the AJAX token -->
+<form id="__AjaxAntiForgeryForm">
+    @Html.AntiForgeryToken()
+</form>
+
 @section Scripts {
-    <script src="~/js/search.js"></script>
-    <script>
-        function confirmDelete(id, name) {
-            if (confirm(`Are you sure you want to delete the recipe "${name}"?`)) {
-                document.getElementById(`delete-form-${id}`).submit();
-            }
-            return false;
+<script src="~/js/search.js"></script>
+<script>
+    function confirmDelete(id, name) {
+        if (confirm(`Are you sure you want to delete the recipe "${name}"?`)) {
+            document.getElementById(`delete-form-${id}`).submit();
         }
+        return false;
+    }
 
-        // Add hover effect for recipe cards
-        $('.hover-scale').hover(
-            function() { $(this).addClass('shadow'); },
-            function() { $(this).removeClass('shadow'); }
-        );
-    </script>
+    // Favorite button functionality
+    $(document).ready(function() {
+        $('.favorite-btn').on('click', function() {
+            const btn = $(this);
+            const recipeId = btn.closest('.favorite-container').data('recipe-id');
+            const isFavorite = btn.data('is-favorite') === true;
+            const token = $('input[name="__RequestVerificationToken"]').val();
 
-    <style>
-        .hover-scale {
-            transition: transform 0.3s ease;
-        }
-        .hover-scale:hover {
-            transform: translateY(-5px);
-        }
+            btn.prop('disabled', true);
 
-        /* Text truncation utility */
-        .text-truncate-3 {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-    </style>
+            $.ajax({
+                url: '/Recipe/ToggleFavorite',
+                type: 'POST',
+                data: {
+                    recipeId: recipeId,
+                    __RequestVerificationToken: token
+                },
+                success: function(result) {
+                    if (result.success) {
+                        btn.data('is-favorite', result.isFavorite);
+
+                        if (result.isFavorite) {
+                            btn.find('i').removeClass('bi-heart').addClass('bi-heart-fill text-danger');
+                        } else {
+                            btn.find('i').removeClass('bi-heart-fill text-danger').addClass('bi-heart');
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error toggling favorite:', error);
+                    alert('Failed to update favorite status. Please try again.');
+                },
+                complete: function() {
+                    btn.prop('disabled', false);
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .hover-scale {
+        transition: transform 0.3s ease;
+    }
+    .hover-scale:hover {
+        transform: translateY(-5px);
+    }
+
+    .text-truncate-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .favorite-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .cook-time {
+        color: #ff6920;
+        font-size: 0.9rem;
+        margin-top: 2px;
+    }
+</style>
 }

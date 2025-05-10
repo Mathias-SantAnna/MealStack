@@ -47,6 +47,14 @@
                             </a>
                         </li>
                     }
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Recipe" asp-action="MyFavorites">
+                                <i class="bi bi-heart me-1"></i> My Favorites
+                            </a>
+                        </li>
+                    }
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Ingredient" asp-action="Index">
                             <i class="bi bi-basket me-1"></i> Ingredients

@@ -1,113 +1,9 @@
 @model IEnumerable<MealStack.Infrastructure.Data.Entities.RecipeEntity>
-
 @{
     ViewData["Title"] = "All Recipes";
 }
 
-<!-- Recipe Collection Header -->
-<div class="container-fluid bg-light py-4 mb-4">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="mb-2">All Recipes</h1>
-                <p class="text-muted">Discover and explore delicious recipes from our community.</p>
-            </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <a asp-action="Create" class="btn btn-primary">Create New Recipe</a>
-                    <a asp-action="MyRecipes" class="btn btn-outline-secondary ms-2">My Recipes</a>
-                }
-                else
-                {
-                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary">Sign Up to Add Recipes</a>
-                }
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Enhanced Search Bar -->
-<div class="search-container mb-4">
-    <form id="searchForm" asp-controller="Recipe" asp-action="@ViewData["SearchAction"]" method="get">
-        <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control" id="searchTerm" name="searchTerm"
-                   placeholder="Search recipes or ingredients (e.g., 'pasta' or 'chicken, garlic')"
-                   value="@ViewData["SearchTerm"]">
-            <button class="btn btn-primary" type="submit">Search</button>
-            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#advancedSearchOptions" aria-expanded="false">
-                <i class="bi bi-sliders"></i>
-            </button>
-        </div>
-
-        <!-- Advanced Search Options (Collapsed) -->
-        <div class="collapse mt-3" id="advancedSearchOptions">
-            <div class="card card-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Search Type</label>
-                        <select class="form-select" id="searchType" name="searchType">
-                            <option value="all" selected="@(ViewData["SearchType"]?.ToString() == "all")">All (Title, Description, Ingredients)</option>
-                            <option value="title" selected="@(ViewData["SearchType"]?.ToString() == "title")">Title Only</option>
-                            <option value="ingredients" selected="@(ViewData["SearchType"]?.ToString() == "ingredients")">Ingredients Only</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Difficulty</label>
-                        <select class="form-select" id="difficulty" name="difficulty">
-                            <option value="">Any difficulty</option>
-                            <option value="Easy" selected="@(ViewData["Difficulty"]?.ToString() == "Easy")">Easy</option>
-                            <option value="Medium" selected="@(ViewData["Difficulty"]?.ToString() == "Medium")">Medium</option>
-                            <option value="Hard" selected="@(ViewData["Difficulty"]?.ToString() == "Hard")">Hard</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Sort By</label>
-                        <select class="form-select" id="sortBy" name="sortBy">
-                            <option value="newest" selected="@(ViewData["SortBy"]?.ToString() == "newest" || ViewData["SortBy"] == null)">Newest first</option>
-                            <option value="oldest" selected="@(ViewData["SortBy"]?.ToString() == "oldest")">Oldest first</option>
-                            <option value="fastest" selected="@(ViewData["SortBy"]?.ToString() == "fastest")">Quickest prep</option>
-                            <option value="easiest" selected="@(ViewData["SortBy"]?.ToString() == "easiest")">Easiest first</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-check mt-3">
-                    <input class="form-check-input" type="checkbox" id="matchAllIngredients" name="matchAllIngredients" value="true"
-                           checked="@(ViewData["MatchAllIngredients"]?.ToString() == "true")">
-                    <label class="form-check-label" for="matchAllIngredients">
-                        Match all ingredients (when searching by ingredients)
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <!-- Fix: Changed .HasValue to != null check -->
-        @if (ViewBag.SelectedCategoryId != null)
-        {
-            <input type="hidden" name="categoryId" value="@ViewBag.SelectedCategoryId">
-        }
-    </form>
-</div>
-
-<!-- Categories Quick Nav -->
-<div class="container mb-4">
-    <div class="d-flex overflow-auto pb-2">
-        <a href="@Url.Action("Index")" class="btn @(ViewBag.SelectedCategoryId == null ? "btn-primary" : "btn-outline-primary") me-2 rounded-pill">All</a>
-        @if (ViewBag.Categories != null)
-        {
-            foreach (var category in ViewBag.Categories)
-            {
-                <a href="@Url.Action("Index", new { categoryId = category.Id })"
-                   class="btn @(ViewBag.SelectedCategoryId != null && ViewBag.SelectedCategoryId == category.Id ? "btn-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass) : "btn-outline-" + (string.IsNullOrEmpty(category.ColorClass) ? "primary" : category.ColorClass)) me-2 rounded-pill">
-                    @category.Name
-                </a>
-            }
-        }
-    </div>
-</div>
+<!-- Keep your existing header, search bar, etc. -->
 
 <!-- Recipe Grid -->
 <div class="container mb-5">
@@ -115,95 +11,26 @@
     {
         <div class="alert alert-info">
             <h5 class="alert-heading">No recipes found!</h5>
-            <p>We couldn't find any recipes matching your criteria. Try adjusting your filters or be the first to add a recipe.</p>
-            @if (User.Identity.IsAuthenticated)
-            {
-                <a asp-action="Create" class="btn btn-success">Add New Recipe</a>
-            }
+            <p>We couldn't find any recipes matching your criteria.</p>
         </div>
     }
     else
     {
         <div class="row g-4">
-            @foreach (var item in Model)
+            @foreach (var recipe in Model)
             {
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm hover-scale">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge bg-@(item.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" :
-                                                      item.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger")">
-                                    @item.Difficulty
-                                </span>
-                                <small class="text-muted">@(item.PrepTimeMinutes + item.CookTimeMinutes) min</small>
-                            </div>
-
-                            @if (item.RecipeCategories != null && item.RecipeCategories.Any())
-                            {
-                                <div class="mb-2">
-                                    @foreach (var recipeCategory in item.RecipeCategories)
-                                    {
-                                        <span class="badge bg-@(string.IsNullOrEmpty(recipeCategory.Category.ColorClass) ? "secondary" : recipeCategory.Category.ColorClass) me-1">
-                                            @recipeCategory.Category.Name
-                                        </span>
-                                    }
-                                </div>
-                            }
-
-                            <h5 class="card-title">@item.Title</h5>
-                            <p class="card-text">@(item.Description?.Length > 100 ? item.Description.Substring(0, 97) + "..." : item.Description)</p>
-
-                            <div class="mt-3">
-                                @if (!string.IsNullOrEmpty(item.Ingredients))
-                                {
-                                    var ingredients = item.Ingredients.Split('\n').Length;
-                                    <span class="badge bg-light text-dark me-2">@ingredients ingredients</span>
-                                }
-                                <span class="badge bg-light text-dark">@item.Servings servings</span>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-                            <div>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">View</a>
-                                @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || item.CreatedById == Context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
-                                {
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                    <a href="#" onclick="return confirmDelete(@item.Id, '@item.Title')" class="btn btn-sm btn-outline-danger">Delete</a>
-
-                                    <!-- Hidden form for delete submission -->
-                                    <form id="delete-form-@item.Id" asp-action="Delete" asp-route-id="@item.Id" method="post" style="display: none;">
-                                        @Html.AntiForgeryToken()
-                                    </form>
-                                }
-                            </div>
-                            <small class="text-muted">By @(item.CreatedBy?.UserName ?? "Unknown")</small>
-                        </div>
-                    </div>
-                </div>
+                <partial name="_RecipeCard" model="recipe" />
             }
         </div>
     }
 </div>
 
-<!-- Pagination -->
-<div class="container mb-5">
-    <nav>
-        <ul class="pagination justify-content-center">
-            <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1">Previous</a>
-            </li>
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item">
-                <a class="page-link" href="#">Next</a>
-            </li>
-        </ul>
-    </nav>
-</div>
+<!-- Add this for the AJAX token -->
+<form id="__AjaxAntiForgeryForm">
+    @Html.AntiForgeryToken()
+</form>
 
 @section Scripts {
-    <script src="~/js/search.js"></script>
     <script>
         function confirmDelete(id, name) {
             if (confirm(`Are you sure you want to delete the recipe "${name}"?`)) {
@@ -212,39 +39,72 @@
             return false;
         }
 
-        // Apply stored filter values on page load
+        // Favorite button functionality
         $(document).ready(function() {
-            // Get URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-
-            // Set form values based on URL parameters
-            if (urlParams.has('difficulty')) {
-                $('#difficulty').val(urlParams.get('difficulty'));
-            }
-
-            if (urlParams.has('timeFilter')) {
-                $('#timeFilter').val(urlParams.get('timeFilter'));
-            }
-
-            if (urlParams.has('sortBy')) {
-                $('#sortBy').val(urlParams.get('sortBy'));
-            }
-
-            // Add hover effect for recipe cards
-            $('.hover-scale').hover(
-                function() { $(this).addClass('shadow'); },
-                function() { $(this).removeClass('shadow'); }
-            );
+            $('.favorite-btn').on('click', function() {
+                const btn = $(this);
+                const recipeId = btn.closest('.favorite-container').data('recipe-id');
+                const isFavorite = btn.data('is-favorite') === true;
+                const token = $('input[name="__RequestVerificationToken"]').val();
+                
+                btn.prop('disabled', true);
+                
+                $.ajax({
+                    url: '/Recipe/ToggleFavorite',
+                    type: 'POST',
+                    data: {
+                        recipeId: recipeId,
+                        __RequestVerificationToken: token
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            btn.data('is-favorite', result.isFavorite);
+                            
+                            if (result.isFavorite) {
+                                btn.find('i').removeClass('bi-heart').addClass('bi-heart-fill text-danger');
+                            } else {
+                                btn.find('i').removeClass('bi-heart-fill text-danger').addClass('bi-heart');
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error toggling favorite:', error);
+                        alert('Failed to update favorite status. Please try again.');
+                    },
+                    complete: function() {
+                        btn.prop('disabled', false);
+                    }
+                });
+            });
         });
     </script>
-
-
+    
     <style>
         .hover-scale {
             transition: transform 0.3s ease;
         }
         .hover-scale:hover {
             transform: translateY(-5px);
+        }
+        
+        .text-truncate-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .favorite-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        .cook-time {
+            color: #ff6920;
+            font-size: 0.9rem;
+            margin-top: 2px;
         }
     </style>
 }

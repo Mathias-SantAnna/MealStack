@@ -8,19 +8,29 @@ namespace MealStack.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // drop the FK only if it’s there
+            // drop the FK only if it's there
             migrationBuilder.Sql(
                 "ALTER TABLE \"Categories\" " +
                 "DROP CONSTRAINT IF EXISTS \"FK_Categories_AspNetUsers_CreatedById\";");
 
-            // drop the index only if it’s there
+            // drop the index only if it's there
             migrationBuilder.Sql(
                 "DROP INDEX IF EXISTS \"IX_Categories_CreatedById\";");
 
-            // finally drop the column
-            migrationBuilder.DropColumn(
-                name: "CreatedById",
-                table: "Categories");
+            // drop the column if it exists
+            migrationBuilder.Sql(@"
+                DO $$
+                BEGIN
+                    IF EXISTS (
+                        SELECT FROM information_schema.columns 
+                        WHERE table_name = 'categories' AND column_name = 'createdbyid'
+                    ) THEN
+                        ALTER TABLE ""Categories"" DROP COLUMN ""CreatedById"";
+                    END IF;
+                END $$;
+            ");
+            
+            // Note: Removed the direct DropColumn operation
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
