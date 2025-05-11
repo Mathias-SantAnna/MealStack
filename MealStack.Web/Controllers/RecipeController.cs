@@ -42,6 +42,7 @@ namespace MealStack.Web.Controllers
                 .Include(r => r.CreatedBy)
                 .Include(r => r.RecipeCategories)
                 .ThenInclude(rc => rc.Category)
+                .Include(r => r.Ratings) // Include ratings for sorting and display
                 .AsQueryable();
             
             // Apply search filters based on the search model
@@ -90,6 +91,7 @@ namespace MealStack.Web.Controllers
                 .Include(r => r.CreatedBy)
                 .Include(r => r.RecipeCategories)
                 .ThenInclude(rc => rc.Category)
+                .Include(r => r.Ratings) // Include ratings for sorting and display
                 .Where(r => r.CreatedById == userId)
                 .AsQueryable();
             
@@ -139,6 +141,7 @@ namespace MealStack.Web.Controllers
                 .Include(uf => uf.Recipe)
                     .ThenInclude(r => r.RecipeCategories)
                         .ThenInclude(rc => rc.Category)
+                .Include(uf => uf.Recipe.Ratings) // Include ratings for sorting and display
                 .Select(uf => uf.Recipe)
                 .AsQueryable();
             
@@ -217,6 +220,61 @@ namespace MealStack.Web.Controllers
             }
         }
 
+        // POST: Recipe/RateRecipe
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RateRecipe(int recipeId, int rating)
+        {
+            if (rating < 1 || rating > 5)
+                return Json(new { success = false, message = "Invalid rating" });
+
+            var userId = _userManager.GetUserId(User);
+            
+            // Check if recipe exists
+            var recipe = await _context.Recipes.FindAsync(recipeId);
+            if (recipe == null)
+            {
+                return Json(new { success = false, message = "Recipe not found" });
+            }
+            
+            var existingRating = await _context.UserRatings
+                .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RecipeId == recipeId);
+            
+            if (existingRating != null)
+            {
+                existingRating.Rating = rating;
+                existingRating.DateRated = DateTime.UtcNow;
+            }
+            else
+            {
+                _context.UserRatings.Add(new UserRatingEntity
+                {
+                    UserId = userId,
+                    RecipeId = recipeId,
+                    Rating = rating,
+                    DateRated = DateTime.UtcNow
+                });
+            }
+            
+            await _context.SaveChangesAsync();
+            
+            // Get updated average
+            var averageRating = await _context.UserRatings
+                .Where(ur => ur.RecipeId == recipeId)
+                .AverageAsync(ur => (double)ur.Rating);
+            
+            var totalRatings = await _context.UserRatings
+                .Where(ur => ur.RecipeId == recipeId)
+                .CountAsync();
+            
+            return Json(new { 
+                success = true, 
+                averageRating = Math.Round(averageRating, 1),
+                totalRatings = totalRatings
+            });
+        }
+
         // Helper method to check if a recipe is favorited by current user
         private async Task<bool> IsRecipeFavorited(int recipeId)
         {
@@ -226,6 +284,19 @@ namespace MealStack.Web.Controllers
             var userId = _userManager.GetUserId(User);
             return await _context.UserFavorites
                 .AnyAsync(uf => uf.UserId == userId && uf.RecipeId == recipeId);
+        }
+
+        // Helper method to check if a recipe is rated by current user
+        private async Task<int?> GetUserRating(int recipeId)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return null;
+                
+            var userId = _userManager.GetUserId(User);
+            var rating = await _context.UserRatings
+                .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RecipeId == recipeId);
+            
+            return rating?.Rating;
         }
 
         // Helper method to apply search filters to a recipe query
@@ -388,6 +459,10 @@ namespace MealStack.Web.Controllers
                 case "easiest":
                     query = query.OrderBy(r => r.Difficulty);
                     break;
+                case "highestRated":
+                    // This sorts recipes by their average rating
+                    query = query.OrderByDescending(r => r.Ratings.Any() ? r.Ratings.Average(ur => ur.Rating) : 0);
+                    break;
                 case "newest":
                 default:
                     query = query.OrderByDescending(r => r.CreatedDate);
@@ -461,6 +536,7 @@ namespace MealStack.Web.Controllers
                 .Include(r => r.CreatedBy)
                 .Include(r => r.RecipeCategories)
                 .ThenInclude(rc => rc.Category)
+                .Include(r => r.Ratings) // Include ratings
                 .FirstOrDefaultAsync(r => r.Id == id);
                 
             if (recipe == null)
@@ -472,6 +548,7 @@ namespace MealStack.Web.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 ViewBag.IsFavorited = await IsRecipeFavorited(id);
+                ViewBag.UserRating = await GetUserRating(id);
             }
 
             return View(recipe);

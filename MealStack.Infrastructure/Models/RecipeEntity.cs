@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace MealStack.Infrastructure.Data.Entities
 {
@@ -44,6 +45,13 @@ namespace MealStack.Infrastructure.Data.Entities
         public DateTime? UpdatedDate { get; set; }
         
         public virtual ICollection<RecipeCategoryEntity> RecipeCategories { get; set; } = new List<RecipeCategoryEntity>();
+        
+        // Rating Properties
+        public virtual ICollection<UserRatingEntity> Ratings { get; set; } = new List<UserRatingEntity>();
+        
+        // Computed properties
+        public double AverageRating => Ratings.Any() ? Ratings.Average(r => r.Rating) : 0;
+        public int TotalRatings => Ratings.Count;
     }
     
     public enum DifficultyLevel

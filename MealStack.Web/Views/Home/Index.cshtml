@@ -57,7 +57,7 @@
             </a>
         </div>
         <div class="col-6 col-md-4 col-lg-3">
-            <a asp-controller="Recipe" asp-action="Index" asp-route-categoryId="4" class="text-decoration-none">
+            <a asp-controller="Recipe" asp-action="Index" asp-route-categoryId="2" class="text-decoration-none">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body text-center">
                         <div class="display-4 mb-3 text-primary">🥪</div>
@@ -79,7 +79,7 @@
             </a>
         </div>
         <div class="col-6 col-md-4 col-lg-3">
-            <a asp-controller="Recipe" asp-action="Index" asp-route-categoryId="2" class="text-decoration-none">
+            <a asp-controller="Recipe" asp-action="Index" asp-route-categoryId="4" class="text-decoration-none">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body text-center">
                         <div class="display-4 mb-3 text-primary">🍰</div>
@@ -173,4 +173,7 @@
 
 @section Scripts {
     <script src="~/js/search.js"></script>
+    
+    <!-- Ajax token -->
+    <partial name="_AjaxAntiForgeryToken" />
 }

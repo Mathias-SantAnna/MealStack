@@ -18,6 +18,7 @@ namespace MealStack.Infrastructure.Data
         public DbSet<CategoryEntity> Categories { get; set; }
         public DbSet<RecipeCategoryEntity> RecipeCategories { get; set; }
         public DbSet<UserFavoriteEntity> UserFavorites { get; set; }
+        public DbSet<UserRatingEntity> UserRatings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -68,6 +69,22 @@ namespace MealStack.Infrastructure.Data
                 .HasOne(uf => uf.Recipe)
                 .WithMany()
                 .HasForeignKey(uf => uf.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            // Configure relationships for UserRating
+            builder.Entity<UserRatingEntity>()
+                .HasKey(ur => new { ur.UserId, ur.RecipeId });
+
+            builder.Entity<UserRatingEntity>()
+                .HasOne(ur => ur.User)
+                .WithMany()
+                .HasForeignKey(ur => ur.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<UserRatingEntity>()
+                .HasOne(ur => ur.Recipe)
+                .WithMany(r => r.Ratings)
+                .HasForeignKey(ur => ur.RecipeId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

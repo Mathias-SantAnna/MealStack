@@ -238,6 +238,29 @@ body {
   margin-top: 2px;
 }
 
+
+.star-rating {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #ffc107;
+  transition: transform 0.1s;
+}
+
+.star-rating:hover {
+  transform: scale(1.1);
+}
+
+.rating-stars {
+  display: inline-block;
+}
+
+.rating-widget {
+  border: 1px solid #dee2e6;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background-color: #f8f9fa;
+}
+
 /* Footer */
 .footer {
   position: absolute;

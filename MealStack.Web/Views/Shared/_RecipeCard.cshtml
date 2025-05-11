@@ -33,6 +33,31 @@
                 </div>
             </div>
 
+            <!-- Rating stars -->
+            <div class="d-flex align-items-center mb-2">
+                <div class="rating-stars small" data-recipe-id="@Model.Id">
+                    @{
+                        var avgRating = Model.AverageRating;
+                        for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= avgRating)
+                            {
+                                <i class="bi bi-star-fill text-warning"></i>
+                            }
+                            else if (i - 0.5 <= avgRating)
+                            {
+                                <i class="bi bi-star-half text-warning"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-star text-warning"></i>
+                            }
+                        }
+                    }
+                </div>
+                <span class="ms-2 text-muted small rating-count">(@Model.TotalRatings)</span>
+            </div>
+
             @if (Model.RecipeCategories != null && Model.RecipeCategories.Any())
             {
                 <div class="mb-2">
