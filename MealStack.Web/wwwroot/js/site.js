@@ -17,6 +17,11 @@ $(document).ready(function() {
         // Prepare anti-forgery token
         const token = $('input[name="__RequestVerificationToken"]').val();
 
+        // Show loading state
+        btn.prop('disabled', true);
+        const originalContent = btn.html();
+        btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+
         // AJAX call to toggle favorite status
         $.ajax({
             url: '/Recipe/ToggleFavorite',
@@ -48,10 +53,16 @@ $(document).ready(function() {
                         }
                     }
                 }
+                // Re-enable button
+                btn.prop('disabled', false);
+                btn.html(originalContent);
             },
             error: function(xhr, status, error) {
                 console.error('Error toggling favorite:', error);
                 alert('Failed to update favorite status. Please try again.');
+                // Re-enable button
+                btn.prop('disabled', false);
+                btn.html(originalContent);
             }
         });
     });
@@ -162,4 +173,73 @@ $(document).ready(function() {
             });
         }
     });
+});
+
+// Ingredient increment/decrement behavior - USE EVENT DELEGATION
+$(document).on('input', '.quantity-input', function() {
+    // Validate and format the input
+    let value = parseFloat($(this).val());
+    if (isNaN(value)) {
+        $(this).val("");
+    } else {
+        // Round to 2 decimal places if needed
+        $(this).val(Math.max(0, parseFloat(value.toFixed(2))));
+    }
+});
+
+// Handle number input arrows
+$(document).on('keydown', '.quantity-input', function(e) {
+    // Allow: backspace, delete, tab, escape, enter
+    if ($.inArray(e.keyCode, [46, 8, 9, 27, 13]) !== -1 ||
+        // Allow: Ctrl+A, Command+A
+        (e.keyCode === 65 && (e.ctrlKey === true || e.metaKey === true)) ||
+        // Allow: home, end, left, right, down, up
+        (e.keyCode >= 35 && e.keyCode <= 40)) {
+        return;
+    }
+
+    // Ensure that it's a number and stop the keypress if not
+    if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) &&
+        (e.keyCode < 96 || e.keyCode > 105) &&
+        e.keyCode !== 190 && e.keyCode !== 110) {
+        e.preventDefault();
+    }
+});
+
+// Add custom validation rules
+$.validator.addMethod("ingredientsRequired", function(value, element) {
+    return $("#ingredients-container").children().length > 0;
+}, "Please add at least one ingredient");
+
+// Apply the rule
+$("#recipeForm").validate({
+    rules: {
+        Title: {
+            required: true,
+            minlength: 3
+        },
+        Instructions: {
+            required: true,
+            minlength: 10
+        },
+        // Custom validation for ingredients
+        "ingredients-data": {
+            ingredientsRequired: true
+        }
+    },
+    messages: {
+        Title: {
+            required: "Please enter a recipe title",
+            minlength: "Title must be at least 3 characters"
+        }
+        // Add other messages
+    },
+    errorPlacement: function(error, element) {
+        // Custom placement of error messages
+        if (element.attr("id") === "ingredients-data") {
+            error.insertAfter("#ingredients-section");
+        } else {
+            error.insertAfter(element);
+        }
+    }
 });

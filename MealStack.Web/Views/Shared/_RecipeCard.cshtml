@@ -1,4 +1,4 @@
-@model MealStack.Infrastructure.Data.Entities.RecipeEntity
+@model MealStack.Infrastructure.Data.RecipeEntity
 @{
     var isFavorite = ViewBag.FavoriteRecipes != null && ((List<int>)ViewBag.FavoriteRecipes).Contains(Model.Id);
 }
@@ -7,8 +7,8 @@
     <div class="card h-100 shadow-sm hover-scale">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-@(Model.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" :
-                                      Model.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger")">
+                <span class="badge bg-@(Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Easy ? "success" :
+                                      Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Medium ? "warning" : "danger")">
                     @Model.Difficulty
                 </span>
 

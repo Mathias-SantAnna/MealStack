@@ -1,4 +1,4 @@
-@model MealStack.Infrastructure.Data.Entities.RecipeEntity
+@model MealStack.Infrastructure.Data.RecipeEntity
 
 @{
     ViewData["Title"] = "Edit Recipe";
@@ -9,7 +9,7 @@
 <hr />
 <div class="row">
     <div class="col-md-8">
-        <form asp-action="Edit">
+        <form id="recipeForm" asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             
@@ -51,7 +51,7 @@
             
             <div class="mb-3">
                 <label asp-for="Difficulty" class="form-label"></label>
-                <select asp-for="Difficulty" asp-items="Html.GetEnumSelectList<MealStack.Infrastructure.Data.Entities.DifficultyLevel>()" class="form-select"></select>
+                <select asp-for="Difficulty" asp-items="Html.GetEnumSelectList<MealStack.Infrastructure.Data.DifficultyLevel>()" class="form-select"></select>
                 <span asp-validation-for="Difficulty" class="text-danger"></span>
             </div>
             

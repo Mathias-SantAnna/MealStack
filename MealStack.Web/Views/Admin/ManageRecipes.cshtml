@@ -1,4 +1,4 @@
-@model IEnumerable<MealStack.Infrastructure.Data.Entities.RecipeEntity>
+@model IEnumerable<MealStack.Infrastructure.Data.RecipeEntity>
 
 @{
     ViewData["Title"] = "Manage Recipes";
@@ -192,8 +192,8 @@
                     <tr>
                         <td><a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.Id" class="text-decoration-none fw-bold">@recipe.Title</a></td>
                         <td>
-                                <span class="badge bg-@(recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" :
-                                                      recipe.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger")">
+                                <span class="badge bg-@(recipe.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Easy ? "success" :
+                                                      recipe.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Medium ? "warning" : "danger")">
                                     @recipe.Difficulty
                                 </span>
                         </td>

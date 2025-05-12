@@ -84,6 +84,35 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+else
+{
+    app.UseDeveloperExceptionPage();
+}
+
+// Add a custom error handling middleware (optional)
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+        
+        if (context.Response.StatusCode == 404 && !context.Response.HasStarted)
+        {
+            context.Request.Path = "/Home/NotFound";
+            await next();
+        }
+    }
+    catch (Exception ex)
+    {
+        // Log the error
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An unhandled exception occurred");
+        
+        // Redirect to error page
+        context.Request.Path = "/Home/Error";
+        await next();
+    }
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

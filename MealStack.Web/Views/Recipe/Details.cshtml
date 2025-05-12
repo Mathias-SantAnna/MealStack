@@ -1,4 +1,4 @@
-@model MealStack.Infrastructure.Data.Entities.RecipeEntity
+@model MealStack.Infrastructure.Data.RecipeEntity
 
 @{
     ViewData["Title"] = Model.Title;
@@ -58,7 +58,7 @@
                     </div>
                     <div class="recipe-meta-item">
                         <i class="bi bi-bar-chart text-primary"></i>
-                        <span class="badge bg-@(Model.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Easy ? "success" : Model.Difficulty == MealStack.Infrastructure.Data.Entities.DifficultyLevel.Medium ? "warning" : "danger")">
+                        <span class="badge bg-@(Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Easy ? "success" : Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Medium ? "warning" : "danger")">
                             @Model.Difficulty
                         </span>
                     </div>

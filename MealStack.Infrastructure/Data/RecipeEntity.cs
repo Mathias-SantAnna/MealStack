@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using MealStack.Infrastructure.Data.Entities;
 
-namespace MealStack.Infrastructure.Data.Entities
+namespace MealStack.Infrastructure.Data
 {
     public class RecipeEntity
     {
@@ -43,6 +44,8 @@ namespace MealStack.Infrastructure.Data.Entities
         public DateTime CreatedDate { get; set; }
         
         public DateTime? UpdatedDate { get; set; }
+     
+        public string Notes { get; set; }
         
         public virtual ICollection<RecipeCategoryEntity> RecipeCategories { get; set; } = new List<RecipeCategoryEntity>();
         

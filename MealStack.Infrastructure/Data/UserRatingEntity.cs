@@ -1,4 +1,5 @@
 using System;
+using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
 
 public class UserRatingEntity
