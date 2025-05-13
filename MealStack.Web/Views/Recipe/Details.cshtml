@@ -233,6 +233,7 @@
 @section Scripts {
     <!-- AJAX token -->
     <partial name="_AjaxAntiForgeryToken" />
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
         function confirmDelete(id, name) {
@@ -298,6 +299,22 @@
                         }
                     }
                 });
+            });
+        });
+        
+        // Debug form submission
+        $(document).ready(function() {
+            $('#recipeForm').on('submit', function(e) {
+                console.log('Form submission:');
+                
+                // Log all form fields
+                var formData = new FormData(this);
+                for (var pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + pair[1]);
+                }
+                
+                // Continue with normal submission
+                return true;
             });
         });
     </script>

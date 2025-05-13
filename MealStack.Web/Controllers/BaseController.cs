@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using MealStack.Infrastructure.Data.Entities;
 using MealStack.Web.Models;
+using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace MealStack.Web.Controllers
@@ -68,6 +70,32 @@ namespace MealStack.Web.Controllers
             ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
             ViewData["CategoryId"] = searchModel.CategoryId;
             ViewData["SearchAction"] = actionName;
+        }
+
+        // New error handling methods
+        protected IActionResult HandleError(Exception ex, string errorMessage = null, string redirectAction = "Index")
+        {
+            // Log the error (simple console logging for now)
+            Debug.WriteLine($"Error: {ex.Message}");
+            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            
+            // Add user-friendly error message to TempData
+            TempData["Error"] = errorMessage ?? "An error occurred while processing your request.";
+            
+            // Redirect to specified action or default
+            return RedirectToAction(redirectAction);
+        }
+
+        protected async Task<IActionResult> TryExecuteAsync(Func<Task<IActionResult>> action, string errorMessage = null, string redirectAction = "Index")
+        {
+            try
+            {
+                return await action();
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex, errorMessage, redirectAction);
+            }
         }
     }
 }

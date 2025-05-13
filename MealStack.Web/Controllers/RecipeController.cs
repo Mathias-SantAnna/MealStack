@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MealStack.Web.Controllers
 {
@@ -29,181 +30,190 @@ namespace MealStack.Web.Controllers
         // GET: Recipe
         public async Task<IActionResult> Index(RecipeSearchViewModel searchModel, int page = 1)
         {
-            int pageSize = 12; // Number of recipes per page
-            
-            // Save search parameters to ViewData for form repopulation
-            ViewData["SearchTerm"] = searchModel.SearchTerm;
-            ViewData["SearchType"] = searchModel.SearchType ?? "all";
-            ViewData["Difficulty"] = searchModel.Difficulty;
-            ViewData["SortBy"] = searchModel.SortBy ?? "newest";
-            ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
-            ViewData["CategoryId"] = searchModel.CategoryId;
-            
-            // Create a query for recipes
-            var recipesQuery = _context.Recipes
-                .Include(r => r.CreatedBy)
-                .Include(r => r.RecipeCategories)
-                .ThenInclude(rc => rc.Category)
-                .Include(r => r.Ratings)
-                .AsQueryable();
-            
-            // Apply search filters based on the search model
-            recipesQuery = ApplySearchFilters(recipesQuery, searchModel);
-            
-            // Get total count for pagination
-            var totalRecipes = await recipesQuery.CountAsync();
-            
-            // Apply pagination
-            var recipes = await recipesQuery
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-            
-            // Add pagination info to ViewBag
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = (int)Math.Ceiling(totalRecipes / (double)pageSize);
-            
-            // Get categories for filter buttons
-            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-            ViewBag.SelectedCategoryId = searchModel.CategoryId;
-            ViewData["SearchAction"] = "Index";
-            
-            // Add favorites for logged-in users
-            if (User.Identity.IsAuthenticated)
+            return await TryExecuteAsync(async () =>
             {
-                var userId = _userManager.GetUserId(User);
-                var favoriteRecipeIds = await _context.UserFavorites
-                    .Where(uf => uf.UserId == userId)
-                    .Select(uf => uf.RecipeId)
+                int pageSize = 12;
+                
+                // Save search parameters to ViewData for form repopulation
+                ViewData["SearchTerm"] = searchModel.SearchTerm;
+                ViewData["SearchType"] = searchModel.SearchType ?? "all";
+                ViewData["Difficulty"] = searchModel.Difficulty;
+                ViewData["SortBy"] = searchModel.SortBy ?? "newest";
+                ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
+                ViewData["CategoryId"] = searchModel.CategoryId;
+                
+                // Create a query for recipes
+                var recipesQuery = _context.Recipes
+                    .Include(r => r.CreatedBy)
+                    .Include(r => r.RecipeCategories)
+                    .ThenInclude(rc => rc.Category)
+                    .Include(r => r.Ratings)
+                    .AsQueryable();
+                
+                // Apply search filters based on the search model
+                recipesQuery = ApplySearchFilters(recipesQuery, searchModel);
+                
+                // Get total count for pagination
+                var totalRecipes = await recipesQuery.CountAsync();
+                
+                // Apply pagination
+                var recipes = await recipesQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToListAsync();
-            
-                ViewBag.FavoriteRecipes = favoriteRecipeIds;
-            }
-            
-            return View(recipes);
+                
+                // Add pagination info to ViewBag
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = (int)Math.Ceiling(totalRecipes / (double)pageSize);
+                
+                // Get categories for filter buttons
+                ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                ViewBag.SelectedCategoryId = searchModel.CategoryId;
+                ViewData["SearchAction"] = "Index";
+                
+                // Add favorites for logged-in users
+                if (User.Identity.IsAuthenticated)
+                {
+                    var userId = _userManager.GetUserId(User);
+                    var favoriteRecipeIds = await _context.UserFavorites
+                        .Where(uf => uf.UserId == userId)
+                        .Select(uf => uf.RecipeId)
+                        .ToListAsync();
+                
+                    ViewBag.FavoriteRecipes = favoriteRecipeIds;
+                }
+                
+                return View(recipes);
+            }, "Error loading recipes. Please try again later.");
         }
 
         // GET: Recipe/MyRecipes
         [Authorize]
         public async Task<IActionResult> MyRecipes(RecipeSearchViewModel searchModel, int page = 1)
         {
-            int pageSize = 12; // Number of recipes per page
-            
-            // Save search parameters to ViewData for form repopulation
-            ViewData["SearchTerm"] = searchModel.SearchTerm;
-            ViewData["SearchType"] = searchModel.SearchType ?? "all";
-            ViewData["Difficulty"] = searchModel.Difficulty;
-            ViewData["SortBy"] = searchModel.SortBy ?? "newest";
-            ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
-            ViewData["CategoryId"] = searchModel.CategoryId;
-            
-            // Get the current user ID
-            var userId = _userManager.GetUserId(User);
-            
-            // Create a query for the user's recipes
-            var recipesQuery = _context.Recipes
-                .Include(r => r.CreatedBy)
-                .Include(r => r.RecipeCategories)
-                .ThenInclude(rc => rc.Category)
-                .Include(r => r.Ratings) // Include ratings for sorting and display
-                .Where(r => r.CreatedById == userId)
-                .AsQueryable();
-            
-            // Apply search filters - search model
-            recipesQuery = ApplySearchFilters(recipesQuery, searchModel);
-            
-            // Get total count for pagination
-            var totalRecipes = await recipesQuery.CountAsync();
-            
-            // Apply pagination
-            var recipes = await recipesQuery
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-            
-            // Add pagination info to ViewBag
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = (int)Math.Ceiling(totalRecipes / (double)pageSize);
-            
-            // Get categories for filter buttons
-            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-            ViewBag.SelectedCategoryId = searchModel.CategoryId;
-            ViewData["SearchAction"] = "MyRecipes";
-            
-            // Add favorite status for each recipe
-            if (User.Identity.IsAuthenticated)
+            return await TryExecuteAsync(async () =>
             {
-                var favoriteRecipeIds = await _context.UserFavorites
-                    .Where(uf => uf.UserId == userId)
-                    .Select(uf => uf.RecipeId)
+                int pageSize = 12; // Number of recipes per page
+                
+                // Save search parameters to ViewData for form repopulation
+                ViewData["SearchTerm"] = searchModel.SearchTerm;
+                ViewData["SearchType"] = searchModel.SearchType ?? "all";
+                ViewData["Difficulty"] = searchModel.Difficulty;
+                ViewData["SortBy"] = searchModel.SortBy ?? "newest";
+                ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
+                ViewData["CategoryId"] = searchModel.CategoryId;
+                
+                // Get the current user ID
+                var userId = _userManager.GetUserId(User);
+                
+                // Create a query for the user's recipes
+                var recipesQuery = _context.Recipes
+                    .Include(r => r.CreatedBy)
+                    .Include(r => r.RecipeCategories)
+                    .ThenInclude(rc => rc.Category)
+                    .Include(r => r.Ratings) // Include ratings for sorting and display
+                    .Where(r => r.CreatedById == userId)
+                    .AsQueryable();
+                
+                // Apply search filters - search model
+                recipesQuery = ApplySearchFilters(recipesQuery, searchModel);
+                
+                // Get total count for pagination
+                var totalRecipes = await recipesQuery.CountAsync();
+                
+                // Apply pagination
+                var recipes = await recipesQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToListAsync();
-                    
-                ViewBag.FavoriteRecipes = favoriteRecipeIds;
-            }
-            return View(recipes);
+                
+                // Add pagination info to ViewBag
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = (int)Math.Ceiling(totalRecipes / (double)pageSize);
+                
+                // Get categories for filter buttons
+                ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                ViewBag.SelectedCategoryId = searchModel.CategoryId;
+                ViewData["SearchAction"] = "MyRecipes";
+                
+                // Add favorite status for each recipe
+                if (User.Identity.IsAuthenticated)
+                {
+                    var favoriteRecipeIds = await _context.UserFavorites
+                        .Where(uf => uf.UserId == userId)
+                        .Select(uf => uf.RecipeId)
+                        .ToListAsync();
+                        
+                    ViewBag.FavoriteRecipes = favoriteRecipeIds;
+                }
+                return View(recipes);
+            }, "Error loading your recipes. Please try again later.");
         }
 
         // GET: Recipe/MyFavorites
         [Authorize]
         public async Task<IActionResult> MyFavorites(RecipeSearchViewModel searchModel, int page = 1)
         {
-            int pageSize = 12; // Number of recipes per page
-            
-            // Save search parameters to ViewData for form repopulation
-            ViewData["SearchTerm"] = searchModel.SearchTerm;
-            ViewData["SearchType"] = searchModel.SearchType ?? "all";
-            ViewData["Difficulty"] = searchModel.Difficulty;
-            ViewData["SortBy"] = searchModel.SortBy ?? "newest";
-            ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
-            ViewData["CategoryId"] = searchModel.CategoryId;
-            
-            var userId = _userManager.GetUserId(User);
-            
-            // Get user's favorite recipes
-            var favoriteRecipesQuery = _context.UserFavorites
-                .Where(uf => uf.UserId == userId)
-                .Include(uf => uf.Recipe)
-                    .ThenInclude(r => r.CreatedBy)
-                .Include(uf => uf.Recipe)
-                    .ThenInclude(r => r.RecipeCategories)
-                        .ThenInclude(rc => rc.Category)
-                .Include(uf => uf.Recipe.Ratings) // Include ratings for sorting and display
-                .Select(uf => uf.Recipe)
-                .AsQueryable();
-            
-            // Apply search filters based search model
-            favoriteRecipesQuery = ApplySearchFilters(favoriteRecipesQuery, searchModel);
-            
-            // Get total count for pagination
-            var totalRecipes = await favoriteRecipesQuery.CountAsync();
-            
-            // Apply pagination
-            var recipes = await favoriteRecipesQuery
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-            
-            // Add pagination info to ViewBag
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = (int)Math.Ceiling(totalRecipes / (double)pageSize);
-            
-            // Get categories for filter buttons
-            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-            ViewBag.SelectedCategoryId = searchModel.CategoryId;
-            ViewData["SearchAction"] = "MyFavorites";
-            
-            // Pass the favorite IDs
-            if (User.Identity.IsAuthenticated)
+            return await TryExecuteAsync(async () =>
             {
-                var favoriteRecipeIds = await _context.UserFavorites
+                int pageSize = 12;
+                
+                // Save search parameters to ViewData for form repopulation
+                ViewData["SearchTerm"] = searchModel.SearchTerm;
+                ViewData["SearchType"] = searchModel.SearchType ?? "all";
+                ViewData["Difficulty"] = searchModel.Difficulty;
+                ViewData["SortBy"] = searchModel.SortBy ?? "newest";
+                ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
+                ViewData["CategoryId"] = searchModel.CategoryId;
+                
+                var userId = _userManager.GetUserId(User);
+                
+                // Get user's favorite recipes
+                var favoriteRecipesQuery = _context.UserFavorites
                     .Where(uf => uf.UserId == userId)
-                    .Select(uf => uf.RecipeId)
+                    .Include(uf => uf.Recipe)
+                        .ThenInclude(r => r.CreatedBy)
+                    .Include(uf => uf.Recipe)
+                        .ThenInclude(r => r.RecipeCategories)
+                            .ThenInclude(rc => rc.Category)
+                    .Include(uf => uf.Recipe.Ratings) // Include ratings for sorting and display
+                    .Select(uf => uf.Recipe)
+                    .AsQueryable();
+                
+                // Apply search filters based search model
+                favoriteRecipesQuery = ApplySearchFilters(favoriteRecipesQuery, searchModel);
+                
+                // Get total count for pagination
+                var totalRecipes = await favoriteRecipesQuery.CountAsync();
+                
+                // Apply pagination
+                var recipes = await favoriteRecipesQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToListAsync();
-            
-                ViewBag.FavoriteRecipes = favoriteRecipeIds;
-            }
-            
-            return View(recipes);
+                
+                // Add pagination info to ViewBag
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = (int)Math.Ceiling(totalRecipes / (double)pageSize);
+                
+                // Get categories for filter buttons
+                ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                ViewBag.SelectedCategoryId = searchModel.CategoryId;
+                ViewData["SearchAction"] = "MyFavorites";
+                
+                // Pass the favorite IDs
+                if (User.Identity.IsAuthenticated)
+                {
+                    var favoriteRecipeIds = await _context.UserFavorites
+                        .Where(uf => uf.UserId == userId)
+                        .Select(uf => uf.RecipeId)
+                        .ToListAsync();
+                
+                    ViewBag.FavoriteRecipes = favoriteRecipeIds;
+                }
+                
+                return View(recipes);
+            }, "Error loading your favorite recipes. Please try again later.");
         }
 
         // POST: Recipe/ToggleFavorite
@@ -252,6 +262,7 @@ namespace MealStack.Web.Controllers
             catch (Exception ex)
             {
                 // Log the error if you have logging
+                Debug.WriteLine($"Error in ToggleFavorite: {ex.Message}");
                 return Json(new { success = false, message = "An error occurred: " + ex.Message });
             }
         }
@@ -262,53 +273,61 @@ namespace MealStack.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RateRecipe(int recipeId, int rating)
         {
-            if (rating < 1 || rating > 5)
-                return Json(new { success = false, message = "Invalid rating" });
+            try
+            {
+                if (rating < 1 || rating > 5)
+                    return Json(new { success = false, message = "Invalid rating" });
 
-            var userId = _userManager.GetUserId(User);
-            
-            // Check if recipe exists
-            var recipe = await _context.Recipes.FindAsync(recipeId);
-            if (recipe == null)
-            {
-                return Json(new { success = false, message = "Recipe not found" });
-            }
-            
-            var existingRating = await _context.UserRatings
-                .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RecipeId == recipeId);
-            
-            if (existingRating != null)
-            {
-                existingRating.Rating = rating;
-                existingRating.DateRated = DateTime.UtcNow;
-            }
-            else
-            {
-                _context.UserRatings.Add(new UserRatingEntity
+                var userId = _userManager.GetUserId(User);
+                
+                // Check if recipe exists
+                var recipe = await _context.Recipes.FindAsync(recipeId);
+                if (recipe == null)
                 {
-                    UserId = userId,
-                    RecipeId = recipeId,
-                    Rating = rating,
-                    DateRated = DateTime.UtcNow
+                    return Json(new { success = false, message = "Recipe not found" });
+                }
+                
+                var existingRating = await _context.UserRatings
+                    .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RecipeId == recipeId);
+                
+                if (existingRating != null)
+                {
+                    existingRating.Rating = rating;
+                    existingRating.DateRated = DateTime.UtcNow;
+                }
+                else
+                {
+                    _context.UserRatings.Add(new UserRatingEntity
+                    {
+                        UserId = userId,
+                        RecipeId = recipeId,
+                        Rating = rating,
+                        DateRated = DateTime.UtcNow
+                    });
+                }
+                
+                await _context.SaveChangesAsync();
+                
+                // Get updated average
+                var averageRating = await _context.UserRatings
+                    .Where(ur => ur.RecipeId == recipeId)
+                    .AverageAsync(ur => (double)ur.Rating);
+                
+                var totalRatings = await _context.UserRatings
+                    .Where(ur => ur.RecipeId == recipeId)
+                    .CountAsync();
+                
+                return Json(new { 
+                    success = true, 
+                    averageRating = Math.Round(averageRating, 1),
+                    totalRatings = totalRatings
                 });
             }
-            
-            await _context.SaveChangesAsync();
-            
-            // Get updated average
-            var averageRating = await _context.UserRatings
-                .Where(ur => ur.RecipeId == recipeId)
-                .AverageAsync(ur => (double)ur.Rating);
-            
-            var totalRatings = await _context.UserRatings
-                .Where(ur => ur.RecipeId == recipeId)
-                .CountAsync();
-            
-            return Json(new { 
-                success = true, 
-                averageRating = Math.Round(averageRating, 1),
-                totalRatings = totalRatings
-            });
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in RateRecipe: {ex.Message}");
+                return Json(new { success = false, message = "An error occurred while rating recipe: " + ex.Message });
+            }
         }
 
         // GET: Recipe/SaveNotes
@@ -342,6 +361,7 @@ namespace MealStack.Web.Controllers
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"Error in SaveNotes: {ex.Message}");
                 return Json(new { success = false, message = "An error occurred: " + ex.Message });
             }
         }
@@ -370,6 +390,335 @@ namespace MealStack.Web.Controllers
             return rating?.Rating;
         }
 
+        // GET: Recipe/Details/5
+        public async Task<IActionResult> Details(int id)
+        {
+            return await TryExecuteAsync(async () =>
+            {
+                var recipe = await _context.Recipes
+                    .Include(r => r.CreatedBy)
+                    .Include(r => r.RecipeCategories)
+                    .ThenInclude(rc => rc.Category)
+                    .Include(r => r.Ratings) // Include ratings
+                    .FirstOrDefaultAsync(r => r.Id == id);
+                    
+                if (recipe == null)
+                {
+                    return NotFound();
+                }
+
+                // Check if the recipe is favorited by the current user
+                if (User.Identity.IsAuthenticated)
+                {
+                    ViewBag.IsFavorited = await IsRecipeFavorited(id);
+                    ViewBag.UserRating = await GetUserRating(id);
+                }
+
+                return View(recipe);
+            }, "Error loading recipe details. Please try again later.");
+        }
+
+        // GET: Recipe/Create
+        [Authorize]
+        public async Task<IActionResult> Create()
+        {
+            return await TryExecuteAsync(async () =>
+            {
+                var recipe = new RecipeEntity
+                {
+                    Difficulty = DifficultyLevel.Easy,
+                    PrepTimeMinutes = 15,
+                    CookTimeMinutes = 30,
+                    Servings = 4
+                };
+                
+                // Get categories for dropdown
+                ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                
+                return View(recipe);
+            }, "Error loading recipe form. Please try again later.");
+        }
+
+        // POST: Recipe/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> Create(RecipeEntity recipe, int[] selectedCategories)
+        {
+            return await TryExecuteAsync(async () =>
+            {
+                // Set required fields
+                recipe.CreatedById = _userManager.GetUserId(User);
+                recipe.CreatedDate = DateTime.UtcNow;
+                
+                // Clear any model errors for CreatedById since we just set it
+                ModelState.Remove("CreatedById");
+                
+                // Ensure ingredients is not null to avoid DB constraints
+                recipe.Ingredients = recipe.Ingredients ?? string.Empty;
+                
+                if (ModelState.IsValid)
+                {
+                    // First add and save the recipe to get an ID
+                    _context.Recipes.Add(recipe);
+                    await _context.SaveChangesAsync();
+                    
+                    Debug.WriteLine($"Recipe saved with ID: {recipe.Id}");
+                    
+                    // Then add categories if any were selected
+                    if (selectedCategories != null && selectedCategories.Length > 0)
+                    {
+                        foreach (var categoryId in selectedCategories)
+                        {
+                            _context.RecipeCategories.Add(new RecipeCategoryEntity
+                            {
+                                RecipeId = recipe.Id,
+                                CategoryId = categoryId
+                            });
+                        }
+                        await _context.SaveChangesAsync();
+                    }
+                    
+                    TempData["Message"] = "Recipe created successfully!";
+                    return RedirectToAction("Details", new { id = recipe.Id });
+                }
+                
+                // If we got this far, something failed, redisplay form
+                ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                return View(recipe);
+            }, "Error creating recipe. Please check your input and try again.");
+        }
+
+        // GET: Recipe/Edit/5
+        [Authorize]
+        public async Task<IActionResult> Edit(int id)
+        {
+            return await TryExecuteAsync(async () =>
+            {
+                var recipe = await _context.Recipes
+                    .Include(r => r.RecipeCategories)
+                    .FirstOrDefaultAsync(r => r.Id == id);
+                    
+                if (recipe == null)
+                {
+                    return NotFound();
+                }
+
+                // Only allow edit if user created the recipe or is admin
+                if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+                {
+                    // Get categories for dropdown and mark the selected ones
+                    ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                    ViewBag.SelectedCategories = recipe.RecipeCategories?.Select(rc => rc.CategoryId).ToList() ?? new List<int>();
+                    
+                    return View(recipe);
+                }
+                
+                return Forbid();
+            }, "Error loading recipe for editing. Please try again later.");
+        }
+
+        // POST: Recipe/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> Edit(int id, RecipeEntity recipe, int[] selectedCategories)
+        {
+            return await TryExecuteAsync(async () =>
+            {
+                if (id != recipe.Id)
+                {
+                    return NotFound();
+                }
+                
+                // Find the existing recipe (without tracking to avoid conflicts)
+                var existingRecipe = await _context.Recipes
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(r => r.Id == id);
+                    
+                if (existingRecipe == null)
+                {
+                    return NotFound();
+                }
+                
+                // Check authorization
+                var userId = _userManager.GetUserId(User);
+                if (existingRecipe.CreatedById != userId && !User.IsInRole("Admin"))
+                {
+                    return Forbid();
+                }
+                
+                // IMPORTANT: Preserve original values for fields that shouldn't be edited
+                recipe.CreatedById = existingRecipe.CreatedById;
+                recipe.CreatedDate = existingRecipe.CreatedDate;
+                recipe.UpdatedDate = DateTime.UtcNow;
+                
+                // CRITICAL: Remove these from ModelState validation since we've set them manually
+                ModelState.Remove("CreatedById");
+                ModelState.Remove("CreatedDate");
+                
+                // Handle empty/null values
+                recipe.Ingredients = recipe.Ingredients ?? string.Empty;
+                recipe.Description = recipe.Description ?? string.Empty;
+                
+                if (ModelState.IsValid)
+                {
+                    using var transaction = await _context.Database.BeginTransactionAsync();
+                    
+                    try
+                    {
+                        // Use EntityState.Modified instead of tracking and property updates
+                        _context.Entry(recipe).State = EntityState.Modified;
+                        
+                        // Save the basic changes first
+                        await _context.SaveChangesAsync();
+                        
+                        // Handle categories - remove existing and add new ones
+                        var existingCategories = await _context.RecipeCategories
+                            .Where(rc => rc.RecipeId == id)
+                            .ToListAsync();
+                            
+                        _context.RecipeCategories.RemoveRange(existingCategories);
+                        await _context.SaveChangesAsync();
+                        
+                        // Add new categories if any were selected
+                        if (selectedCategories != null && selectedCategories.Length > 0)
+                        {
+                            foreach (var categoryId in selectedCategories)
+                            {
+                                _context.RecipeCategories.Add(new RecipeCategoryEntity
+                                {
+                                    RecipeId = id,
+                                    CategoryId = categoryId
+                                });
+                            }
+                            
+                            await _context.SaveChangesAsync();
+                        }
+                        
+                        await transaction.CommitAsync();
+                        TempData["Message"] = "Recipe updated successfully!";
+                        return RedirectToAction("Details", new { id = id });
+                    }
+                    catch
+                    {
+                        await transaction.RollbackAsync();
+                        throw; // Let the outer TryExecuteAsync handle this
+                    }
+                }
+                
+                // If we got this far, something failed - redisplay form
+                ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                ViewBag.SelectedCategories = await _context.RecipeCategories
+                    .Where(rc => rc.RecipeId == id)
+                    .Select(rc => rc.CategoryId)
+                    .ToListAsync();
+                    
+                return View(recipe);
+            }, "Error updating recipe. Please check your input and try again.");
+        }
+
+        // POST: Recipe/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> Delete(int id)
+        {
+            return await TryExecuteAsync(async () =>
+            {
+                var recipe = await _context.Recipes.FindAsync(id);
+                if (recipe == null)
+                {
+                    return NotFound();
+                }
+
+                // Only allow delete if user created the recipe or is admin
+                if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+                {
+                    _context.Recipes.Remove(recipe);
+                    await _context.SaveChangesAsync();
+                    
+                    TempData["Message"] = "Recipe deleted successfully!";
+                    return RedirectToAction("MyRecipes");
+                }
+                
+                return Forbid();
+            }, "Error deleting recipe. Please try again later.", "MyRecipes");
+        }
+
+        // API endpoint for recipe name autocomplete
+        [HttpGet]
+        public async Task<IActionResult> GetRecipeSuggestions(string term)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(term))
+                {
+                    return Json(new List<string>());
+                }
+                
+                var lowerTerm = term.ToLower();
+                var suggestions = await _context.Recipes
+                    .Where(r => r.Title.ToLower().Contains(lowerTerm))
+                    .Select(r => r.Title)
+                    .Distinct()
+                    .Take(10)
+                    .ToListAsync();
+                    
+                return Json(suggestions);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in GetRecipeSuggestions: {ex.Message}");
+                return Json(new List<string>());
+            }
+        }
+        
+        // API endpoint for search suggestions (both recipes and ingredients)
+        [HttpGet]
+        public async Task<IActionResult> GetSearchSuggestions(string term)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(term))
+                {
+                    return Json(new List<string>());
+                }
+                
+                var lowerTerm = term.ToLower();
+                
+                // Get recipe title suggestions
+                var recipeSuggestions = await _context.Recipes
+                    .Where(r => r.Title.ToLower().Contains(lowerTerm))
+                    .Select(r => r.Title)
+                    .Distinct()
+                    .Take(5)
+                    .ToListAsync();
+                
+                // Get ingredient suggestions
+                var ingredientSuggestions = await _context.Ingredients
+                    .Where(i => i.Name.ToLower().Contains(lowerTerm))
+                    .Select(i => i.Name)
+                    .Distinct()
+                    .Take(5)
+                    .ToListAsync();
+                
+                // Combine and return suggestions
+                var allSuggestions = recipeSuggestions
+                    .Union(ingredientSuggestions)
+                    .OrderBy(s => s)
+                    .Take(10)
+                    .ToList();
+                
+                return Json(allSuggestions);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in GetSearchSuggestions: {ex.Message}");
+                return Json(new List<string>());
+            }
+        }
+
         // Helper method to apply search filters to a recipe query
         private IQueryable<RecipeEntity> ApplySearchFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
         {
@@ -384,101 +733,110 @@ namespace MealStack.Web.Controllers
                 
                 if (searchTerms.Any())
                 {
-                    switch (searchModel.SearchType)
-                    {
-                        case "title":
-                            // Search only in titles
-                            foreach (var term in searchTerms)
-                            {
-                                query = query.Where(r => r.Title.ToLower().Contains(term));
-                            }
-                            break;
-                            
-                        case "ingredients":
-                            // Search only in ingredients
-                            if (searchModel.MatchAllIngredients)
-                            {
-                                // AND logic - must contain all terms
-                                foreach (var term in searchTerms)
-                                {
-                                    query = query.Where(r => r.Ingredients.ToLower().Contains(term));
-                                }
-                            }
-                            else
-                            {
-                                // OR logic - must contain any of the terms
-                                query = query.Where(r => 
-                                    searchTerms.Any(term => r.Ingredients.ToLower().Contains(term)));
-                            }
-                            break;
-                            
-                        case "all":
-                        default:
-                            // Search in title, description and ingredients
-                            if (searchTerms.Count == 1)
-                            {
-                                // Single term search
-                                var term = searchTerms[0];
-                                query = query.Where(r => 
-                                    r.Title.ToLower().Contains(term) || 
-                                    r.Description.ToLower().Contains(term) || 
-                                    r.Ingredients.ToLower().Contains(term));
-                            }
-                            else
-                            {
-                                // Multi-term search with comma or space separated terms
-                                if (searchModel.MatchAllIngredients)
-                                {
-                                    // AND logic for ingredients, OR logic for title/description
-                                    var ingredientMatches = query.Where(r => true);
-                                    foreach (var term in searchTerms)
-                                    {
-                                        ingredientMatches = ingredientMatches.Where(r => r.Ingredients.ToLower().Contains(term));
-                                    }
-                                    
-                                    var titleDescMatches = query.Where(r => 
-                                        searchTerms.Any(term => 
-                                            r.Title.ToLower().Contains(term) || r.Description.ToLower().Contains(term)));
-                                    
-                                    var ingredientIds = ingredientMatches.Select(r => r.Id).ToList();
-                                    var titleDescIds = titleDescMatches.Select(r => r.Id).ToList();
-                                    var allIds = ingredientIds.Union(titleDescIds).ToList();
-                                    
-                                    query = query.Where(r => allIds.Contains(r.Id));
-                                }
-                                else
-                                {
-                                    // OR logic for everything
-                                    query = query.Where(r => 
-                                        searchTerms.Any(term => 
-                                            r.Title.ToLower().Contains(term) || 
-                                            r.Description.ToLower().Contains(term) || 
-                                            r.Ingredients.ToLower().Contains(term)));
-                                }
-                            }
-                            break;
-                    }
+                    // Apply appropriate search logic based on search type
+                    ApplySearchTermFilters(ref query, searchModel.SearchType, searchTerms, searchModel.MatchAllIngredients);
                 }
             }
             
-            // Apply ingredients filter if specified
-            if (searchModel.Ingredients != null && searchModel.Ingredients.Any())
+            // Apply other filters (moved to separate method for clarity)
+            query = ApplyAdditionalFilters(query, searchModel);
+            
+            // Apply sorting
+            query = ApplySorting(query, searchModel.SortBy);
+            
+            return query;
+        }
+
+        // Extract search term filtering logic to a separate method
+        private void ApplySearchTermFilters(ref IQueryable<RecipeEntity> query, string searchType, List<string> searchTerms, bool matchAllIngredients)
+        {
+            switch (searchType)
             {
-                if (searchModel.MatchAllIngredients)
-                {
-                    // AND logic - must contain all ingredients
-                    foreach (var ingredient in searchModel.Ingredients)
+                case "title":
+                    // Search only in titles
+                    foreach (var term in searchTerms)
                     {
-                        query = query.Where(r => r.Ingredients.ToLower().Contains(ingredient.ToLower()));
+                        query = query.Where(r => r.Title.ToLower().Contains(term));
                     }
+                    break;
+                    
+                case "ingredients":
+                    if (matchAllIngredients)
+                    {
+                        // AND logic - must contain all terms
+                        foreach (var term in searchTerms)
+                        {
+                            query = query.Where(r => r.Ingredients.ToLower().Contains(term));
+                        }
+                    }
+                    else
+                    {
+                        // OR logic - must contain any of the terms
+                        query = query.Where(r => 
+                            searchTerms.Any(term => r.Ingredients.ToLower().Contains(term)));
+                    }
+                    break;
+                    
+                case "all":
+                default:
+                    ApplyAllFieldsSearch(ref query, searchTerms, matchAllIngredients);
+                    break;
+            }
+        }
+
+        // Extract all-fields search logic (title, description, ingredients)
+        private void ApplyAllFieldsSearch(ref IQueryable<RecipeEntity> query, List<string> searchTerms, bool matchAllIngredients)
+        {
+            if (searchTerms.Count == 1)
+            {
+                // Single term search
+                var term = searchTerms[0];
+                query = query.Where(r => 
+                    r.Title.ToLower().Contains(term) || 
+                    r.Description.ToLower().Contains(term) || 
+                    r.Ingredients.ToLower().Contains(term));
+            }
+            else
+            {
+                // Multi-term search with comma or space separated terms
+                if (matchAllIngredients)
+                {
+                    // AND logic for ingredients, OR logic for title/description
+                    var ingredientMatches = query.Where(r => true);
+                    foreach (var term in searchTerms)
+                    {
+                        ingredientMatches = ingredientMatches.Where(r => r.Ingredients.ToLower().Contains(term));
+                    }
+                    
+                    var titleDescMatches = query.Where(r => 
+                        searchTerms.Any(term => 
+                            r.Title.ToLower().Contains(term) || r.Description.ToLower().Contains(term)));
+                    
+                    var ingredientIds = ingredientMatches.Select(r => r.Id).ToList();
+                    var titleDescIds = titleDescMatches.Select(r => r.Id).ToList();
+                    var allIds = ingredientIds.Union(titleDescIds).ToList();
+                    
+                    query = query.Where(r => allIds.Contains(r.Id));
                 }
                 else
                 {
-                    // OR logic - must contain any of the ingredients
-                    var ingredients = searchModel.Ingredients.Select(i => i.ToLower()).ToList();
+                    // OR logic for everything
                     query = query.Where(r => 
-                        ingredients.Any(ingredient => r.Ingredients.ToLower().Contains(ingredient)));
+                        searchTerms.Any(term => 
+                            r.Title.ToLower().Contains(term) || 
+                            r.Description.ToLower().Contains(term) || 
+                            r.Ingredients.ToLower().Contains(term)));
                 }
+            }
+        }
+
+        // Apply additional filters (difficulty, servings, prep time, categories)
+        private IQueryable<RecipeEntity> ApplyAdditionalFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
+        {
+            // Apply ingredients filter if specified
+            if (searchModel.Ingredients != null && searchModel.Ingredients.Any())
+            {
+                ApplyIngredientsFilter(ref query, searchModel.Ingredients, searchModel.MatchAllIngredients);
             }
             
             // Apply difficulty filter
@@ -518,315 +876,46 @@ namespace MealStack.Web.Controllers
                 query = query.Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == searchModel.CategoryId.Value));
             }
             
-            // Apply sorting
-            switch (searchModel.SortBy)
-            {
-                case "oldest":
-                    query = query.OrderBy(r => r.CreatedDate);
-                    break;
-                case "fastest":
-                    query = query.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
-                    break;
-                case "easiest":
-                    query = query.OrderBy(r => r.Difficulty);
-                    break;
-                case "highestRated":
-                    // This sorts recipes by their average rating
-                    query = query.OrderByDescending(r => r.Ratings.Any() ? r.Ratings.Average(ur => ur.Rating) : 0);
-                    break;
-                case "newest":
-                default:
-                    query = query.OrderByDescending(r => r.CreatedDate);
-                    break;
-            }
-            
             return query;
         }
 
-        // API endpoint for recipe name autocomplete
-        [HttpGet]
-        public async Task<IActionResult> GetRecipeSuggestions(string term)
+        // Apply sorting based on sort option
+        private IQueryable<RecipeEntity> ApplySorting(IQueryable<RecipeEntity> query, string sortBy)
         {
-            if (string.IsNullOrEmpty(term))
+            switch (sortBy)
             {
-                return Json(new List<string>());
+                case "oldest":
+                    return query.OrderBy(r => r.CreatedDate);
+                case "fastest":
+                    return query.OrderBy(r => r.PrepTimeMinutes + r.CookTimeMinutes);
+                case "easiest":
+                    return query.OrderBy(r => r.Difficulty);
+                case "highestRated":
+                    return query.OrderByDescending(r => r.Ratings.Any() ? r.Ratings.Average(ur => ur.Rating) : 0);
+                case "newest":
+                default:
+                    return query.OrderByDescending(r => r.CreatedDate);
             }
-            
-            var lowerTerm = term.ToLower();
-            var suggestions = await _context.Recipes
-                .Where(r => r.Title.ToLower().Contains(lowerTerm))
-                .Select(r => r.Title)
-                .Distinct()
-                .Take(10)
-                .ToListAsync();
-                
-            return Json(suggestions);
-        }
-        
-        // API endpoint for search suggestions (both recipes and ingredients)
-        [HttpGet]
-        public async Task<IActionResult> GetSearchSuggestions(string term)
-        {
-            if (string.IsNullOrEmpty(term))
-            {
-                return Json(new List<string>());
-            }
-            
-            var lowerTerm = term.ToLower();
-            
-            // Get recipe title suggestions
-            var recipeSuggestions = await _context.Recipes
-                .Where(r => r.Title.ToLower().Contains(lowerTerm))
-                .Select(r => r.Title)
-                .Distinct()
-                .Take(5)
-                .ToListAsync();
-            
-            // Get ingredient suggestions
-            var ingredientSuggestions = await _context.Ingredients
-                .Where(i => i.Name.ToLower().Contains(lowerTerm))
-                .Select(i => i.Name)
-                .Distinct()
-                .Take(5)
-                .ToListAsync();
-            
-            // Combine and return suggestions
-            var allSuggestions = recipeSuggestions
-                .Union(ingredientSuggestions)
-                .OrderBy(s => s)
-                .Take(10)
-                .ToList();
-            
-            return Json(allSuggestions);
-        }
-        
-        // GET: Recipe/Details/5
-        public async Task<IActionResult> Details(int id)
-        {
-            var recipe = await _context.Recipes
-                .Include(r => r.CreatedBy)
-                .Include(r => r.RecipeCategories)
-                .ThenInclude(rc => rc.Category)
-                .Include(r => r.Ratings) // Include ratings
-                .FirstOrDefaultAsync(r => r.Id == id);
-                
-            if (recipe == null)
-            {
-                return NotFound();
-            }
-
-            // Check if the recipe is favorited by the current user
-            if (User.Identity.IsAuthenticated)
-            {
-                ViewBag.IsFavorited = await IsRecipeFavorited(id);
-                ViewBag.UserRating = await GetUserRating(id);
-            }
-
-            return View(recipe);
         }
 
-        // GET: Recipe/Create
-        [Authorize]
-        public IActionResult Create()
+        // Extract ingredients filter logic
+        private void ApplyIngredientsFilter(ref IQueryable<RecipeEntity> query, List<string> ingredients, bool matchAllIngredients)
         {
-            var recipe = new RecipeEntity
+            if (matchAllIngredients)
             {
-                Difficulty = DifficultyLevel.Easy,
-                PrepTimeMinutes = 15,
-                CookTimeMinutes = 30,
-                Servings = 4
-            };
-            
-            // Get categories for dropdown
-            ViewBag.Categories = _context.Categories.OrderBy(c => c.Name).ToList();
-            
-            return View(recipe);
-        }
-
-        // POST: Recipe/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize]
-        public async Task<IActionResult> Create(RecipeEntity recipe, int[] selectedCategories)
-        {
-            try
-            {
-                // Set required fields BEFORE ModelState.IsValid check
-                recipe.CreatedById = _userManager.GetUserId(User);
-                recipe.CreatedDate = DateTime.UtcNow;
-                
-                // Clear any model errors for CreatedById since we just set it
-                ModelState.Remove("CreatedById");
-                
-                if (ModelState.IsValid)
+                // AND logic - must contain all ingredients
+                foreach (var ingredient in ingredients)
                 {
-                    _context.Recipes.Add(recipe);
-                    await _context.SaveChangesAsync();
-                    
-                    // Add categories
-                    if (selectedCategories != null && selectedCategories.Length > 0)
-                    {
-                        foreach (var categoryId in selectedCategories)
-                        {
-                            _context.Add(new RecipeCategoryEntity
-                            {
-                                RecipeId = recipe.Id,
-                                CategoryId = categoryId
-                            });
-                        }
-                        await _context.SaveChangesAsync();
-                    }
-                    
-                    TempData["Message"] = "Recipe created successfully!";
-                    return RedirectToAction("MyRecipes");
+                    query = query.Where(r => r.Ingredients.ToLower().Contains(ingredient.ToLower()));
                 }
             }
-            catch (Exception ex)
+            else
             {
-                ModelState.AddModelError("", $"An error occurred: {ex.Message}");
+                // OR logic - must contain any of the ingredients
+                var ingredientTerms = ingredients.Select(i => i.ToLower()).ToList();
+                query = query.Where(r => 
+                    ingredientTerms.Any(ingredient => r.Ingredients.ToLower().Contains(ingredient)));
             }
-            
-            // If we got this far, something failed, redisplay form
-            ViewBag.Categories = _context.Categories.OrderBy(c => c.Name).ToList();
-            return View(recipe);
-        }
-
-        // GET: Recipe/Edit/5
-        [Authorize]
-        public async Task<IActionResult> Edit(int id)
-        {
-            var recipe = await _context.Recipes
-                .Include(r => r.RecipeCategories)
-                .FirstOrDefaultAsync(r => r.Id == id);
-                
-            if (recipe == null)
-            {
-                return NotFound();
-            }
-
-            // Only allow edit if user created the recipe or is admin
-            if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
-            {
-                // Get categories for dropdown and mark the selected ones
-                ViewBag.Categories = _context.Categories.OrderBy(c => c.Name).ToList();
-                ViewBag.SelectedCategories = recipe.RecipeCategories?.Select(rc => rc.CategoryId).ToList() ?? new List<int>();
-                
-                return View(recipe);
-            }
-            
-            return Forbid();
-        }
-
-        // POST: Recipe/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize]
-        public async Task<IActionResult> Edit(int id, RecipeEntity recipe, int[] selectedCategories)
-        {
-            if (id != recipe.Id)
-            {
-                return NotFound();
-            }
-
-            var existingRecipe = await _context.Recipes
-                .Include(r => r.RecipeCategories)
-                .FirstOrDefaultAsync(r => r.Id == id);
-                
-            if (existingRecipe == null)
-            {
-                return NotFound();
-            }
-
-            // Only allow edit if user created the recipe or is admin
-            if (existingRecipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
-            {
-                if (ModelState.IsValid)
-                {
-                    try
-                    {
-                        // Update properties
-                        existingRecipe.Title = recipe.Title;
-                        existingRecipe.Description = recipe.Description;
-                        existingRecipe.Instructions = recipe.Instructions;
-                        existingRecipe.Ingredients = recipe.Ingredients;
-                        existingRecipe.PrepTimeMinutes = recipe.PrepTimeMinutes;
-                        existingRecipe.CookTimeMinutes = recipe.CookTimeMinutes;
-                        existingRecipe.Servings = recipe.Servings;
-                        existingRecipe.Difficulty = recipe.Difficulty;
-                        existingRecipe.UpdatedDate = DateTime.UtcNow;
-                        
-                        // Update categories - first remove existing ones
-                        var existingCategories = _context.RecipeCategories
-                            .Where(rc => rc.RecipeId == id).ToList();
-                        _context.RecipeCategories.RemoveRange(existingCategories);
-                        
-                        // Then add selected categories
-                        if (selectedCategories != null && selectedCategories.Length > 0)
-                        {
-                            foreach (var categoryId in selectedCategories)
-                            {
-                                // Check if this is a valid category ID
-                                if (await _context.Categories.AnyAsync(c => c.Id == categoryId))
-                                {
-                                    _context.RecipeCategories.Add(new RecipeCategoryEntity
-                                    {
-                                        RecipeId = recipe.Id,
-                                        CategoryId = categoryId
-                                    });
-                                }
-                            }
-                        }
-                        
-                        await _context.SaveChangesAsync();
-                        
-                        TempData["Message"] = "Recipe updated successfully!";
-                        return RedirectToAction("MyRecipes");
-                    }
-                    catch (DbUpdateConcurrencyException)
-                    {
-                        if (!RecipeExists(recipe.Id))
-                        {
-                            return NotFound();
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-                }
-                
-                // If we got this far, something failed, redisplay form
-                ViewBag.Categories = _context.Categories.OrderBy(c => c.Name).ToList();
-                ViewBag.SelectedCategories = existingRecipe.RecipeCategories?.Select(rc => rc.CategoryId).ToList() ?? new List<int>();
-                return View(recipe);
-            }
-            
-            return Forbid();
-        }
-
-        // POST: Recipe/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        [Authorize]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var recipe = await _context.Recipes.FindAsync(id);
-            if (recipe == null)
-            {
-                return NotFound();
-            }
-
-            // Only allow delete if user created the recipe or is admin
-            if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
-            {
-                _context.Recipes.Remove(recipe);
-                await _context.SaveChangesAsync();
-                
-                TempData["Message"] = "Recipe deleted successfully!";
-                return RedirectToAction("MyRecipes");
-            }
-            
-            return Forbid();
         }
 
         private bool RecipeExists(int id)

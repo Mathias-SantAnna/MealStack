@@ -2,13 +2,33 @@ using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configure EF Core + PostgreSQL
-builder.Services.AddDbContext<MealStackDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        x => x.MigrationsAssembly("MealStack.Infrastructure")));
+// 1. Configure EF Core + PostgreSQL with detailed logging
+if (builder.Environment.IsDevelopment())
+{
+    // Development configuration with detailed logging
+    builder.Services.AddDbContext<MealStackDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+            x => x.MigrationsAssembly("MealStack.Infrastructure"))
+            .EnableSensitiveDataLogging()
+            .LogTo(Console.WriteLine, LogLevel.Information));
+    
+    // More detailed logging
+    builder.Logging.AddConsole()
+        .AddDebug()
+        .SetMinimumLevel(LogLevel.Debug);
+}
+else
+{
+    // Production configuration without detailed logging
+    builder.Services.AddDbContext<MealStackDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+            x => x.MigrationsAssembly("MealStack.Infrastructure")));
+}
 
 // 2. Add Identity with Role support - SINGLE REGISTRATION
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

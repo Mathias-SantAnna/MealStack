@@ -1,8 +1,8 @@
-namespace MealStack.Infrastructure.Models;
-
-public class ErrorViewModel
+namespace MealStack.Web.Models
 {
-    public string? RequestId { get; set; }
-
-    public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+    public class ErrorViewModel
+    {
+        public string? RequestId { get; set; }
+        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+    }
 }

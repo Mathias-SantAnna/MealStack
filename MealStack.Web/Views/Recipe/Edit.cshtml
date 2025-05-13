@@ -10,86 +10,27 @@
 <div class="row">
     <div class="col-md-8">
         <form id="recipeForm" asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            
-            <div class="mb-3">
-                <label asp-for="Title" class="form-label">Recipe Name</label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-            
-            <div class="mb-3">
-                <label asp-for="Description" class="form-label"></label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            
-            <div class="mb-3">
-                <label asp-for="Instructions" class="form-label"></label>
-                <textarea asp-for="Instructions" class="form-control" rows="5"></textarea>
-                <span asp-validation-for="Instructions" class="text-danger"></span>
-            </div>
-            
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label asp-for="PrepTimeMinutes" class="form-label">Prep Time (minutes)</label>
-                    <input asp-for="PrepTimeMinutes" class="form-control" type="number" min="1" />
-                    <span asp-validation-for="PrepTimeMinutes" class="text-danger"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="CookTimeMinutes" class="form-label">Cook Time (minutes)</label>
-                    <input asp-for="CookTimeMinutes" class="form-control" type="number" min="0" />
-                    <span asp-validation-for="CookTimeMinutes" class="text-danger"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="Servings" class="form-label"></label>
-                    <input asp-for="Servings" class="form-control" type="number" min="1" />
-                    <span asp-validation-for="Servings" class="text-danger"></span>
-                </div>
-            </div>
-            
-            <div class="mb-3">
-                <label asp-for="Difficulty" class="form-label"></label>
-                <select asp-for="Difficulty" asp-items="Html.GetEnumSelectList<MealStack.Infrastructure.Data.DifficultyLevel>()" class="form-select"></select>
-                <span asp-validation-for="Difficulty" class="text-danger"></span>
-            </div>
-            
-            <div class="mb-3">
-                <label asp-for="Ingredients" class="form-label"></label>
-                <textarea asp-for="Ingredients" class="form-control" rows="5" placeholder="Enter each ingredient on a new line (e.g. 2 cups flour)"></textarea>
-                <span asp-validation-for="Ingredients" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Categories</label>
-                <div class="border rounded p-3">
-                    <div class="row">
-                        @foreach (var category in ViewBag.Categories)
-                        {
-                            <div class="col-md-4 col-lg-3 mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="selectedCategories" value="@category.Id" id="category-@category.Id"
-                                           @(ViewBag.SelectedCategories != null && ViewBag.SelectedCategories.Contains(category.Id) ? "checked" : "")>
-                                    <label class="form-check-label" for="category-@category.Id">
-                            <span class="badge bg-@(string.IsNullOrEmpty(category.ColorClass) ? "secondary" : category.ColorClass)">
-                                @category.Name
-                            </span>
-                                    </label>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                    <small class="text-muted">Select categories that best describe your recipe</small>
-                </div>
-            </div>
-            <div class="mb-3">
-                <button type="submit" class="btn btn-primary">Save</button>
-                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-            </div>
+            <partial name="_RecipeForm" model="Model" />
         </form>
     </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Debug form submission to see what's being sent
+        $(document).ready(function() {
+            // Log form data on submit
+            $('#recipeForm').on('submit', function(e) {
+                console.log('Form being submitted with data:');
+                var formData = new FormData(this);
+                
+                // Log all form fields
+                for (var pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+                }
+            });
+        });
+    </script>
 }
