@@ -1,0 +1,32 @@
+@model (IEnumerable<string> Categories, IEnumerable<string> Measurements)
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="ingredientSearch" class="form-control" placeholder="Search ingredients...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select id="categoryFilter" class="form-select">
+                    <option value="">All Categories</option>
+                    @foreach (var category in Model.Categories)
+                    {
+                        <option value="@category">@category</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="measurementFilter" class="form-select">
+                    <option value="">All Measurements</option>
+                    @foreach (var measurement in Model.Measurements)
+                    {
+                        <option value="@measurement">@measurement</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,19 +1,35 @@
 @if (TempData["Message"] != null)
 {
-    <div class="container">
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Message"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
 @if (TempData["Error"] != null)
 {
-    <div class="container">
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="assertive">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert" aria-live="polite">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @TempData["Warning"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Info"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert" aria-live="polite">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        @TempData["Info"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }

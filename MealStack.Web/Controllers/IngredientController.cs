@@ -22,9 +22,42 @@ namespace MealStack.Web.Controllers
         }
 
         // GET: Ingredient
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            var ingredients = await _context.Ingredients.ToListAsync();
+            int pageSize = 12;
+    
+            var totalIngredients = await _context.Ingredients.CountAsync();
+    
+            var ingredients = await _context.Ingredients
+                .Include(i => i.CreatedBy)
+                .OrderBy(i => i.Name) // Alphabetical
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        
+            var totalPages = (int)Math.Ceiling(totalIngredients / (double)pageSize);
+    
+            // Get all categories and measurements for filters - explicitly cast to List<string>
+            var allCategories = await _context.Ingredients
+                .Where(i => !string.IsNullOrEmpty(i.Category))
+                .Select(i => i.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToListAsync();
+        
+            var allMeasurements = await _context.Ingredients
+                .Where(i => !string.IsNullOrEmpty(i.Measurement))
+                .Select(i => i.Measurement)
+                .Distinct()
+                .OrderBy(m => m)
+                .ToListAsync();
+    
+            ViewBag.Categories = allCategories;
+            ViewBag.Measurements = allMeasurements;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalIngredients = totalIngredients;
+    
             return View(ingredients);
         }
 

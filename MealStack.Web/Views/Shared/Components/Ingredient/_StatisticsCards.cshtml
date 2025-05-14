@@ -1,0 +1,28 @@
+@model (int TotalIngredients, int CategoryCount, int UserCount)
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h3>@Model.TotalIngredients</h3>
+                <p class="mb-0">Total Ingredients</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h3>@Model.CategoryCount</h3>
+                <p class="mb-0">Ingredient Categories</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h3>@Model.UserCount</h3>
+                <p class="mb-0">Contributing Users</p>
+            </div>
+        </div>
+    </div>
+</div>

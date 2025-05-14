@@ -18,138 +18,81 @@
     }
 </div>
 
-@if (TempData["Message"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["Message"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+<partial name="_MessageAlerts" />
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+<!-- Search and Filters -->
+<partial name="Components/Ingredient/_IngredientsFilter" model='(ViewBag.Categories as IEnumerable<string>, ViewBag.Measurements as IEnumerable<string>)' />
 
+<!-- Ingredient Table -->
 <div class="card shadow-sm">
     <div class="card-header d-flex justify-content-between align-items-center bg-light">
         <h5 class="mb-0">Ingredient Dashboard</h5>
-        <span class="badge bg-success rounded-pill">Total Ingredients: @Model.Count()</span>
+        <span class="badge bg-success rounded-pill">Total Ingredients: @ViewBag.TotalIngredients</span>
     </div>
     <div class="card-body p-0">
-        @if (!Model.Any())
-        {
-            <div class="alert alert-info m-3">
-                <h5 class="alert-heading">No ingredients found!</h5>
-                <p>There are no ingredients in the system yet. Add some ingredients to use in your recipes.</p>
-            </div>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Measurement</th>
-                            <th>Description</th>
-                            <th>Created By</th>
-                            <th>Actions</th>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="ingredientsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Measurement</th>
+                        <th>Description</th>
+                        <th>Created By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr data-category="@item.Category" data-measurement="@item.Measurement">
+                            <td>@item.Name</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.Category))
+                                {
+                                    <span class="badge bg-info text-dark">@item.Category</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>@(item.Measurement ?? "-")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.Description))
+                                {
+                                    <span>@item.Description</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>@(item.CreatedBy?.UserName ?? "Unknown")</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">View</a>
+                                    @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || item.CreatedById == Context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                                    }
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td>@item.Name</td>
-                                <td>
-                                    @if (!string.IsNullOrEmpty(item.Category))
-                                    {
-                                        <span class="badge bg-info text-dark">@item.Category</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">-</span>
-                                    }
-                                </td>
-                                <td>@(item.Measurement ?? "-")</td>
-                                <td>
-                                    @if (!string.IsNullOrEmpty(item.Description))
-                                    {
-                                        <span class="text-truncate d-inline-block" style="max-width: 200px;">@item.Description</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">-</span>
-                                    }
-                                </td>
-                                <td>@(item.CreatedBy?.UserName ?? "Unknown")</td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">View</a>
-                                        @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || item.CreatedById == Context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
-                                        {
-                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Edit</a>
-                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
-                                        }
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
+    
+    <!-- Pagination -->
+    <partial name="Components/Ingredient/_Pagination" model="((int)ViewBag.CurrentPage, (int)ViewBag.TotalPages)" />
 </div>
 
-<div class="row mt-4">
-    <div class="col-md-4">
-        <div class="card bg-light">
-            <div class="card-body text-center">
-                <h3>@Model.Count()</h3>
-                <p class="mb-0">Total Ingredients</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-light">
-            <div class="card-body text-center">
-                <h3>@Model.Select(i => i.Category).Where(c => !string.IsNullOrEmpty(c)).Distinct().Count()</h3>
-                <p class="mb-0">Ingredient Categories</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-light">
-            <div class="card-body text-center">
-                <h3>@Model.Select(i => i.CreatedById).Distinct().Count()</h3>
-                <p class="mb-0">Contributing Users</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-@if (User.IsInRole("Admin"))
-{
-    <div class="text-center mt-4">
-        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Back to Admin Dashboard
-        </a>
-    </div>
-}
+<!-- Statistics -->
+<partial name="Components/Ingredient/_StatisticsCards" model="((int)ViewBag.TotalIngredients, (ViewBag.Categories as IEnumerable<string>).Count(), Model.Select(i => i.CreatedById).Distinct().Count())" />
 
 @section Scripts {
-    <script>
-        function confirmDelete(id, name) {
-            if (confirm(`Are you sure you want to delete the ingredient "${name}"?`)) {
-                document.getElementById(`delete-form-${id}`).submit();
-            }
-            return false;
-        }
-    </script>
+    <script src="~/js/ingredients.js"></script>
 }
