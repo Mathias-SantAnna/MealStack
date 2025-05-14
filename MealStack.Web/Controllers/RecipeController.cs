@@ -34,7 +34,6 @@ namespace MealStack.Web.Controllers
             {
                 int pageSize = 12;
                 
-                // Save search parameters to ViewData for form repopulation
                 ViewData["SearchTerm"] = searchModel.SearchTerm;
                 ViewData["SearchType"] = searchModel.SearchType ?? "all";
                 ViewData["Difficulty"] = searchModel.Difficulty;
@@ -42,7 +41,6 @@ namespace MealStack.Web.Controllers
                 ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
                 ViewData["CategoryId"] = searchModel.CategoryId;
                 
-                // Create a query for recipes
                 var recipesQuery = _context.Recipes
                     .Include(r => r.CreatedBy)
                     .Include(r => r.RecipeCategories)
@@ -50,28 +48,23 @@ namespace MealStack.Web.Controllers
                     .Include(r => r.Ratings)
                     .AsQueryable();
                 
-                // Apply search filters based on the search model
                 recipesQuery = ApplySearchFilters(recipesQuery, searchModel);
                 
-                // Get total count for pagination
                 var totalRecipes = await recipesQuery.CountAsync();
                 
-                // Apply pagination
                 var recipes = await recipesQuery
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
                 
-                // Add pagination info to ViewBag
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = (int)Math.Ceiling(totalRecipes / (double)pageSize);
                 
-                // Get categories for filter buttons
+                
                 ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
                 ViewBag.SelectedCategoryId = searchModel.CategoryId;
                 ViewData["SearchAction"] = "Index";
                 
-                // Add favorites for logged-in users
                 if (User.Identity.IsAuthenticated)
                 {
                     var userId = _userManager.GetUserId(User);
@@ -93,9 +86,8 @@ namespace MealStack.Web.Controllers
         {
             return await TryExecuteAsync(async () =>
             {
-                int pageSize = 12; // Number of recipes per page
+                int pageSize = 12;
                 
-                // Save search parameters to ViewData for form repopulation
                 ViewData["SearchTerm"] = searchModel.SearchTerm;
                 ViewData["SearchType"] = searchModel.SearchType ?? "all";
                 ViewData["Difficulty"] = searchModel.Difficulty;
@@ -103,10 +95,8 @@ namespace MealStack.Web.Controllers
                 ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
                 ViewData["CategoryId"] = searchModel.CategoryId;
                 
-                // Get the current user ID
                 var userId = _userManager.GetUserId(User);
                 
-                // Create a query for the user's recipes
                 var recipesQuery = _context.Recipes
                     .Include(r => r.CreatedBy)
                     .Include(r => r.RecipeCategories)
@@ -115,23 +105,18 @@ namespace MealStack.Web.Controllers
                     .Where(r => r.CreatedById == userId)
                     .AsQueryable();
                 
-                // Apply search filters - search model
                 recipesQuery = ApplySearchFilters(recipesQuery, searchModel);
                 
-                // Get total count for pagination
                 var totalRecipes = await recipesQuery.CountAsync();
                 
-                // Apply pagination
                 var recipes = await recipesQuery
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
                 
-                // Add pagination info to ViewBag
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = (int)Math.Ceiling(totalRecipes / (double)pageSize);
                 
-                // Get categories for filter buttons
                 ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
                 ViewBag.SelectedCategoryId = searchModel.CategoryId;
                 ViewData["SearchAction"] = "MyRecipes";
@@ -158,7 +143,6 @@ namespace MealStack.Web.Controllers
             {
                 int pageSize = 12;
                 
-                // Save search parameters to ViewData for form repopulation
                 ViewData["SearchTerm"] = searchModel.SearchTerm;
                 ViewData["SearchType"] = searchModel.SearchType ?? "all";
                 ViewData["Difficulty"] = searchModel.Difficulty;
@@ -176,27 +160,22 @@ namespace MealStack.Web.Controllers
                     .Include(uf => uf.Recipe)
                         .ThenInclude(r => r.RecipeCategories)
                             .ThenInclude(rc => rc.Category)
-                    .Include(uf => uf.Recipe.Ratings) // Include ratings for sorting and display
+                    .Include(uf => uf.Recipe.Ratings)
                     .Select(uf => uf.Recipe)
                     .AsQueryable();
                 
-                // Apply search filters based search model
                 favoriteRecipesQuery = ApplySearchFilters(favoriteRecipesQuery, searchModel);
                 
-                // Get total count for pagination
                 var totalRecipes = await favoriteRecipesQuery.CountAsync();
                 
-                // Apply pagination
                 var recipes = await favoriteRecipesQuery
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
                 
-                // Add pagination info to ViewBag
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = (int)Math.Ceiling(totalRecipes / (double)pageSize);
                 
-                // Get categories for filter buttons
                 ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
                 ViewBag.SelectedCategoryId = searchModel.CategoryId;
                 ViewData["SearchAction"] = "MyFavorites";
@@ -226,27 +205,23 @@ namespace MealStack.Web.Controllers
             {
                 var userId = _userManager.GetUserId(User);
         
-                // Check if recipe exists
                 var recipe = await _context.Recipes.FindAsync(recipeId);
                 if (recipe == null)
                 {
                     return Json(new { success = false, message = "Recipe not found" });
                 }
         
-                // Check if already favorited
                 var existingFavorite = await _context.UserFavorites
                     .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.RecipeId == recipeId);
         
                 if (existingFavorite != null)
                 {
-                    // Remove favorite
                     _context.UserFavorites.Remove(existingFavorite);
                     await _context.SaveChangesAsync();
                     return Json(new { success = true, isFavorite = false });
                 }
                 else
                 {
-                    // Add favorite
                     var favorite = new UserFavoriteEntity
                     {
                         UserId = userId,
@@ -280,7 +255,7 @@ namespace MealStack.Web.Controllers
 
                 var userId = _userManager.GetUserId(User);
                 
-                // Check if recipe exists
+                
                 var recipe = await _context.Recipes.FindAsync(recipeId);
                 if (recipe == null)
                 {
@@ -338,21 +313,18 @@ namespace MealStack.Web.Controllers
         {
             try
             {
-                // Check if recipe exists
                 var recipe = await _context.Recipes.FindAsync(recipeId);
                 if (recipe == null)
                 {
                     return Json(new { success = false, message = "Recipe not found" });
                 }
 
-                // Check if user is authorized to add notes (owner or admin)
                 var userId = _userManager.GetUserId(User);
                 if (recipe.CreatedById != userId && !User.IsInRole("Admin"))
                 {
                     return Json(new { success = false, message = "Not authorized to add notes to this recipe" });
                 }
 
-                // Update notes
                 recipe.Notes = notes;
                 recipe.UpdatedDate = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
@@ -366,7 +338,7 @@ namespace MealStack.Web.Controllers
             }
         }
 
-        // Helper method to check if a recipe is favorited by current user
+        // Check if a recipe is favorited by current user
         private async Task<bool> IsRecipeFavorited(int recipeId)
         {
             if (!User.Identity.IsAuthenticated)
@@ -377,7 +349,7 @@ namespace MealStack.Web.Controllers
                 .AnyAsync(uf => uf.UserId == userId && uf.RecipeId == recipeId);
         }
 
-        // Helper method to check if a recipe is rated by current user
+        // Check if a recipe is rated by current user
         private async Task<int?> GetUserRating(int recipeId)
         {
             if (!User.Identity.IsAuthenticated)
@@ -407,7 +379,6 @@ namespace MealStack.Web.Controllers
                     return NotFound();
                 }
 
-                // Check if the recipe is favorited by the current user
                 if (User.Identity.IsAuthenticated)
                 {
                     ViewBag.IsFavorited = await IsRecipeFavorited(id);
@@ -432,7 +403,6 @@ namespace MealStack.Web.Controllers
                     Servings = 4
                 };
                 
-                // Get categories for dropdown
                 ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
                 
                 return View(recipe);
@@ -443,27 +413,43 @@ namespace MealStack.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Create(RecipeEntity recipe, int[] selectedCategories)
+        public async Task<IActionResult> Create(RecipeEntity recipe, int[]? selectedCategories)
         {
             return await TryExecuteAsync(async () =>
             {
-                // Set required fields
-                recipe.CreatedById = _userManager.GetUserId(User);
+                if (recipe == null)
+                {
+                    ModelState.AddModelError("", "Invalid recipe data");
+                    ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                    return View(new RecipeEntity());
+                }
+
+                recipe.CreatedById = _userManager.GetUserId(User) ?? string.Empty;
                 recipe.CreatedDate = DateTime.UtcNow;
                 
-                // Clear any model errors for CreatedById since we just set it
                 ModelState.Remove("CreatedById");
                 
-                // Ensure ingredients is not null to avoid DB constraints
+                // Ensure Not null to avoid DB constraints
                 recipe.Ingredients = recipe.Ingredients ?? string.Empty;
+                recipe.Description = recipe.Description ?? string.Empty;
                 
                 if (ModelState.IsValid)
                 {
-                    // First add and save the recipe to get an ID
+                    // No duplicate titles per user
+                    bool duplicateExists = await _context.Recipes
+                        .AnyAsync(r => r.Title.ToLower() == recipe.Title.ToLower() && 
+                                       r.CreatedById == recipe.CreatedById);
+                        
+                    if (duplicateExists)
+                    {
+                        ModelState.AddModelError("Title", "You already have a recipe with this title. Please use a different title.");
+                        ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                        return View(recipe);
+                    }
+                    
+                    // Add and save the recipe to get an ID
                     _context.Recipes.Add(recipe);
                     await _context.SaveChangesAsync();
-                    
-                    Debug.WriteLine($"Recipe saved with ID: {recipe.Id}");
                     
                     // Then add categories if any were selected
                     if (selectedCategories != null && selectedCategories.Length > 0)
@@ -504,7 +490,7 @@ namespace MealStack.Web.Controllers
                     return NotFound();
                 }
 
-                // Only allow edit if user created the recipe or is admin
+                
                 if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
                 {
                     // Get categories for dropdown and mark the selected ones
@@ -531,7 +517,6 @@ namespace MealStack.Web.Controllers
                     return NotFound();
                 }
                 
-                // Find the existing recipe (without tracking to avoid conflicts)
                 var existingRecipe = await _context.Recipes
                     .AsNoTracking()
                     .FirstOrDefaultAsync(r => r.Id == id);
@@ -541,28 +526,41 @@ namespace MealStack.Web.Controllers
                     return NotFound();
                 }
                 
-                // Check authorization
                 var userId = _userManager.GetUserId(User);
                 if (existingRecipe.CreatedById != userId && !User.IsInRole("Admin"))
                 {
                     return Forbid();
                 }
                 
-                // IMPORTANT: Preserve original values for fields that shouldn't be edited
                 recipe.CreatedById = existingRecipe.CreatedById;
                 recipe.CreatedDate = existingRecipe.CreatedDate;
                 recipe.UpdatedDate = DateTime.UtcNow;
                 
-                // CRITICAL: Remove these from ModelState validation since we've set them manually
+                // Skip validation for
                 ModelState.Remove("CreatedById");
                 ModelState.Remove("CreatedDate");
                 
-                // Handle empty/null values
                 recipe.Ingredients = recipe.Ingredients ?? string.Empty;
                 recipe.Description = recipe.Description ?? string.Empty;
                 
                 if (ModelState.IsValid)
                 {
+                    // Avoid duplicated Recipe name
+                    bool duplicateExists = await _context.Recipes
+                        .Where(r => r.Id != id && r.CreatedById == recipe.CreatedById)
+                        .AnyAsync(r => r.Title.ToLower() == recipe.Title.ToLower());
+                        
+                    if (duplicateExists)
+                    {
+                        ModelState.AddModelError("Title", "You already have another recipe with this title. Please use a different title.");
+                        ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                        ViewBag.SelectedCategories = await _context.RecipeCategories
+                            .Where(rc => rc.RecipeId == id)
+                            .Select(rc => rc.CategoryId)
+                            .ToListAsync();
+                        return View(recipe);
+                    }
+                
                     using var transaction = await _context.Database.BeginTransactionAsync();
                     
                     try
@@ -603,7 +601,7 @@ namespace MealStack.Web.Controllers
                     catch
                     {
                         await transaction.RollbackAsync();
-                        throw; // Let the outer TryExecuteAsync handle this
+                        throw; 
                     }
                 }
                 
@@ -632,7 +630,7 @@ namespace MealStack.Web.Controllers
                     return NotFound();
                 }
 
-                // Only allow delete if user created the recipe or is admin
+                
                 if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
                 {
                     _context.Recipes.Remove(recipe);
@@ -718,27 +716,25 @@ namespace MealStack.Web.Controllers
                 return Json(new List<string>());
             }
         }
-
-        // Helper method to apply search filters to a recipe query
+        
         private IQueryable<RecipeEntity> ApplySearchFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
         {
             // Apply search term filtering
             if (!string.IsNullOrEmpty(searchModel.SearchTerm))
             {
-                // Split search term into individual terms
+                // Split search term in individual terms
                 var searchTerms = searchModel.SearchTerm.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(t => t.Trim().ToLower()) // Convert to lowercase for case-insensitive search
+                    .Select(t => t.Trim().ToLower())
                     .Where(t => !string.IsNullOrEmpty(t))
                     .ToList();
                 
                 if (searchTerms.Any())
                 {
-                    // Apply appropriate search logic based on search type
                     ApplySearchTermFilters(ref query, searchModel.SearchType, searchTerms, searchModel.MatchAllIngredients);
                 }
             }
             
-            // Apply other filters (moved to separate method for clarity)
+            // Apply other filters (separate method - clarity)
             query = ApplyAdditionalFilters(query, searchModel);
             
             // Apply sorting
@@ -763,7 +759,7 @@ namespace MealStack.Web.Controllers
                 case "ingredients":
                     if (matchAllIngredients)
                     {
-                        // AND logic - must contain all terms
+                        // AND logic - Need to match all terms
                         foreach (var term in searchTerms)
                         {
                             query = query.Where(r => r.Ingredients.ToLower().Contains(term));
@@ -771,7 +767,7 @@ namespace MealStack.Web.Controllers
                     }
                     else
                     {
-                        // OR logic - must contain any of the terms
+                        // OR logic - Match any term
                         query = query.Where(r => 
                             searchTerms.Any(term => r.Ingredients.ToLower().Contains(term)));
                     }
@@ -784,7 +780,7 @@ namespace MealStack.Web.Controllers
             }
         }
 
-        // Extract all-fields search logic (title, description, ingredients)
+        // Extract all-fields search logic
         private void ApplyAllFieldsSearch(ref IQueryable<RecipeEntity> query, List<string> searchTerms, bool matchAllIngredients)
         {
             if (searchTerms.Count == 1)
@@ -798,10 +794,9 @@ namespace MealStack.Web.Controllers
             }
             else
             {
-                // Multi-term search with comma or space separated terms
                 if (matchAllIngredients)
                 {
-                    // AND logic for ingredients, OR logic for title/description
+                    // Match ALL for ingredients, ANY for title/desc
                     var ingredientMatches = query.Where(r => true);
                     foreach (var term in searchTerms)
                     {
@@ -820,7 +815,7 @@ namespace MealStack.Web.Controllers
                 }
                 else
                 {
-                    // OR logic for everything
+                    // Or logic - Match anything
                     query = query.Where(r => 
                         searchTerms.Any(term => 
                             r.Title.ToLower().Contains(term) || 
@@ -833,13 +828,13 @@ namespace MealStack.Web.Controllers
         // Apply additional filters (difficulty, servings, prep time, categories)
         private IQueryable<RecipeEntity> ApplyAdditionalFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
         {
-            // Apply ingredients filter if specified
+            // Ingredients
             if (searchModel.Ingredients != null && searchModel.Ingredients.Any())
             {
                 ApplyIngredientsFilter(ref query, searchModel.Ingredients, searchModel.MatchAllIngredients);
             }
             
-            // Apply difficulty filter
+            // Difficulty
             if (!string.IsNullOrEmpty(searchModel.Difficulty))
             {
                 if (Enum.TryParse<DifficultyLevel>(searchModel.Difficulty, out var difficultyLevel))
@@ -848,7 +843,7 @@ namespace MealStack.Web.Controllers
                 }
             }
             
-            // Apply servings range filter
+            // Servings range
             if (searchModel.MinServings.HasValue)
             {
                 query = query.Where(r => r.Servings >= searchModel.MinServings.Value);
@@ -859,7 +854,7 @@ namespace MealStack.Web.Controllers
                 query = query.Where(r => r.Servings <= searchModel.MaxServings.Value);
             }
             
-            // Apply preparation time range filter
+            // Preparation time range
             if (searchModel.MinPrepTime.HasValue)
             {
                 query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) >= searchModel.MinPrepTime.Value);
@@ -870,7 +865,7 @@ namespace MealStack.Web.Controllers
                 query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= searchModel.MaxPrepTime.Value);
             }
             
-            // Apply category filter
+            // Category 
             if (searchModel.CategoryId.HasValue)
             {
                 query = query.Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == searchModel.CategoryId.Value));
@@ -879,7 +874,6 @@ namespace MealStack.Web.Controllers
             return query;
         }
 
-        // Apply sorting based on sort option
         private IQueryable<RecipeEntity> ApplySorting(IQueryable<RecipeEntity> query, string sortBy)
         {
             switch (sortBy)
@@ -898,7 +892,6 @@ namespace MealStack.Web.Controllers
             }
         }
 
-        // Extract ingredients filter logic
         private void ApplyIngredientsFilter(ref IQueryable<RecipeEntity> query, List<string> ingredients, bool matchAllIngredients)
         {
             if (matchAllIngredients)

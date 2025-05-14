@@ -1,8 +1,10 @@
-// search.js - Script for search functionality
+// -------------------------------------------------------------------------------------------------------------------
+// Search functionality
+// -------------------------------------------------------------------------------------------------------------------
 $(document).ready(function() {
     console.log("Search.js loaded");
 
-    // Initialize autocomplete for search inputs
+    // Initialize autocomplete
     $("#searchTerm").autocomplete({
         source: function(request, response) {
             console.log("Autocomplete request for: " + request.term);
@@ -28,7 +30,7 @@ $(document).ready(function() {
         }
     });
 
-    // Show advanced search options if any filter is applied
+    // Show advanced search options
     if ($("#difficulty").val() || $("#sortBy").val() !== "newest" ||
         $("#matchAllIngredients").prop("checked") === false) {
         $("#advancedSearchOptions").collapse("show");

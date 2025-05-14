@@ -127,7 +127,7 @@ body {
   color: white;
 }
 
-/* Search bar - Updated for wider size and no rounded corners */
+/* Search bar */
 .search-container {
   width: 70%;
   margin: 0 auto;
@@ -174,7 +174,6 @@ body {
   margin: 0 !important;
 }
 
-/* Category pills */
 .category-pill {
   padding: 0.5rem 1rem;
   background-color: white;
@@ -229,7 +228,60 @@ body {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  touch-action: manipulation;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+/* Create a larger invisible touch target */
+.favorite-btn::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  z-index: -1;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+}
+
+.favorite-btn:focus {
+  outline: 3px solid rgba(13, 110, 253, 0.25);
+  outline-offset: 2px;
+}
+
+/* Visual feedback for active state */
+.favorite-btn:active {
+  transform: scale(0.95);
+}
+
+/* Heart icon transitions */
+.favorite-btn i {
+  transition: all 0.2s ease;
+}
+
+/* Subtle pulse animation - filled heart */
+@keyframes heartPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.favorite-btn i.bi-heart-fill {
+  animation: heartPulse 0.6s ease-in-out;
+}
+
+.card .favorite-btn {
+  padding: 6px;
 }
 
 .cook-time {
@@ -237,7 +289,6 @@ body {
   font-size: 0.9rem;
   margin-top: 2px;
 }
-
 
 .star-rating {
   cursor: pointer;
@@ -281,8 +332,7 @@ body {
   .navbar-nav {
     padding-top: 1rem;
   }
-
-  /* Ensure content doesn't overlap with footer on small screens */
+  
   body {
     margin-bottom: 100px;
   }
@@ -290,6 +340,12 @@ body {
   /* Make search container wider on mobile */
   .search-container {
     width: 100%;
+  }
+
+  /* Favorite buttons easy tap on small screens */
+  .favorite-btn {
+    min-width: 48px;
+    min-height: 48px;
   }
 }
 

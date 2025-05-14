@@ -1,10 +1,7 @@
-﻿// site.js - Fixed version focusing on the recipe-card-wrapper class
-
-// =============================================================================
+﻿// -------------------------------------------------------------------------------------------------------------------
 // Recipe Operations
-// =============================================================================
+// -------------------------------------------------------------------------------------------------------------------
 const RecipeApp = {
-    // Initialize all recipe-related functionality
     init: function() {
         this.setupDeleteConfirmation();
         this.setupFavorites();
@@ -23,24 +20,23 @@ const RecipeApp = {
         };
     },
 
-    // Setup favorites functionality 
+    // Setup favorites functionality
     setupFavorites: function() {
-        // Heart icon click handler
-        $(document).on('click', '.favorite-container i.bi-heart, .favorite-container i.bi-heart-fill', function(e) {
+        $(document).on('click', '.favorite-btn', function(e) {
             e.preventDefault();
             e.stopPropagation();
 
-            const heartIcon = $(this);
-            const container = heartIcon.closest('.favorite-container');
+            const btn = $(this);
+            const container = btn.closest('.favorite-container');
             const recipeId = container.data('recipe-id');
 
-            if (heartIcon.data('processing')) return;
-            heartIcon.data('processing', true);
+            if (btn.data('processing')) return;
+            btn.data('processing', true);
 
-            heartIcon.css({
-                'transition': 'transform 0.2s ease',
-                'transform': 'scale(1.2)'
-            });
+            // Visual feedback
+            btn.prop('disabled', true);
+            const originalContent = btn.html();
+            btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
 
             const token = $('input[name="__RequestVerificationToken"]').val();
 
@@ -50,151 +46,41 @@ const RecipeApp = {
                 data: { recipeId: recipeId, __RequestVerificationToken: token },
                 success: function(result) {
                     if (result.success) {
-                        // Replace heart icons
-                        container.find('i.bi-heart, i.bi-heart-fill').remove();
-                        const newHeart = $('<i>').addClass(result.isFavorite ?
-                            'bi bi-heart-fill text-danger fs-5' :
-                            'bi bi-heart fs-5').css('cursor', 'pointer');
-                        container.append(newHeart);
+                        // Update button state and appearance
+                        btn.data('is-favorite', result.isFavorite);
 
-                        // Handle unfavorite on MyFavorites page
-                        if (!result.isFavorite && window.location.pathname.includes('/Recipe/MyFavorites')) {
-                            // Find the recipe card wrapper - explicitly look for this class
-                            const recipeCard = heartIcon.closest('.recipe-card-wrapper');
+                        if (result.isFavorite) {
+                            btn.html('<i class="bi bi-heart-fill text-danger fs-5"></i>');
+                        } else {
+                            btn.html('<i class="bi bi-heart fs-5"></i>');
 
-                            if (recipeCard && recipeCard.length) {
-                                console.log("Found recipe card:", recipeCard);
+                            // Special handling for MyFavorites page
+                            if (window.location.pathname.includes('/Recipe/MyFavorites')) {
+                                const recipeCard = btn.closest('.recipe-card-wrapper');
 
-                                // Clear any existing animations or transitions
-                                recipeCard.stop(true, true);
-
-                                // Simple fadeOut with longer duration for smoother effect
-                                recipeCard.fadeOut(900, function() {
-                                    console.log("Fadeout complete, removing card");
-                                    $(this).remove();
-
-                                    // Check if we need to reload to show "No favorites" message
-                                    const remainingCards = $('.recipe-card-wrapper:visible').length;
-                                    console.log("Remaining cards:", remainingCards);
-
-                                    if (remainingCards === 0) {
-                                        console.log("No cards left, reloading page");
-                                        location.reload();
-                                    }
-                                });
-                            } else {
-                                console.warn("Could not find recipe card wrapper - falling back to older selectors");
-                                // Fallback to find any parent column
-                                const cardCol = heartIcon.closest('.col-md-6, .col-lg-4');
-                                if (cardCol && cardCol.length) {
-                                    cardCol.fadeOut(900, function() {
+                                if (recipeCard && recipeCard.length) {
+                                    recipeCard.fadeOut(900, function() {
                                         $(this).remove();
-                                        if ($('.col-md-6:visible, .col-lg-4:visible').length === 0) {
+
+                                        if ($('.recipe-card-wrapper:visible').length === 0) {
                                             location.reload();
                                         }
                                     });
-                                } else {
-                                    console.error("Could not find recipe card container - reloading page");
-                                    location.reload();
                                 }
                             }
                         }
+                    } else {
+                        // Restore original content on failure
+                        btn.html(originalContent);
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error('Error toggling favorite:', error);
                     alert('Failed to update favorite status. Please try again.');
-                    heartIcon.css('transform', 'scale(1)');
+                    btn.html(originalContent);
                 },
                 complete: function() {
-                    heartIcon.data('processing', false);
-                }
-            });
-        });
-
-        // Button-based favorite toggle handler (for backward compatibility)
-        $(document).on('click', '.favorite-btn', function() {
-            const btn = $(this);
-            const container = btn.closest('.favorite-container');
-            const recipeId = container.data('recipe-id');
-
-            if (btn.data('processing')) {
-                return;
-            }
-            btn.data('processing', true);
-
-            const token = $('input[name="__RequestVerificationToken"]').val();
-            const originalContent = btn.html();
-
-            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
-
-            $.ajax({
-                url: '/Recipe/ToggleFavorite',
-                type: 'POST',
-                data: { recipeId: recipeId, __RequestVerificationToken: token },
-                success: function(result) {
                     btn.prop('disabled', false);
-                    if (result.success) {
-                        btn.data('is-favorite', result.isFavorite);
-
-                        if (result.isFavorite) {
-                            btn.html('<i class="bi bi-heart-fill text-danger"></i>');
-                        } else {
-                            btn.html('<i class="bi bi-heart"></i>');
-
-                            // Special handling for MyFavorites page
-                            if (window.location.pathname.includes('/Recipe/MyFavorites')) {
-                                // Look for the recipe card wrapper
-                                const recipeCard = btn.closest('.recipe-card-wrapper');
-
-                                if (recipeCard && recipeCard.length) {
-                                    console.log("Found recipe card (button click):", recipeCard);
-
-                                    // Clear any existing animations
-                                    recipeCard.stop(true, true);
-
-                                    // Use longer duration for smoother fadeout
-                                    recipeCard.fadeOut(900, function() {
-                                        console.log("Fadeout complete, removing card (button click)");
-                                        $(this).remove();
-
-                                        // Check remaining cards
-                                        const remainingCards = $('.recipe-card-wrapper:visible').length;
-                                        console.log("Remaining cards after button click:", remainingCards);
-
-                                        if (remainingCards === 0) {
-                                            console.log("No cards left after button click, reloading page");
-                                            location.reload();
-                                        }
-                                    });
-                                } else {
-                                    console.warn("Could not find recipe card wrapper for button - using fallback");
-                                    // Fallback to column
-                                    const cardCol = btn.closest('.col-md-6, .col-lg-4');
-                                    if (cardCol && cardCol.length) {
-                                        cardCol.fadeOut(900, function() {
-                                            $(this).remove();
-                                            if ($('.col-md-6:visible, .col-lg-4:visible').length === 0) {
-                                                location.reload();
-                                            }
-                                        });
-                                    } else {
-                                        console.error("Could not find recipe card container for button - reloading page");
-                                        location.reload();
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        btn.html(originalContent); // Restore on failure
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error toggling favorite (button click):', error);
-                    alert('Failed to update favorite status. Please try again.');
-                    btn.prop('disabled', false).html(originalContent);
-                },
-                complete: function() {
                     btn.data('processing', false);
                 }
             });
@@ -203,7 +89,6 @@ const RecipeApp = {
 
     // Setup star ratings functionality
     setupRatings: function() {
-        // Handle star click
         $(document).on('click', '.star-rating', function() {
             const rating = $(this).data('rating');
             const container = $(this).closest('.rating-widget');
@@ -227,7 +112,7 @@ const RecipeApp = {
             });
         });
 
-        // Hover effect for stars
+        // Hover effect
         $(document).on('mouseenter', '.star-rating', function() {
             const rating = $(this).data('rating');
             const container = $(this).closest('.rating-stars');
@@ -253,21 +138,18 @@ const RecipeApp = {
     // Handle rating result
     handleRatingResult: function(result, container, rating) {
         if (result.success) {
-            // Update stars display for this specific recipe
             RecipeApp.updateStarDisplay(container.find('.rating-stars'), rating);
-
-            // Store the current user rating
+            
             container.data('user-rating', rating);
-
-            // Update average display if exists
+            
             container.find('.average-rating').text(result.averageRating.toFixed(1));
             container.find('.total-ratings').text(result.totalRatings);
 
-            // If we're on the recipe details page
+            // Recipe details page
             $('#average-rating').text(result.averageRating.toFixed(1));
             $('#total-ratings').text(result.totalRatings);
 
-            // Update the recipe card's rating stars if it exists
+            // Update rating if exists
             RecipeApp.updateRecipeCardRating(container.data('recipe-id'), result);
         }
     },
@@ -319,7 +201,6 @@ const RecipeApp = {
                 },
                 success: function(result) {
                     if (result.success) {
-                        // Show success message
                         alert('Notes saved successfully!');
                     } else {
                         alert('Error: ' + result.message);
@@ -343,13 +224,11 @@ const RecipeApp = {
             }
         });
     },
-
-    // Handle AJAX errors
+    
     handleAjaxError: function(message, error, btn, originalContent) {
         console.error(`${message}: ${error}`);
         alert(`${message}. Please try again.`);
-
-        // If button provided, restore it
+        
         if (btn) {
             btn.prop('disabled', false);
             if (originalContent) {
@@ -359,24 +238,24 @@ const RecipeApp = {
     }
 };
 
-// =============================================================================
+// -------------------------------------------------------------------------------------------------------------------
 // Ingredient Form Validation
-// =============================================================================
+// -------------------------------------------------------------------------------------------------------------------
 const IngredientApp = {
     init: function() {
         this.setupQuantityValidation();
         this.setupCustomValidation();
+        this.setupDuplicateHandling();
     },
 
     // Handle ingredient quantity input validation
     setupQuantityValidation: function() {
         $(document).on('input', '.quantity-input', function() {
-            // Validate and format the input
             let value = parseFloat($(this).val());
             if (isNaN(value)) {
                 $(this).val("");
             } else {
-                // Round to 2 decimal places if needed
+                // Round to 2 decimal
                 $(this).val(Math.max(0, parseFloat(value.toFixed(2))));
             }
         });
@@ -401,6 +280,58 @@ const IngredientApp = {
         });
     },
 
+    // Duplicate handling for ingredient modal
+    setupDuplicateHandling: function() {
+        $("#save-new-ingredient").on("click", function() {
+            const name = $("#new-ingredient-name").val().trim();
+            if (!name) {
+                alert("Ingredient name is required");
+                return;
+            }
+
+            // Create new ingredient data
+            const newIngredientData = {
+                name: name,
+                category: $("#new-ingredient-category").val().trim(),
+                measurement: $("#new-ingredient-measurement").val().trim(),
+                description: $("#new-ingredient-description").val().trim()
+            };
+
+            // Save to database via AJAX
+            $.ajax({
+                url: "/Ingredient/AddIngredientAjax",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(newIngredientData),
+                success: function(result) {
+                    if (result.success) {
+                        ingredientsList.push(result.ingredient);
+                        
+                        addIngredientChip(result.ingredient);
+                        
+                        $("#addIngredientModal").modal("hide");
+                    } else {
+                        alert("Error saving ingredient: " + result.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error saving ingredient:", error);
+                    // Try to parse the error response for more detailed message
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response && response.message) {
+                            alert("Error: " + response.message);
+                        } else {
+                            alert("Error saving ingredient. Please try again.");
+                        }
+                    } catch (e) {
+                        alert("Error saving ingredient. Please try again.");
+                    }
+                }
+            });
+        });
+    },
+
     // Add custom validation rules
     setupCustomValidation: function() {
         if ($.validator) {
@@ -419,7 +350,6 @@ const IngredientApp = {
                         required: true,
                         minlength: 10
                     },
-                    // Custom validation for ingredients
                     "ingredients-data": {
                         ingredientsRequired: true
                     }
@@ -431,7 +361,6 @@ const IngredientApp = {
                     }
                 },
                 errorPlacement: function(error, element) {
-                    // Custom placement of error messages
                     if (element.attr("id") === "ingredients-data") {
                         error.insertAfter("#ingredients-section");
                     } else {
@@ -443,9 +372,9 @@ const IngredientApp = {
     }
 };
 
-// =============================================================================
+// -------------------------------------------------------------------------------------------------------------------
 // Search Functionality
-// =============================================================================
+// -------------------------------------------------------------------------------------------------------------------
 const SearchApp = {
     init: function() {
         this.setupAutocomplete();
@@ -489,7 +418,6 @@ const SearchApp = {
     }
 };
 
-// Initialize all apps when document is ready
 $(document).ready(function() {
     RecipeApp.init();
     IngredientApp.init();

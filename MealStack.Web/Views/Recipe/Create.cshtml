@@ -1,7 +1,7 @@
 @model MealStack.Infrastructure.Data.RecipeEntity
 
 @{
-    ViewData["Title"] = "Create Recipe";
+ViewData["Title"] = "Create Recipe";
 }
 
 <div class="container py-4">
@@ -17,302 +17,25 @@
 </div>
 
 <!-- Modal for adding new ingredient -->
-<div class="modal fade" id="addIngredientModal" tabindex="-1" aria-labelledby="addIngredientModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addIngredientModalLabel">Add New Ingredient</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="new-ingredient-name" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="new-ingredient-name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="new-ingredient-category" class="form-label">Category</label>
-                    <input type="text" class="form-control" id="new-ingredient-category">
-                </div>
-                <div class="mb-3">
-                    <label for="new-ingredient-measurement" class="form-label">Default Measurement Unit</label>
-                    <select class="form-select" id="new-ingredient-measurement">
-                        <option value="">Select a unit</option>
-                        <option value="grams">Grams (g)</option>
-                        <option value="kilograms">Kilograms (kg)</option>
-                        <option value="milliliters">Milliliters (ml)</option>
-                        <option value="liters">Liters (L)</option>
-                        <option value="teaspoons">Teaspoons (tsp)</option>
-                        <option value="tablespoons">Tablespoons (tbsp)</option>
-                        <option value="cups">Cups</option>
-                        <option value="pieces">Pieces</option>
-                        <option value="units">Units</option>
-                        <option value="ounces">Ounces (oz)</option>
-                        <option value="pounds">Pounds (lb)</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="new-ingredient-description" class="form-label">Description (Optional)</label>
-                    <textarea class="form-control" id="new-ingredient-description" rows="2"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="save-new-ingredient">Save Ingredient</button>
-            </div>
-        </div>
-    </div>
-</div>
+<partial name="_IngredientModal" />
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
-    <!-- Make sure jQuery UI is included in your layout or add it here -->
+    <!-- jQuery UI -->
     <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
+    <!-- Reusable JS modules -->
+    <script src="~/js/recipe/ingredientManager.js"></script>
+    <script src="~/js/recipe/recipeForm.js"></script>
+
     <script>
         $(document).ready(function() {
-            // Measurement units for dropdown
-            const measurementUnits = [
-                { value: 'grams', label: 'Grams (g)' },
-                { value: 'kilograms', label: 'Kilograms (kg)' },
-                { value: 'milliliters', label: 'Milliliters (ml)' },
-                { value: 'liters', label: 'Liters (L)' },
-                { value: 'teaspoons', label: 'Teaspoons (tsp)' },
-                { value: 'tablespoons', label: 'Tablespoons (tbsp)' },
-                { value: 'cups', label: 'Cups' },
-                { value: 'pieces', label: 'Pieces' },
-                { value: 'units', label: 'Units' },
-                { value: 'ounces', label: 'Ounces (oz)' },
-                { value: 'pounds', label: 'Pounds (lb)' }
-            ];
-
-            // Ingredients data structure
-            let ingredientsList = [];
-            let selectedIngredients = [];
-
-            // Load ingredients from API on page load
-            loadIngredients();
-
-            // Set up autocomplete for ingredient search
-            $("#ingredient-search").autocomplete({
-                source: function(request, response) {
-                    // Call the API endpoint directly
-                    $.getJSON("/Ingredient/SearchIngredients", { term: request.term }, function(data) {
-                        response($.map(data, function(item) {
-                            return {
-                                label: item.name,
-                                value: item.name,
-                                item: item
-                            };
-                        }));
-                    });
-                },
-                minLength: 2,
-                select: function(event, ui) {
-                    setTimeout(function() {
-                        $("#ingredient-search").val("");
-                    }, 100);
-
-                    // Add the selected ingredient
-                    addIngredientChip(ui.item.item);
-
-                    return false;
-                }
+            // Initialize recipe form
+            RecipeForm.init({
+                isEdit: false
             });
-
-            // Add ingredient button
-            $("#add-ingredient-btn").on("click", function() {
-                const searchTerm = $("#ingredient-search").val().trim();
-                if (searchTerm) {
-                    // Search for the ingredient
-                    $.getJSON("/Ingredient/SearchIngredients", { term: searchTerm }, function(data) {
-                        if (data && data.length > 0) {
-                            // Use the first matching ingredient
-                            addIngredientChip(data[0]);
-                        } else {
-                            // Create a basic new ingredient with just the name
-                            const newIngredient = {
-                                id: 'temp_' + Date.now(),
-                                name: searchTerm,
-                                isNew: true
-                            };
-                            addIngredientChip(newIngredient);
-                        }
-                    });
-
-                    $("#ingredient-search").val("");
-                }
-            });
-
-            // Add new ingredient button
-            $("#add-new-ingredient-btn").on("click", function() {
-                // Clear the modal fields
-                $("#new-ingredient-name").val("");
-                $("#new-ingredient-category").val("");
-                $("#new-ingredient-measurement").val("");
-                $("#new-ingredient-description").val("");
-
-                // Show the modal
-                $("#addIngredientModal").modal("show");
-            });
-
-            // Save new ingredient from modal
-            $("#save-new-ingredient").on("click", function() {
-                const name = $("#new-ingredient-name").val().trim();
-                if (!name) {
-                    alert("Ingredient name is required");
-                    return;
-                }
-
-                // Create new ingredient data
-                const newIngredientData = {
-                    name: name,
-                    category: $("#new-ingredient-category").val().trim(),
-                    measurement: $("#new-ingredient-measurement").val().trim(),
-                    description: $("#new-ingredient-description").val().trim()
-                };
-
-                // Save to database via AJAX
-                $.ajax({
-                    url: "/Ingredient/AddIngredientAjax",
-                    type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify(newIngredientData),
-                    success: function(result) {
-                        if (result.success) {
-                            // Add to ingredients list for autocomplete
-                            ingredientsList.push(result.ingredient);
-
-                            // Add as a selected ingredient
-                            addIngredientChip(result.ingredient);
-
-                            // Close the modal
-                            $("#addIngredientModal").modal("hide");
-                        } else {
-                            alert("Error saving ingredient: " + result.message);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error saving ingredient:", error);
-                        alert("Error saving ingredient. Please try again.");
-                    }
-                });
-            });
-
-            // Handle form submission
-            $("form").on("submit", function(e) {
-                // Format the ingredients data
-                const ingredientsText = selectedIngredients.map(i => {
-                    if (i.quantity && i.unit) {
-                        return `${i.quantity} ${i.unit} ${i.name}`;
-                    } else if (i.quantity) {
-                        return `${i.quantity} ${i.name}`;
-                    } else {
-                        return i.name;
-                    }
-                }).join("\n");
-
-                $("#ingredients-data").val(ingredientsText);
-
-                // Let the form submit normally
-                return true;
-            });
-
-            // Function to add an ingredient chip to the container
-            function addIngredientChip(ingredient) {
-                // Check if already added
-                if (selectedIngredients.some(i => i.id === ingredient.id)) {
-                    return;
-                }
-
-                // Add to selected ingredients
-                const ingredientWithQuantity = {
-                    ...ingredient,
-                    quantity: "",
-                    unit: ingredient.measurement || ""
-                };
-                selectedIngredients.push(ingredientWithQuantity);
-
-                // Create measurement options HTML
-                let measurementOptionsHtml = '<option value="">Select unit</option>';
-                measurementUnits.forEach(unit => {
-                    const selected = unit.value === ingredient.measurement ? 'selected' : '';
-                    measurementOptionsHtml += `<option value="${unit.value}" ${selected}>${unit.label}</option>`;
-                });
-
-                // Create chip UI
-                const chipHtml = `
-                    <div class="ingredient-chip d-inline-flex align-items-center bg-light rounded p-2 me-2 mb-2" data-id="${ingredient.id}">
-                        <input type="number" class="quantity-input form-control form-control-sm me-1" 
-                               style="width: 60px;" placeholder="Qty" aria-label="Quantity" min="0" step="0.01">
-                        <select class="unit-select form-select form-select-sm me-1" style="width: 100px;">
-                            ${measurementOptionsHtml}
-                        </select>
-                        <span class="ingredient-name">${ingredient.name}</span>
-                        <button type="button" class="btn-close ms-2 remove-ingredient" aria-label="Remove" style="font-size: 0.6rem;"></button>
-                    </div>
-                `;
-
-                $("#ingredients-container").append(chipHtml);
-
-                // Set up event handlers for the new chip
-                $(".remove-ingredient").off("click").on("click", function() {
-                    const chipId = $(this).closest(".ingredient-chip").data("id");
-                    removeIngredientChip(chipId);
-                });
-
-                $(".quantity-input").off("change").on("change", function() {
-                    const chipId = $(this).closest(".ingredient-chip").data("id");
-                    const quantity = $(this).val().trim();
-                    updateIngredientQuantity(chipId, quantity);
-                });
-
-                $(".unit-select").off("change").on("change", function() {
-                    const chipId = $(this).closest(".ingredient-chip").data("id");
-                    const unit = $(this).val().trim();
-                    updateIngredientUnit(chipId, unit);
-                });
-            }
-
-            // Function to remove an ingredient chip
-            function removeIngredientChip(id) {
-                // Remove from selected ingredients
-                selectedIngredients = selectedIngredients.filter(i => i.id !== id);
-
-                // Remove from UI
-                $(`.ingredient-chip[data-id="${id}"]`).remove();
-            }
-
-            // Function to update ingredient quantity
-            function updateIngredientQuantity(id, quantity) {
-                const ingredient = selectedIngredients.find(i => i.id === id);
-                if (ingredient) {
-                    ingredient.quantity = quantity;
-                }
-            }
-
-            // Function to update ingredient unit
-            function updateIngredientUnit(id, unit) {
-                const ingredient = selectedIngredients.find(i => i.id === id);
-                if (ingredient) {
-                    ingredient.unit = unit;
-                }
-            }
-
-            // Function to load ingredients from API
-            function loadIngredients() {
-                $.ajax({
-                    url: "/Ingredient/GetAllIngredients",
-                    type: "GET",
-                    success: function(data) {
-                        ingredientsList = data;
-                    },
-                    error: function(err) {
-                        console.error("Error loading ingredients:", err);
-                    }
-                });
-            }
         });
     </script>
 }

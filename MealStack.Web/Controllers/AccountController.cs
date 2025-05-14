@@ -24,33 +24,25 @@ namespace MealStack.Web.Controllers
         public async Task<IActionResult> Profile()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            
+            if (user == null) return NotFound();
+
             var model = new ProfileViewModel
             {
                 Email = user.Email,
                 UserName = user.UserName
             };
-            
+
             return View(model);
         }
-        
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateUsername(ProfileViewModel model)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            
+            if (user == null) return NotFound();
+
             if (ModelState.IsValid)
             {
-                // Check if the username is already taken
                 var existingUser = await _userManager.FindByNameAsync(model.UserName);
                 if (existingUser != null && existingUser.Id != user.Id)
                 {
@@ -58,25 +50,24 @@ namespace MealStack.Web.Controllers
                     model.Email = user.Email;
                     return View("Profile", model);
                 }
-                
+
                 user.UserName = model.UserName;
                 user.NormalizedUserName = _userManager.NormalizeName(model.UserName);
-                
+
                 var result = await _userManager.UpdateAsync(user);
-                
+
                 if (result.Succeeded)
                 {
                     TempData["Message"] = "Username updated successfully.";
                     return RedirectToAction(nameof(Profile));
                 }
-                
+
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError("", error.Description);
                 }
             }
-            
-            // If we got this far, something failed, redisplay form
+
             model.Email = user.Email;
             return View("Profile", model);
         }

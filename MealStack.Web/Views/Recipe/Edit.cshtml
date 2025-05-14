@@ -4,32 +4,37 @@
     ViewData["Title"] = "Edit Recipe";
 }
 
-<h1>Edit Recipe</h1>
+<div class="container py-4">
+    <h1>Edit Recipe</h1>
 
-<hr />
-<div class="row">
-    <div class="col-md-8">
-        <form id="recipeForm" asp-action="Edit">
-            <partial name="_RecipeForm" model="Model" />
-        </form>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form id="recipeForm" asp-action="Edit">
+                <partial name="_RecipeForm" model="Model" />
+            </form>
+        </div>
     </div>
 </div>
 
+<!-- Modal for adding new ingredient -->
+<partial name="_IngredientModal" />
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <!-- jQuery UI -->
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    
+    <!-- Reusable JS modules -->
+    <script src="~/js/recipe/ingredientManager.js"></script>
+    <script src="~/js/recipe/recipeForm.js"></script>
     
     <script>
-        // Debug form submission to see what's being sent
         $(document).ready(function() {
-            // Log form data on submit
-            $('#recipeForm').on('submit', function(e) {
-                console.log('Form being submitted with data:');
-                var formData = new FormData(this);
-                
-                // Log all form fields
-                for (var pair of formData.entries()) {
-                    console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
-                }
+            // Initialize recipe form in edit mode
+            RecipeForm.init({
+                isEdit: true
             });
         });
     </script>

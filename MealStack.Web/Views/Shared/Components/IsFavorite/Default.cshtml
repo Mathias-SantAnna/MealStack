@@ -1,14 +1,13 @@
 @model bool
 
-@if (Model)
-{
-    <button class="btn btn-outline-danger favorite-btn" data-is-favorite="true">
-        <i class="bi bi-heart-fill me-1"></i>
-    </button>
-}
-else
-{
-    <button class="btn btn-outline-danger favorite-btn" data-is-favorite="false">
-        <i class="bi bi-heart me-1"></i>
-    </button>
-}
+<button class="favorite-btn @(Model ? "active" : "")" data-is-favorite="@(Model ? "true" : "false")">
+    @if (Model)
+    {
+        <i class="bi bi-heart-fill text-danger fs-5"></i>
+    }
+    else
+    {
+        <i class="bi bi-heart fs-5"></i>
+    }
+    <span class="visually-hidden">@(Model ? "Remove from favorites" : "Add to favorites")</span>
+</button>

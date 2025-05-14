@@ -19,13 +19,13 @@ namespace MealStack.Web.Models
         public int? MinPrepTime { get; set; }
         public int? MaxPrepTime { get; set; }
         
-        // Helper method to convert ingredients list to comma-separated string
+        // Convert ingredients list to comma-separated string
         public string GetIngredientsAsString()
         {
             return Ingredients != null ? string.Join(",", Ingredients) : string.Empty;
         }
         
-        // Helper method to parse comma-separated string to ingredients list
+        // Parse comma-separated string to ingredients list
         public void SetIngredientsFromString(string ingredientsString)
         {
             if (string.IsNullOrEmpty(ingredientsString))

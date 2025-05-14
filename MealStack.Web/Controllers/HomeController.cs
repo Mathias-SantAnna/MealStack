@@ -26,50 +26,35 @@ namespace MealStack.Web.Controllers
 
         public async Task<IActionResult> Index(string searchTerm, string searchType = "all", bool matchAllIngredients = true)
         {
-            // If search is performed, redirect to Recipe/Index
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                return RedirectToAction("Index", "Recipe", new { 
-                    searchTerm, 
-                    searchType,
-                    matchAllIngredients
-                });
+                return RedirectToAction("Index", "Recipe", new { searchTerm, searchType, matchAllIngredients });
             }
-    
-            // Add these lines to fix the null reference errors
-            ViewData["SearchAction"] = "Index"; 
+
+            ViewData["SearchAction"] = "Index";
             ViewData["SearchTerm"] = "";
             ViewData["SearchType"] = "all";
             ViewData["MatchAllIngredients"] = "true";
-            ViewBag.SelectedCategoryId = null;
 
-            // Get categories for the navigation menu
             ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-    
-            // Get the 3 most recent recipes
+
             var latestRecipes = await _context.Recipes
                 .Include(r => r.CreatedBy)
-                .Include(r => r.RecipeCategories)
-                .ThenInclude(rc => rc.Category)
-                .Include(r => r.Ratings) // Make sure ratings are included
+                .Include(r => r.RecipeCategories).ThenInclude(rc => rc.Category)
+                .Include(r => r.Ratings)
                 .OrderByDescending(r => r.CreatedDate)
-                .Take(3)
-                .ToListAsync();
-    
-            // Add favorite status for logged-in users
+                .Take(3).ToListAsync();
+
             if (User.Identity.IsAuthenticated)
             {
-                var userId = _userManager.GetUserId(User); // Use local instance
-                var favoriteRecipeIds = await _context.UserFavorites
-                    .Where(uf => uf.UserId == userId)
-                    .Select(uf => uf.RecipeId)
-                    .ToListAsync();
-            
-                ViewBag.FavoriteRecipes = favoriteRecipeIds;
+                var userId = _userManager.GetUserId(User);
+                ViewBag.FavoriteRecipes = await _context.UserFavorites.Where(uf => uf.UserId == userId)
+                    .Select(uf => uf.RecipeId).ToListAsync();
             }
-    
+
             return View(latestRecipes);
         }
+
 
         public IActionResult Privacy()
         {

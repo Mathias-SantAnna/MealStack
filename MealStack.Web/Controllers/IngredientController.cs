@@ -78,30 +78,46 @@ namespace MealStack.Web.Controllers
         [Authorize]
         public async Task<IActionResult> AddIngredientAjax([FromBody] IngredientEntity ingredient)
         {
-            if (string.IsNullOrEmpty(ingredient.Name))
+            if (ingredient == null || string.IsNullOrEmpty(ingredient.Name))
             {
                 return BadRequest(new { success = false, message = "Ingredient name is required" });
             }
-            
-            // Set required fields
-            ingredient.CreatedById = _userManager.GetUserId(User);
-            ingredient.CreatedDate = DateTime.UtcNow;
-            
-            _context.Ingredients.Add(ingredient);
-            await _context.SaveChangesAsync();
-            
-            return Json(new 
+    
+            try
             {
-                success = true,
-                ingredient = new 
+                // Check for duplicate name
+                bool duplicateExists = await _context.Ingredients
+                    .AnyAsync(i => i.Name.ToLower() == ingredient.Name.ToLower());
+            
+                if (duplicateExists)
                 {
-                    id = ingredient.Id,
-                    name = ingredient.Name,
-                    category = ingredient.Category,
-                    measurement = ingredient.Measurement,
-                    description = ingredient.Description
+                    return BadRequest(new { success = false, message = "An ingredient with this name already exists" });
                 }
-            });
+        
+                // Set required fields
+                ingredient.CreatedById = _userManager.GetUserId(User) ?? string.Empty;
+                ingredient.CreatedDate = DateTime.UtcNow;
+        
+                _context.Ingredients.Add(ingredient);
+                await _context.SaveChangesAsync();
+        
+                return Json(new 
+                {
+                    success = true,
+                    ingredient = new 
+                    {
+                        id = ingredient.Id,
+                        name = ingredient.Name,
+                        category = ingredient.Category ?? string.Empty,
+                        measurement = ingredient.Measurement ?? string.Empty,
+                        description = ingredient.Description ?? string.Empty
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = $"Error creating ingredient: {ex.Message}" });
+            }
         }
 
         // GET: Ingredient/Details/5
@@ -129,19 +145,34 @@ namespace MealStack.Web.Controllers
         [Authorize]
         public async Task<IActionResult> Create([Bind("Name,Description,Category,Measurement")] IngredientEntity ingredient)
         {
-            if (ModelState.IsValid)
+            return await TryExecuteAsync(async () =>
             {
-                if (User.Identity.IsAuthenticated)
+                if (ModelState.IsValid)
                 {
-                    ingredient.CreatedById = _userManager.GetUserId(User);
-                }
+                    // Check for duplicate name
+                    bool duplicateExists = await _context.Ingredients
+                        .AnyAsync(i => i.Name.ToLower() == ingredient.Name.ToLower());
                 
-                ingredient.CreatedDate = DateTime.UtcNow;
-                _context.Add(ingredient);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(ingredient);
+                    if (duplicateExists)
+                    {
+                        ModelState.AddModelError("Name", "An ingredient with this name already exists.");
+                        return View(ingredient);
+                    }
+                    
+                    if (User.Identity.IsAuthenticated)
+                    {
+                        ingredient.CreatedById = _userManager.GetUserId(User);
+                    }
+            
+                    ingredient.CreatedDate = DateTime.UtcNow;
+                    _context.Add(ingredient);
+                    await _context.SaveChangesAsync();
+            
+                    TempData["Message"] = "Ingredient created successfully!";
+                    return RedirectToAction(nameof(Index));
+                }
+                return View(ingredient);
+            }, "Error creating ingredient. Please try again later.");
         }
 
         // GET: Ingredient/Edit/5
@@ -153,8 +184,7 @@ namespace MealStack.Web.Controllers
             {
                 return NotFound();
             }
-
-            // Only allow edit if user created the ingredient or is admin
+            
             if (User.Identity.IsAuthenticated && 
                (ingredient.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
             {
@@ -180,8 +210,7 @@ namespace MealStack.Web.Controllers
             {
                 return NotFound();
             }
-
-            // Only allow edit if user created the ingredient or is admin
+            
             if (User.Identity.IsAuthenticated && 
                (existingIngredient.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
             {
@@ -210,8 +239,7 @@ namespace MealStack.Web.Controllers
             {
                 return NotFound();
             }
-
-            // Only allow delete if user created the ingredient or is admin
+            
             if (User.Identity.IsAuthenticated && 
                (ingredient.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
             {
@@ -232,8 +260,7 @@ namespace MealStack.Web.Controllers
             {
                 return NotFound();
             }
-
-            // Only allow delete if user created the ingredient or is admin
+            
             if (User.Identity.IsAuthenticated && 
                (ingredient.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin")))
             {
