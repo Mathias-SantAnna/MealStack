@@ -101,7 +101,7 @@ namespace MealStack.Web.Controllers
                     .Include(r => r.CreatedBy)
                     .Include(r => r.RecipeCategories)
                     .ThenInclude(rc => rc.Category)
-                    .Include(r => r.Ratings) // Include ratings for sorting and display
+                    .Include(r => r.Ratings) 
                     .Where(r => r.CreatedById == userId)
                     .AsQueryable();
                 
@@ -121,7 +121,7 @@ namespace MealStack.Web.Controllers
                 ViewBag.SelectedCategoryId = searchModel.CategoryId;
                 ViewData["SearchAction"] = "MyRecipes";
                 
-                // Add favorite status for each recipe
+                // Add favorite status for each modules
                 if (User.Identity.IsAuthenticated)
                 {
                     var favoriteRecipeIds = await _context.UserFavorites
@@ -204,16 +204,16 @@ namespace MealStack.Web.Controllers
             try
             {
                 var userId = _userManager.GetUserId(User);
-        
+
                 var recipe = await _context.Recipes.FindAsync(recipeId);
                 if (recipe == null)
                 {
                     return Json(new { success = false, message = "Recipe not found" });
                 }
-        
+
                 var existingFavorite = await _context.UserFavorites
                     .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.RecipeId == recipeId);
-        
+
                 if (existingFavorite != null)
                 {
                     _context.UserFavorites.Remove(existingFavorite);
@@ -236,8 +236,8 @@ namespace MealStack.Web.Controllers
             }
             catch (Exception ex)
             {
-                // Log the error if you have logging
-                Debug.WriteLine($"Error in ToggleFavorite: {ex.Message}");
+                // Log the error
+                Console.WriteLine($"Error in ToggleFavorite: {ex.Message}");
                 return Json(new { success = false, message = "An error occurred: " + ex.Message });
             }
         }
@@ -301,7 +301,7 @@ namespace MealStack.Web.Controllers
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error in RateRecipe: {ex.Message}");
-                return Json(new { success = false, message = "An error occurred while rating recipe: " + ex.Message });
+                return Json(new { success = false, message = "An error occurred while rating modules: " + ex.Message });
             }
         }
 
@@ -322,7 +322,7 @@ namespace MealStack.Web.Controllers
                 var userId = _userManager.GetUserId(User);
                 if (recipe.CreatedById != userId && !User.IsInRole("Admin"))
                 {
-                    return Json(new { success = false, message = "Not authorized to add notes to this recipe" });
+                    return Json(new { success = false, message = "Not authorized to add notes to this modules" });
                 }
 
                 recipe.Notes = notes;
@@ -338,7 +338,7 @@ namespace MealStack.Web.Controllers
             }
         }
 
-        // Check if a recipe is favorited by current user
+        // Check if a modules is favorited by current user
         private async Task<bool> IsRecipeFavorited(int recipeId)
         {
             if (!User.Identity.IsAuthenticated)
@@ -349,7 +349,7 @@ namespace MealStack.Web.Controllers
                 .AnyAsync(uf => uf.UserId == userId && uf.RecipeId == recipeId);
         }
 
-        // Check if a recipe is rated by current user
+        // Check if a modules is rated by current user
         private async Task<int?> GetUserRating(int recipeId)
         {
             if (!User.Identity.IsAuthenticated)
@@ -365,28 +365,36 @@ namespace MealStack.Web.Controllers
         // GET: Recipe/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            return await TryExecuteAsync(async () =>
+            var recipe = await _context.Recipes
+                .Include(r => r.CreatedBy)
+                .Include(r => r.RecipeCategories)
+                .ThenInclude(rc => rc.Category)
+                .Include(r => r.Ratings)
+                .FirstOrDefaultAsync(r => r.Id == id);
+        
+            if (recipe == null)
             {
-                var recipe = await _context.Recipes
-                    .Include(r => r.CreatedBy)
-                    .Include(r => r.RecipeCategories)
-                    .ThenInclude(rc => rc.Category)
-                    .Include(r => r.Ratings) // Include ratings
-                    .FirstOrDefaultAsync(r => r.Id == id);
-                    
-                if (recipe == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                if (User.Identity.IsAuthenticated)
-                {
-                    ViewBag.IsFavorited = await IsRecipeFavorited(id);
-                    ViewBag.UserRating = await GetUserRating(id);
-                }
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = _userManager.GetUserId(User);
+                ViewBag.IsFavorited = await _context.UserFavorites
+                    .AnyAsync(uf => uf.UserId == userId && uf.RecipeId == id);
+        
+                ViewBag.UserRating = await _context.UserRatings
+                    .Where(ur => ur.UserId == userId && ur.RecipeId == id)
+                    .Select(ur => ur.Rating)
+                    .FirstOrDefaultAsync();
+            }
+            else
+            {
+                ViewBag.IsFavorited = false;
+                ViewBag.UserRating = null;
+            }
 
-                return View(recipe);
-            }, "Error loading recipe details. Please try again later.");
+            return View(recipe);
         }
 
         // GET: Recipe/Create
@@ -406,7 +414,7 @@ namespace MealStack.Web.Controllers
                 ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
                 
                 return View(recipe);
-            }, "Error loading recipe form. Please try again later.");
+            }, "Error loading modules form. Please try again later.");
         }
 
         // POST: Recipe/Create
@@ -419,7 +427,7 @@ namespace MealStack.Web.Controllers
             {
                 if (recipe == null)
                 {
-                    ModelState.AddModelError("", "Invalid recipe data");
+                    ModelState.AddModelError("", "Invalid modules data");
                     ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
                     return View(new RecipeEntity());
                 }
@@ -442,12 +450,12 @@ namespace MealStack.Web.Controllers
                         
                     if (duplicateExists)
                     {
-                        ModelState.AddModelError("Title", "You already have a recipe with this title. Please use a different title.");
+                        ModelState.AddModelError("Title", "You already have a modules with this title. Please use a different title.");
                         ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
                         return View(recipe);
                     }
                     
-                    // Add and save the recipe to get an ID
+                    // Add and save the modules to get an ID
                     _context.Recipes.Add(recipe);
                     await _context.SaveChangesAsync();
                     
@@ -472,7 +480,7 @@ namespace MealStack.Web.Controllers
                 // If we got this far, something failed, redisplay form
                 ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
                 return View(recipe);
-            }, "Error creating recipe. Please check your input and try again.");
+            }, "Error creating modules. Please check your input and try again.");
         }
 
         // GET: Recipe/Edit/5
@@ -501,7 +509,7 @@ namespace MealStack.Web.Controllers
                 }
                 
                 return Forbid();
-            }, "Error loading recipe for editing. Please try again later.");
+            }, "Error loading modules for editing. Please try again later.");
         }
 
         // POST: Recipe/Edit/5
@@ -552,7 +560,7 @@ namespace MealStack.Web.Controllers
                         
                     if (duplicateExists)
                     {
-                        ModelState.AddModelError("Title", "You already have another recipe with this title. Please use a different title.");
+                        ModelState.AddModelError("Title", "You already have another modules with this title. Please use a different title.");
                         ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
                         ViewBag.SelectedCategories = await _context.RecipeCategories
                             .Where(rc => rc.RecipeId == id)
@@ -568,10 +576,8 @@ namespace MealStack.Web.Controllers
                         // Use EntityState.Modified instead of tracking and property updates
                         _context.Entry(recipe).State = EntityState.Modified;
                         
-                        // Save the basic changes first
                         await _context.SaveChangesAsync();
                         
-                        // Handle categories - remove existing and add new ones
                         var existingCategories = await _context.RecipeCategories
                             .Where(rc => rc.RecipeId == id)
                             .ToListAsync();
@@ -613,7 +619,7 @@ namespace MealStack.Web.Controllers
                     .ToListAsync();
                     
                 return View(recipe);
-            }, "Error updating recipe. Please check your input and try again.");
+            }, "Error updating modules. Please check your input and try again.");
         }
 
         // POST: Recipe/Delete/5
@@ -641,10 +647,10 @@ namespace MealStack.Web.Controllers
                 }
                 
                 return Forbid();
-            }, "Error deleting recipe. Please try again later.", "MyRecipes");
+            }, "Error deleting modules. Please try again later.", "MyRecipes");
         }
 
-        // API endpoint for recipe name autocomplete
+        // API endpoint for modules name autocomplete
         [HttpGet]
         public async Task<IActionResult> GetRecipeSuggestions(string term)
         {
@@ -685,7 +691,6 @@ namespace MealStack.Web.Controllers
                 
                 var lowerTerm = term.ToLower();
                 
-                // Get recipe title suggestions
                 var recipeSuggestions = await _context.Recipes
                     .Where(r => r.Title.ToLower().Contains(lowerTerm))
                     .Select(r => r.Title)
@@ -693,7 +698,6 @@ namespace MealStack.Web.Controllers
                     .Take(5)
                     .ToListAsync();
                 
-                // Get ingredient suggestions
                 var ingredientSuggestions = await _context.Ingredients
                     .Where(i => i.Name.ToLower().Contains(lowerTerm))
                     .Select(i => i.Name)
@@ -719,10 +723,8 @@ namespace MealStack.Web.Controllers
         
         private IQueryable<RecipeEntity> ApplySearchFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
         {
-            // Apply search term filtering
             if (!string.IsNullOrEmpty(searchModel.SearchTerm))
             {
-                // Split search term in individual terms
                 var searchTerms = searchModel.SearchTerm.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(t => t.Trim().ToLower())
                     .Where(t => !string.IsNullOrEmpty(t))
@@ -734,10 +736,9 @@ namespace MealStack.Web.Controllers
                 }
             }
             
-            // Apply other filters (separate method - clarity)
+            
             query = ApplyAdditionalFilters(query, searchModel);
             
-            // Apply sorting
             query = ApplySorting(query, searchModel.SortBy);
             
             return query;
@@ -749,7 +750,6 @@ namespace MealStack.Web.Controllers
             switch (searchType)
             {
                 case "title":
-                    // Search only in titles
                     foreach (var term in searchTerms)
                     {
                         query = query.Where(r => r.Title.ToLower().Contains(term));
@@ -759,7 +759,6 @@ namespace MealStack.Web.Controllers
                 case "ingredients":
                     if (matchAllIngredients)
                     {
-                        // AND logic - Need to match all terms
                         foreach (var term in searchTerms)
                         {
                             query = query.Where(r => r.Ingredients.ToLower().Contains(term));
@@ -767,7 +766,6 @@ namespace MealStack.Web.Controllers
                     }
                     else
                     {
-                        // OR logic - Match any term
                         query = query.Where(r => 
                             searchTerms.Any(term => r.Ingredients.ToLower().Contains(term)));
                     }
@@ -785,7 +783,6 @@ namespace MealStack.Web.Controllers
         {
             if (searchTerms.Count == 1)
             {
-                // Single term search
                 var term = searchTerms[0];
                 query = query.Where(r => 
                     r.Title.ToLower().Contains(term) || 
@@ -796,7 +793,6 @@ namespace MealStack.Web.Controllers
             {
                 if (matchAllIngredients)
                 {
-                    // Match ALL for ingredients, ANY for title/desc
                     var ingredientMatches = query.Where(r => true);
                     foreach (var term in searchTerms)
                     {
@@ -815,7 +811,6 @@ namespace MealStack.Web.Controllers
                 }
                 else
                 {
-                    // Or logic - Match anything
                     query = query.Where(r => 
                         searchTerms.Any(term => 
                             r.Title.ToLower().Contains(term) || 
@@ -825,16 +820,13 @@ namespace MealStack.Web.Controllers
             }
         }
 
-        // Apply additional filters (difficulty, servings, prep time, categories)
         private IQueryable<RecipeEntity> ApplyAdditionalFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
         {
-            // Ingredients
             if (searchModel.Ingredients != null && searchModel.Ingredients.Any())
             {
                 ApplyIngredientsFilter(ref query, searchModel.Ingredients, searchModel.MatchAllIngredients);
             }
             
-            // Difficulty
             if (!string.IsNullOrEmpty(searchModel.Difficulty))
             {
                 if (Enum.TryParse<DifficultyLevel>(searchModel.Difficulty, out var difficultyLevel))
@@ -843,7 +835,6 @@ namespace MealStack.Web.Controllers
                 }
             }
             
-            // Servings range
             if (searchModel.MinServings.HasValue)
             {
                 query = query.Where(r => r.Servings >= searchModel.MinServings.Value);
@@ -854,7 +845,6 @@ namespace MealStack.Web.Controllers
                 query = query.Where(r => r.Servings <= searchModel.MaxServings.Value);
             }
             
-            // Preparation time range
             if (searchModel.MinPrepTime.HasValue)
             {
                 query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) >= searchModel.MinPrepTime.Value);
@@ -865,7 +855,6 @@ namespace MealStack.Web.Controllers
                 query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= searchModel.MaxPrepTime.Value);
             }
             
-            // Category 
             if (searchModel.CategoryId.HasValue)
             {
                 query = query.Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == searchModel.CategoryId.Value));
@@ -896,7 +885,6 @@ namespace MealStack.Web.Controllers
         {
             if (matchAllIngredients)
             {
-                // AND logic - must contain all ingredients
                 foreach (var ingredient in ingredients)
                 {
                     query = query.Where(r => r.Ingredients.ToLower().Contains(ingredient.ToLower()));
@@ -904,7 +892,6 @@ namespace MealStack.Web.Controllers
             }
             else
             {
-                // OR logic - must contain any of the ingredients
                 var ingredientTerms = ingredients.Select(i => i.ToLower()).ToList();
                 query = query.Where(r => 
                     ingredientTerms.Any(ingredient => r.Ingredients.ToLower().Contains(ingredient)));

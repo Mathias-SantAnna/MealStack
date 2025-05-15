@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MealStack.styles.css" asp-append-version="true" />
+    <!-- jQuery UI CSS -->
+    <link rel="stylesheet" href="~/lib/jquery-ui/jquery-ui.min.css" />
 </head>
 <body>
 <header>
@@ -151,7 +153,7 @@
     </nav>
 </header>
 <div class="container">
-    <main role="main" class="pb-3">
+    <main role="main" class="pb-3 clearfix">
         @RenderBody()
     </main>
 </div>
@@ -162,18 +164,64 @@
     </div>
 </footer>
 
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <!-- Core Libraries (jQuery, Bootstrap) -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery UI - Use local copy instead of CDN for reliability -->
+    <script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
+    
+    <!-- Include Anti-Forgery Token early to ensure it's available -->
+    @if (User.Identity.IsAuthenticated)
+    {
+        <partial name="_AjaxAntiForgeryToken" />
+    }
 
-@if (User.Identity.IsAuthenticated)
-{
-    <!-- AJAX token -->
-    <partial name="_AjaxAntiForgeryToken" />
-}
+    <!-- MEALSTACK CORE JS MODULES -->
+    <script src="~/js/core/utils.js" asp-append-version="true"></script>
+    <script src="~/js/core/ajax.js" asp-append-version="true"></script>
+    <script src="~/js/core/validation.js" asp-append-version="true"></script>
 
-@await RenderSectionAsync("Scripts", required: false)
-</body>`
-</html>
+    <!-- MEALSTACK FEATURE JS MODULES - Loaded based on page needs -->
+    <script src="~/js/modules/recipe.js" asp-append-version="true"></script>
+    <script src="~/js/modules/favorite.js" asp-append-version="true"></script>
+    <script src="~/js/modules/search.js" asp-append-version="true"></script>
+    
+    @if (Context.Request.Path.Value?.ToLowerInvariant().Contains("/recipe/details") ?? false)
+    {
+        <script src="~/js/modules/rating.js" asp-append-version="true"></script>
+    }
+    
+    @if ((Context.Request.Path.Value?.ToLowerInvariant().Contains("/recipe/create") ?? false) || 
+          (Context.Request.Path.Value?.ToLowerInvariant().Contains("/recipe/edit") ?? false))
+    {
+        <script src="~/js/modules/ingredient.js" asp-append-version="true"></script>
+    }
+
+    <!-- MAIN APPLICATION INITIALIZER -->
+    <script src="~/js/app.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+    
+    <!-- Diagnostic script -->
+    <script>
+        $(document).ready(function() {
+            const brokenElements = $('*').filter(function() {
+                return $(this).css('display') === 'none' && 
+                      ($(this).width() > 1000 || $(this).height() > 1000);
+            });
+            
+            if (brokenElements.length > 0) {
+                console.warn('Potentially broken elements found:', brokenElements);
+            }
+            
+            $(document).on('click', '.favorite-btn', function() {
+                console.log('Favorite button clicked', {
+                    recipeId: $(this).data('recipe-id'),
+                    isFavorite: $(this).data('is-favorite')
+                });
+            });
+        });
+    </script>
+    </body>
+</html>`

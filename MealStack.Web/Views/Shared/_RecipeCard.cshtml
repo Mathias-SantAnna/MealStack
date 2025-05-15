@@ -17,7 +17,10 @@
                     @if (User.Identity.IsAuthenticated)
                     {
                         <div class="favorite-container" data-recipe-id="@Model.Id">
-                            <button class="btn btn-sm p-0 favorite-btn" data-is-favorite="@(isFavorite ? "true" : "false")">
+                            <button class="favorite-btn" 
+                                    data-recipe-id="@Model.Id" 
+                                    data-is-favorite="@(isFavorite ? "true" : "false")"
+                                    aria-label="@(isFavorite ? "Remove from favorites" : "Add to favorites")">
                                 <i class="bi @(isFavorite ? "bi-heart-fill text-danger" : "bi-heart") fs-5"></i>
                             </button>
                         </div>
@@ -92,7 +95,7 @@
                     <a asp-controller="Recipe" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-secondary">
                         <i class="bi bi-pencil me-1"></i> Edit
                     </a>
-                    <a href="#" onclick="return confirmDelete(@Model.Id, '@Model.Title')" class="btn btn-sm btn-outline-danger">
+                    <a href="#" onclick="return RecipeModule.confirmDelete(@Model.Id, '@Model.Title')" class="btn btn-sm btn-outline-danger">
                         <i class="bi bi-trash me-1"></i> Delete
                     </a>
                     

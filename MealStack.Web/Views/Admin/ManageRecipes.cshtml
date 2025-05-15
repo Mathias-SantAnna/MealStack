@@ -6,7 +6,7 @@
 
 <div class="mb-4">
     <h1>Recipes</h1>
-    <p class="text-muted">Manage all recipes from all users in the system.</p>
+    <p class="text-muted">Manage all moduless from all users in the system.</p>
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -17,7 +17,7 @@
                 <div class="me-2">
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" id="searchTerm" name="searchTerm" placeholder="Search recipes..." value="@ViewData["SearchTerm"]">
+                        <input type="text" class="form-control" id="searchTerm" name="searchTerm" placeholder="Search moduless..." value="@ViewData["SearchTerm"]">
                     </div>
                 </div>
 
@@ -107,14 +107,14 @@
                         <button type="button" id="selectAllRecipes" class="btn btn-sm btn-outline-primary me-2">Select All</button>
                         <button type="button" id="deselectAllRecipes" class="btn btn-sm btn-outline-secondary">Deselect All</button>
                     </div>
-                    <div class="recipe-list border rounded p-2" style="max-height: 200px; overflow-y: auto;">
+                    <div class="modules-list border rounded p-2" style="max-height: 200px; overflow-y: auto;">
                         <div class="row">
                             @foreach (var recipe in Model)
                             {
                                 <div class="col-md-4 mb-2">
                                     <div class="form-check">
-                                        <input class="form-check-input recipe-checkbox" type="checkbox" name="selectedRecipes" value="@recipe.Id" id="recipe-@recipe.Id">
-                                        <label class="form-check-label text-truncate" for="recipe-@recipe.Id" title="@recipe.Title">
+                                        <input class="form-check-input modules-checkbox" type="checkbox" name="selectedRecipes" value="@recipe.Id" id="modules-@recipe.Id">
+                                        <label class="form-check-label text-truncate" for="modules-@recipe.Id" title="@recipe.Title">
                                             @recipe.Title
                                         </label>
                                     </div>
@@ -244,7 +244,7 @@
 @section Scripts {
     <script>
         function confirmDelete(id, name) {
-            if (confirm(`Are you sure you want to delete the recipe "${name}"?`)) {
+            if (confirm(`Are you sure you want to delete the modules "${name}"?`)) {
                 document.getElementById(`delete-form-${id}`).submit();
             }
             return false;
@@ -270,21 +270,21 @@
 
             // Bulk Category Management
             $('#selectAllRecipes').click(function() {
-                $('.recipe-checkbox').prop('checked', true);
+                $('.modules-checkbox').prop('checked', true);
             });
 
             $('#deselectAllRecipes').click(function() {
-                $('.recipe-checkbox').prop('checked', false);
+                $('.modules-checkbox').prop('checked', false);
             });
 
             // Form validation
             $('#bulkCategoryForm').on('submit', function(event) {
-                const selectedRecipes = document.querySelectorAll('.recipe-checkbox:checked');
+                const selectedRecipes = document.querySelectorAll('.modules-checkbox:checked');
                 const selectedCategories = document.querySelectorAll('.category-checkbox:checked');
 
                 if (selectedRecipes.length === 0) {
                     event.preventDefault();
-                    alert('Please select at least one recipe');
+                    alert('Please select at least one modules');
                     return false;
                 }
 

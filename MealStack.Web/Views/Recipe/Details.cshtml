@@ -6,7 +6,7 @@
 
 <div class="container py-4">
     <!-- Recipe Header -->
-    <div class="recipe-header shadow-sm">
+    <div class="modules-header shadow-sm">
         <div class="row">
             <div class="col-lg-8">
                 <h1 class="mb-3">@Model.Title</h1>
@@ -16,7 +16,12 @@
                 @if (User.Identity.IsAuthenticated)
                 {
                     <div class="favorite-container mb-3" data-recipe-id="@Model.Id">
-                        @await Component.InvokeAsync("IsFavorite", new { recipeId = Model.Id })
+                        <button class="favorite-btn @(ViewBag.IsFavorited ? "favorited" : "")" 
+                                data-recipe-id="@Model.Id" 
+                                data-is-favorite="@(ViewBag.IsFavorited ? "true" : "false")"
+                                aria-label="@(ViewBag.IsFavorited ? "Remove from favorites" : "Add to favorites")">
+                            <i class="bi @(ViewBag.IsFavorited ? "bi-heart-fill text-danger" : "bi-heart") fs-5"></i>
+                        </button>
                     </div>
                 }
                 
@@ -39,24 +44,24 @@
                 }
                 
                 <!-- Recipe Meta Information -->
-                <div class="recipe-meta">
-                    <div class="recipe-meta-item">
+                <div class="modules-meta">
+                    <div class="modules-meta-item">
                         <i class="bi bi-alarm text-primary"></i>
                         <span>Prep: @Model.PrepTimeMinutes min</span>
                     </div>
-                    <div class="recipe-meta-item">
+                    <div class="modules-meta-item">
                         <i class="bi bi-fire text-primary"></i>
                         <span>Cook: @Model.CookTimeMinutes min</span>
                     </div>
-                    <div class="recipe-meta-item">
+                    <div class="modules-meta-item">
                         <i class="bi bi-clock-history text-primary"></i>
                         <span>Total: @(Model.PrepTimeMinutes + Model.CookTimeMinutes) min</span>
                     </div>
-                    <div class="recipe-meta-item">
+                    <div class="modules-meta-item">
                         <i class="bi bi-people text-primary"></i>
                         <span>Serves: @Model.Servings</span>
                     </div>
-                    <div class="recipe-meta-item">
+                    <div class="modules-meta-item">
                         <i class="bi bi-bar-chart text-primary"></i>
                         <span class="badge bg-@(Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Easy ? "success" : Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Medium ? "warning" : "danger")">
                             @Model.Difficulty
@@ -65,7 +70,7 @@
 
                     @if (Model.RecipeCategories != null && Model.RecipeCategories.Any())
                     {
-                        <div class="recipe-meta-item">
+                        <div class="modules-meta-item">
                             <i class="bi bi-tags text-primary"></i>
                             <div>
                                 @foreach (var recipeCategory in Model.RecipeCategories)
@@ -125,8 +130,8 @@
     <div class="row mt-5">
         <!-- Ingredients Section -->
         <div class="col-md-4 mb-4">
-            <div class="recipe-section">
-                <h3 class="recipe-section-title">
+            <div class="modules-section">
+                <h3 class="modules-section-title">
                     <i class="bi bi-basket me-2 text-primary"></i>Ingredients
                 </h3>
 
@@ -155,8 +160,8 @@
 
         <!-- Instructions Section -->
         <div class="col-md-8 mb-4">
-            <div class="recipe-section">
-                <h3 class="recipe-section-title">
+            <div class="modules-section">
+                <h3 class="modules-section-title">
                     <i class="bi bi-list-ol me-2 text-primary"></i>Instructions
                 </h3>
 
@@ -237,14 +242,13 @@
 
     <script>
         function confirmDelete(id, name) {
-            if (confirm(`Are you sure you want to delete the recipe "${name}"?`)) {
+            if (confirm(`Are you sure you want to delete the modules "${name}"?`)) {
                 document.getElementById(`delete-form-${id}`).submit();
             }
             return false;
         }
 
         function adjustServings() {
-            // Placeholder for future feature
             alert('Servings adjustment feature coming soon!');
         }
 
@@ -253,7 +257,6 @@
         }
 
         function shareRecipe() {
-            // Placeholder for future feature
             if (navigator.share) {
                 navigator.share({
                     title: '@Model.Title',
@@ -263,7 +266,6 @@
                     console.log('Thanks for sharing!');
                 }).catch(console.error);
             } else {
-                // Fallback
                 alert('Share feature coming soon!');
             }
         }
@@ -272,7 +274,7 @@
         $(document).ready(function() {
             $('.favorite-btn').on('click', function() {
                 const btn = $(this);
-                const recipeId = btn.closest('.favorite-container').data('recipe-id');
+                const modulesId = btn.closest('.favorite-container').data('modules-id');
                 const isFavorite = btn.data('is-favorite') === true;
                 
                 // Prepare anti-forgery token
@@ -283,7 +285,7 @@
                     url: '/Recipe/ToggleFavorite',
                     type: 'POST',
                     data: { 
-                        recipeId: recipeId,
+                        modulesId: modulesId,
                         __RequestVerificationToken: token 
                     },
                     success: function(result) {
@@ -304,7 +306,7 @@
         
         // Debug form submission
         $(document).ready(function() {
-            $('#recipeForm').on('submit', function(e) {
+            $('#modulesForm').on('submit', function(e) {
                 console.log('Form submission:');
                 
                 // Log all form fields
@@ -313,7 +315,6 @@
                     console.log(pair[0] + ': ' + pair[1]);
                 }
                 
-                // Continue with normal submission
                 return true;
             });
         });
@@ -322,7 +323,7 @@
     <style>
         /* Print styles */
         @@media print {
-            header, footer, .recipe-header .col-lg-4, .cooking-tools, .btn {
+            header, footer, .modules-header .col-lg-4, .cooking-tools, .btn {
                 display: none !important;
             }
 
@@ -330,7 +331,7 @@
                 font-size: 12pt;
             }
 
-            .recipe-header {
+            .modules-header {
                 box-shadow: none !important;
                 padding: 0 !important;
             }

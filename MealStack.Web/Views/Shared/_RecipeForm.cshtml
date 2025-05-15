@@ -24,7 +24,7 @@
             <button type="button" id="add-ingredient-btn" class="btn btn-outline-primary">Add</button>
         </div>
         <div id="ingredients-container" class="mb-2">
-            <!-- Ingredient chips will be added here -->
+            <!-- Ingredient chips here -->
         </div>
         <div class="d-flex justify-content-between align-items-center">
             <button type="button" id="add-new-ingredient-btn" class="btn btn-sm btn-outline-success">
@@ -33,14 +33,16 @@
             <small class="text-muted">Can't find what you need? Add a new ingredient.</small>
         </div>
     </div>
-    <!-- Hidden field to store actual ingredient data -->
     <textarea asp-for="Ingredients" id="ingredients-data" class="form-control d-none" required></textarea>
     <span asp-validation-for="Ingredients" class="text-danger"></span>
 </div>
 
 <div class="mb-3">
     <label asp-for="Instructions" class="form-label">Instructions</label>
-    <textarea asp-for="Instructions" class="form-control" rows="5" required></textarea>
+    <textarea asp-for="Instructions" class="form-control" rows="5" required placeholder="Step-by-step instructions for preparing your recipe..."></textarea>
+    <p className="text-sm text-gray-500 mt-1">
+        Enter each step on a new line, preferably with step numbers (e.g. "Preheat oven...").
+    </p>
     <span asp-validation-for="Instructions" class="text-danger"></span>
 </div>
 

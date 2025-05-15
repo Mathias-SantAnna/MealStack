@@ -196,6 +196,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 0.5rem;
   padding: 1rem;
+  clear: both; /* Fix for possible float issues */
 }
 
 .ingredient-chip {
@@ -224,6 +225,7 @@ body {
   overflow: hidden;
 }
 
+/* Favorite Button Styles - Updated for heart icon only */
 .favorite-btn {
   background: transparent;
   border: none;
@@ -237,6 +239,8 @@ body {
   touch-action: manipulation;
   position: relative;
   transition: transform 0.2s ease;
+  background-color: transparent !important;
+  border: none !important;
 }
 
 /* Create a larger invisible touch target */
@@ -267,6 +271,7 @@ body {
 /* Heart icon transitions */
 .favorite-btn i {
   transition: all 0.2s ease;
+  color: #dc3545 !important; /* Red color for heart */
 }
 
 /* Subtle pulse animation - filled heart */
@@ -282,6 +287,40 @@ body {
 
 .card .favorite-btn {
   padding: 6px;
+}
+
+/* Hide any text in favorite buttons */
+.favorite-btn .favorite-text {
+  display: none !important;
+}
+
+/* Remove additional styling for btn class when it's a favorite button */
+.btn.favorite-btn {
+  display: flex;
+  padding: 6px;
+  background-color: transparent !important;
+  border: none !important;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Ensure heart color is always red regardless of button state */
+.btn.favorite-btn i,
+.btn.favorite-btn.btn-danger i,
+.btn.favorite-btn.btn-outline-danger i,
+.favorite-btn i,
+.favorite-btn.favorited i {
+  color: #dc3545 !important; /* Red heart */
+  margin-right: 0 !important; /* Remove right margin when text is hidden */
+}
+
+/* Ensure heart is visible on any background */
+.favorite-btn i.bi-heart {
+  opacity: 0.8;
+}
+
+.favorite-btn i.bi-heart-fill {
+  opacity: 1;
 }
 
 .cook-time {
@@ -332,7 +371,7 @@ body {
   .navbar-nav {
     padding-top: 1rem;
   }
-  
+
   body {
     margin-bottom: 100px;
   }
@@ -389,6 +428,8 @@ body {
   border-radius: 0.5rem;
   padding: 2rem;
   margin-bottom: 2rem;
+  clear: both; /* Fix for corrupted display */
+  overflow: hidden; /* Ensure content doesn't spill out */
 }
 
 .recipe-meta {
@@ -396,16 +437,20 @@ body {
   flex-wrap: wrap;
   gap: 1rem;
   margin: 1rem 0;
+  clear: both; /* Fix for corrupted display */
 }
 
 .recipe-meta-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  clear: both; /* Fix for possible float issues */
+  overflow: hidden; /* Prevent content overflow */
 }
 
 .recipe-section {
   margin-bottom: 2rem;
+  clear: both; /* Fix for corrupted display */
 }
 
 .recipe-section-title {
@@ -464,4 +509,127 @@ body {
 
 main {
   padding-bottom: 80px !important;
+  clear: both; /* Fix for possible float issues */
+  overflow: hidden; /* Prevent content overflow that might cause the "dddd" issue */
+}
+
+/* Fix for text replacement issues - change "modules" to "recipe" in UI elements */
+.rating-widget h6 {
+  content: "Rate this recipe:";
+}
+
+/* Ensure all headings are properly cleared */
+h1, h2, h3, h4, h5, h6 {
+  clear: both;
+}
+
+/* Fix for display corruption */
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/* Ensure proper padding and margins in lists to prevent visual corruption */
+ol, ul {
+  padding-left: 0;
+  margin-bottom: 1rem;
+}
+
+/* Fix for issues in DeleteConfirm dialog - ensure text is readable */
+.modal-content {
+  color: #212529;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Ensure favorite button is consistent on details page */
+.favorite-container .favorite-btn,
+.favorite-container .btn.favorite-btn {
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: normal;
+  background-color: transparent !important;
+  border: none !important;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.favorite-container .favorite-btn i,
+.favorite-container .btn.favorite-btn i {
+  margin-right: 0;
+  color: #dc3545 !important;
+}
+
+/* Ensure confirm dialog buttons have proper color and contrast */
+.modal-footer .btn,
+.modal-dialog .btn {
+  color: #212529;
+  background-color: #f8f9fa;
+  border-color: #f8f9fa;
+}
+
+.modal-footer .btn-primary,
+.modal-dialog .btn-primary {
+  color: #fff;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+/* Make sure inputs, selects, and buttons have proper contrast */
+input, select, textarea, button {
+  color: #212529;
+}
+
+/* Ensure no text is white on white background */
+.btn-outline-danger,
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-secondary {
+  color: inherit; /* Use the default text color instead of white */
+}
+
+.btn-outline-danger:hover,
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-secondary:hover {
+  color: white; /* On hover, text is white for contrast */
+}
+
+/* Added for consistent favorite button styling in all contexts */
+.btn-remove-text {
+  display: flex !important;
+  min-width: 44px !important;
+  width: auto !important;
+  min-height: 44px !important;
+  padding: 8px !important;
+  background-color: transparent !important;
+  border: none !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.btn-remove-text span,
+.btn-remove-text .favorite-text {
+  display: none !important;
+}
+
+.btn-remove-text i {
+  margin: 0 !important;
+}
+
+/* Fix for header in recipe listings with heart-only buttons */
+.favorite-time-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+}
+
+/* Ensure proper sizing of favorite button container */
+.favorite-container {
+  margin-bottom: 5px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
