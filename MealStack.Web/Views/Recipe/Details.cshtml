@@ -6,7 +6,7 @@
 
 <div class="container py-4">
     <!-- Recipe Header -->
-    <div class="modules-header shadow-sm">
+    <div class="recipe-header shadow-sm">
         <div class="row">
             <div class="col-lg-8">
                 <h1 class="mb-3">@Model.Title</h1>
@@ -44,24 +44,27 @@
                 }
                 
                 <!-- Recipe Meta Information -->
-                <div class="modules-meta">
-                    <div class="modules-meta-item">
+                <div class="recipe-meta">
+                    <div class="recipe-meta-item">
                         <i class="bi bi-alarm text-primary"></i>
                         <span>Prep: @Model.PrepTimeMinutes min</span>
                     </div>
-                    <div class="modules-meta-item">
+                    <div class="recipe-meta-item">
                         <i class="bi bi-fire text-primary"></i>
                         <span>Cook: @Model.CookTimeMinutes min</span>
                     </div>
-                    <div class="modules-meta-item">
+                    <div class="recipe-meta-item">
                         <i class="bi bi-clock-history text-primary"></i>
                         <span>Total: @(Model.PrepTimeMinutes + Model.CookTimeMinutes) min</span>
                     </div>
-                    <div class="modules-meta-item">
+                    
+                    <!-- Original Serving Size Display (no controls) -->
+                    <div class="recipe-meta-item">
                         <i class="bi bi-people text-primary"></i>
                         <span>Serves: @Model.Servings</span>
                     </div>
-                    <div class="modules-meta-item">
+                    
+                    <div class="recipe-meta-item">
                         <i class="bi bi-bar-chart text-primary"></i>
                         <span class="badge bg-@(Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Easy ? "success" : Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Medium ? "warning" : "danger")">
                             @Model.Difficulty
@@ -70,7 +73,7 @@
 
                     @if (Model.RecipeCategories != null && Model.RecipeCategories.Any())
                     {
-                        <div class="modules-meta-item">
+                        <div class="recipe-meta-item">
                             <i class="bi bi-tags text-primary"></i>
                             <div>
                                 @foreach (var recipeCategory in Model.RecipeCategories)
@@ -110,7 +113,7 @@
                                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">
                                         <i class="bi bi-pencil me-1"></i> Edit Recipe
                                     </a>
-                                    <a href="#" onclick="return confirmDelete(@Model.Id, '@Model.Title')" class="btn btn-outline-danger btn-sm">
+                                    <a href="#" onclick="return RecipeModule.confirmDelete(@Model.Id, '@Model.Title')" class="btn btn-outline-danger btn-sm">
                                         <i class="bi bi-trash me-1"></i> Delete Recipe
                                     </a>
                                 </div>
@@ -130,8 +133,8 @@
     <div class="row mt-5">
         <!-- Ingredients Section -->
         <div class="col-md-4 mb-4">
-            <div class="modules-section">
-                <h3 class="modules-section-title">
+            <div class="recipe-section">
+                <h3 class="recipe-section-title">
                     <i class="bi bi-basket me-2 text-primary"></i>Ingredients
                 </h3>
 
@@ -160,8 +163,8 @@
 
         <!-- Instructions Section -->
         <div class="col-md-8 mb-4">
-            <div class="modules-section">
-                <h3 class="modules-section-title">
+            <div class="recipe-section">
+                <h3 class="recipe-section-title">
                     <i class="bi bi-list-ol me-2 text-primary"></i>Instructions
                 </h3>
 
@@ -191,32 +194,55 @@
         </div>
     </div>
 
-    <!-- Additional Tools Section -->
-    <div class="row mt-4 mb-5">
+    <!-- Cooking Tools Section -->
+    <div class="row mt-4 mb-5 cooking-tools-section">
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">
                         <i class="bi bi-tools me-2 text-primary"></i>Cooking Tools
                     </h5>
-                    <div class="row mt-3">
-                        <div class="col-md-4 mb-3 mb-md-0">
-                            <div class="d-grid">
-                                <button type="button" class="btn btn-outline-primary" onclick="adjustServings()">
-                                    <i class="bi bi-people me-2"></i>Adjust Servings
-                                </button>
+                    
+                    <!-- New Servings Adjustment Card -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Adjust Serving</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Servings:</span>
+                                        <input type="number" id="servings-input" class="form-control" 
+                                               min="1" max="100" value="@Model.Servings" 
+                                               data-original-servings="@Model.Servings">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-end mt-2 mt-md-0">
+                                        <button type="button" id="apply-servings" class="btn btn-success me-2">
+                                            Apply
+                                        </button>
+                                        <button type="button" id="reset-servings" class="btn btn-outline-secondary">
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3 mb-md-0">
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
                             <div class="d-grid">
-                                <button type="button" class="btn btn-outline-success" onclick="printRecipe()">
+                                <button type="button" class="btn btn-outline-success" id="print-recipe">
                                     <i class="bi bi-printer me-2"></i>Print Recipe
                                 </button>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="d-grid">
-                                <button type="button" class="btn btn-outline-info" onclick="shareRecipe()">
+                                <button type="button" class="btn btn-outline-info" id="share-recipe">
                                     <i class="bi bi-share me-2"></i>Share Recipe
                                 </button>
                             </div>
@@ -226,6 +252,25 @@
             </div>
         </div>
     </div>
+
+    <!-- Notes Section -->
+    @if (!string.IsNullOrEmpty(Model.Notes))
+    {
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="bi bi-journal-text me-2 text-primary"></i>Recipe Notes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p>@Model.Notes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
     <!-- Back Button -->
     <div class="text-center mt-4">
@@ -240,106 +285,41 @@
     <partial name="_AjaxAntiForgeryToken" />
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
+    <!-- Load the servings module -->
+    <script src="~/js/modules/servings.js"></script>
+
     <script>
-        function confirmDelete(id, name) {
-            if (confirm(`Are you sure you want to delete the modules "${name}"?`)) {
-                document.getElementById(`delete-form-${id}`).submit();
-            }
-            return false;
-        }
-
-        function adjustServings() {
-            alert('Servings adjustment feature coming soon!');
-        }
-
-        function printRecipe() {
-            window.print();
-        }
-
-        function shareRecipe() {
-            if (navigator.share) {
-                navigator.share({
-                    title: '@Model.Title',
-                    text: '@Model.Description',
-                    url: window.location.href,
-                }).then(() => {
-                    console.log('Thanks for sharing!');
-                }).catch(console.error);
-            } else {
-                alert('Share feature coming soon!');
-            }
-        }
-
-        // Favorites functionality
         $(document).ready(function() {
-            $('.favorite-btn').on('click', function() {
-                const btn = $(this);
-                const modulesId = btn.closest('.favorite-container').data('modules-id');
-                const isFavorite = btn.data('is-favorite') === true;
-                
-                // Prepare anti-forgery token
-                const token = $('input[name="__RequestVerificationToken"]').val();
-                
-                // AJAX call to toggle favorite status
-                $.ajax({
-                    url: '/Recipe/ToggleFavorite',
-                    type: 'POST',
-                    data: { 
-                        modulesId: modulesId,
-                        __RequestVerificationToken: token 
-                    },
-                    success: function(result) {
-                        if (result.success) {
-                            // Update button appearance
-                            if (result.isFavorite) {
-                                btn.data('is-favorite', true);
-                                btn.html('<i class="bi bi-heart-fill me-1"></i> Remove from Favorites');
-                            } else {
-                                btn.data('is-favorite', false);
-                                btn.html('<i class="bi bi-heart me-1"></i> Add to Favorites');
-                            }
-                        }
-                    }
-                });
-            });
-        });
-        
-        // Debug form submission
-        $(document).ready(function() {
-            $('#modulesForm').on('submit', function(e) {
-                console.log('Form submission:');
-                
-                // Log all form fields
-                var formData = new FormData(this);
-                for (var pair of formData.entries()) {
-                    console.log(pair[0] + ': ' + pair[1]);
+            if (typeof ServingsModule !== 'undefined') {
+                ServingsModule.init();
+            }
+            
+            function confirmDelete(id, name) {
+                if (confirm(`Are you sure you want to delete the recipe "${name}"?`)) {
+                    document.getElementById(`delete-form-${id}`).submit();
                 }
-                
-                return true;
+                return false;
+            }
+
+            // Handle print button
+            $('#print-recipe').on('click', function() {
+                window.print();
+            });
+
+            // Handle share button
+            $('#share-recipe').on('click', function() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: '@Model.Title',
+                        text: '@Model.Description',
+                        url: window.location.href,
+                    }).then(() => {
+                        console.log('Thanks for sharing!');
+                    }).catch(console.error);
+                } else {
+                    prompt('Share this recipe by copying the link below:', window.location.href);
+                }
             });
         });
     </script>
-
-    <style>
-        /* Print styles */
-        @@media print {
-            header, footer, .modules-header .col-lg-4, .cooking-tools, .btn {
-                display: none !important;
-            }
-
-            body {
-                font-size: 12pt;
-            }
-
-            .modules-header {
-                box-shadow: none !important;
-                padding: 0 !important;
-            }
-
-            a {
-                text-decoration: none !important;
-                color: #000 !important;
-            }
-        }
-    </style>
 }

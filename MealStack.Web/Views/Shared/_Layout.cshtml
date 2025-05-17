@@ -95,12 +95,6 @@
                                         <i class="bi bi-tags me-2"></i> Manage Categories
                                     </a>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="BulkCategoryAssignment">
-                                        <i class="bi bi-layers me-2"></i> Bulk Category Assignment
-                                    </a>
-                                </li>
                             </ul>
                         </li>
                     }
@@ -168,7 +162,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- jQuery UI - Use local copy instead of CDN for reliability -->
+    <!-- jQuery UI - local copy  -->
     <script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
     
     <!-- Include Anti-Forgery Token early to ensure it's available -->
@@ -190,10 +184,11 @@
     @if (Context.Request.Path.Value?.ToLowerInvariant().Contains("/recipe/details") ?? false)
     {
         <script src="~/js/modules/rating.js" asp-append-version="true"></script>
+        <script src="~/js/modules/servings.js" asp-append-version="true"></script>
     }
     
     @if ((Context.Request.Path.Value?.ToLowerInvariant().Contains("/recipe/create") ?? false) || 
-          (Context.Request.Path.Value?.ToLowerInvariant().Contains("/recipe/edit") ?? false))
+         (Context.Request.Path.Value?.ToLowerInvariant().Contains("/recipe/edit") ?? false))
     {
         <script src="~/js/modules/ingredient.js" asp-append-version="true"></script>
     }

@@ -1,7 +1,4 @@
-/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
-
-/* Base styles */
+/* Base styles and variables */
 :root {
   --primary-color: #0d6efd;
   --secondary-color: #6c757d;
@@ -10,6 +7,9 @@ for details on configuring this project to bundle and minify static web assets. 
   --danger-color: #dc3545;
   --light-color: #f8f9fa;
   --dark-color: #212529;
+  --border-radius: 0.5rem;
+  --transition-speed: 0.2s;
+  --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
 }
 
 html {
@@ -25,7 +25,24 @@ body {
   background-color: #fafafa;
 }
 
-/* Header & navigation */
+main {
+  padding-bottom: 80px !important;
+  clear: both;
+  overflow: hidden;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  clear: both;
+}
+
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/* Layout components */
 .navbar-brand {
   font-weight: 600;
   font-size: 1.25rem;
@@ -34,50 +51,52 @@ body {
 .navbar-nav .nav-link {
   padding: 0.5rem 1rem;
   border-radius: 0.25rem;
-  transition: all 0.2s ease;
+  transition: all var(--transition-speed) ease;
 }
 
 .navbar-nav .nav-link:hover {
   background-color: rgba(13, 110, 253, 0.1);
 }
 
-/* Buttons */
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+  background-color: var(--light-color);
+  z-index: 1000;
+}
+
+/* UI Elements */
 .btn {
   border-radius: 0.25rem;
   padding: 0.5rem 1rem;
-  transition: all 0.2s ease;
+  transition: all var(--transition-speed) ease;
 }
 
 .btn-primary, .btn-success, .btn-danger {
   color: white;
 }
 
-.btn-outline-primary:hover, .btn-outline-success:hover, .btn-outline-danger:hover {
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-danger:hover,
+.btn-outline-secondary:hover {
   color: white;
 }
 
-/* Cards */
-.card {
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+.btn-outline-danger,
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-secondary {
+  color: inherit;
 }
 
-.card-header {
-  border-top-left-radius: 0.5rem !important;
-  border-top-right-radius: 0.5rem !important;
+input, select, textarea, button {
+  color: var(--dark-color);
 }
 
-.card-footer {
-  border-bottom-left-radius: 0.5rem !important;
-  border-bottom-right-radius: 0.5rem !important;
-}
-
-.card:hover {
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-}
-
-/* Form elements */
 .form-control, .form-select {
   border-radius: 0.25rem;
   padding: 0.5rem 0.75rem;
@@ -87,6 +106,86 @@ body {
 .form-control:focus, .form-select:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Cards */
+.card {
+  border-radius: var(--border-radius);
+  transition: all var(--transition-speed) ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.card:hover {
+  box-shadow: var(--box-shadow);
+}
+
+.card-header {
+  border-top-left-radius: var(--border-radius) !important;
+  border-top-right-radius: var(--border-radius) !important;
+}
+
+.card-footer {
+  border-bottom-left-radius: var(--border-radius) !important;
+  border-bottom-right-radius: var(--border-radius) !important;
+}
+
+.modal-content {
+  color: var(--dark-color);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.modal-footer .btn,
+.modal-dialog .btn {
+  color: var(--dark-color);
+  background-color: var(--light-color);
+  border-color: var(--light-color);
+}
+
+.modal-footer .btn-primary,
+.modal-dialog .btn-primary {
+  color: #fff;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Badges */
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+  border-radius: 0.25rem;
+}
+
+.badge-easy {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.badge-medium {
+  background-color: var(--warning-color);
+  color: var(--dark-color);
+}
+
+.badge-hard {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+/* Category pills */
+.category-pill {
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50rem;
+  text-decoration: none;
+  color: var(--dark-color);
+  transition: all var(--transition-speed) ease;
+  white-space: nowrap;
+}
+
+.category-pill:hover, .category-pill.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
 }
 
 /* Recipe Cards */
@@ -104,30 +203,174 @@ body {
   transform: translateY(-5px);
 }
 
-/* Badges */
-.badge {
-  font-weight: 500;
-  padding: 0.35em 0.65em;
-  border-radius: 0.25rem;
+.cook-time {
+  color: #ff6920;
+  font-size: 0.9rem;
+  margin-top: 2px;
 }
 
-/* Recipe difficulty badges */
-.badge-easy {
-  background-color: var(--success-color);
-  color: white;
+/* Favorite button styling */
+.favorite-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  touch-action: manipulation;
+  position: relative;
+  transition: transform var(--transition-speed) ease;
+  background-color: transparent !important;
+  border: none !important;
 }
 
-.badge-medium {
-  background-color: var(--warning-color);
-  color: #212529;
+.favorite-btn::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  z-index: -1;
 }
 
-.badge-hard {
-  background-color: var(--danger-color);
-  color: white;
+.favorite-btn:hover {
+  transform: scale(1.1);
 }
 
-/* Search bar */
+.favorite-btn:focus {
+  outline: 3px solid rgba(13, 110, 253, 0.25);
+  outline-offset: 2px;
+}
+
+.favorite-btn:active {
+  transform: scale(0.95);
+}
+
+.favorite-btn i {
+  transition: all var(--transition-speed) ease;
+  color: #dc3545 !important;
+}
+
+.favorite-btn i.bi-heart {
+  opacity: 0.8;
+}
+
+.favorite-btn i.bi-heart-fill {
+  opacity: 1;
+  animation: heartPulse 0.6s ease-in-out;
+}
+
+.card .favorite-btn {
+  padding: 6px;
+}
+
+.btn.favorite-btn {
+  display: flex;
+  padding: 6px;
+  background-color: transparent !important;
+  border: none !important;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.btn.favorite-btn i,
+.btn.favorite-btn.btn-danger i,
+.btn.favorite-btn.btn-outline-danger i,
+.favorite-btn i,
+.favorite-btn.favorited i {
+  color: #dc3545 !important;
+  margin-right: 0 !important;
+}
+
+.favorite-btn .favorite-text {
+  display: none !important;
+}
+
+.favorite-container {
+  margin-bottom: 5px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.favorite-container .favorite-btn,
+.favorite-container .btn.favorite-btn {
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: normal;
+  background-color: transparent !important;
+  border: none !important;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.favorite-container .favorite-btn i,
+.favorite-container .btn.favorite-btn i {
+  margin-right: 0;
+  color: #dc3545 !important;
+}
+
+.favorite-time-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+}
+
+.btn-remove-text {
+  display: flex !important;
+  min-width: 44px !important;
+  width: auto !important;
+  min-height: 44px !important;
+  padding: 8px !important;
+  background-color: transparent !important;
+  border: none !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.btn-remove-text span,
+.btn-remove-text .favorite-text {
+  display: none !important;
+}
+
+.btn-remove-text i {
+  margin: 0 !important;
+}
+
+/* Rating styles */
+.star-rating {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #ffc107;
+  transition: transform 0.1s;
+}
+
+.star-rating:hover {
+  transform: scale(1.1);
+}
+
+.rating-stars {
+  display: inline-block;
+}
+
+.rating-widget {
+  border: 1px solid #dee2e6;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background-color: var(--light-color);
+}
+
+.rating-widget h6 {
+  content: "Rate this recipe:";
+}
+
+/* Search styles */
 .search-container {
   width: 70%;
   margin: 0 auto;
@@ -152,7 +395,7 @@ body {
   border-left: none;
 }
 
-/* UI Autocomplete styling */
+/* UI Autocomplete */
 .ui-autocomplete {
   border-radius: 0 !important;
   background: white;
@@ -169,267 +412,19 @@ body {
 
 .ui-menu-item:hover,
 .ui-menu-item-wrapper.ui-state-active {
-  background-color: #f8f9fa !important;
+  background-color: var(--light-color) !important;
   border: none !important;
   margin: 0 !important;
-}
-
-.category-pill {
-  padding: 0.5rem 1rem;
-  background-color: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 50rem;
-  text-decoration: none;
-  color: #212529;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.category-pill:hover, .category-pill.active {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  color: white;
-}
-
-/* Ingredients section */
-.ingredients-section {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  clear: both; /* Fix for possible float issues */
-}
-
-.ingredient-chip {
-  background-color: var(--light-color);
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-  margin-right: 0.5rem;
-  margin-bottom: 0.5rem;
-  display: inline-flex;
-  align-items: center;
-}
-
-/* Favorite styles */
-.hover-scale {
-  transition: transform 0.3s ease;
-}
-
-.hover-scale:hover {
-  transform: translateY(-5px);
-}
-
-.text-truncate-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Favorite Button Styles - Updated for heart icon only */
-.favorite-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  min-width: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  touch-action: manipulation;
-  position: relative;
-  transition: transform 0.2s ease;
-  background-color: transparent !important;
-  border: none !important;
-}
-
-/* Create a larger invisible touch target */
-.favorite-btn::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
-  z-index: -1;
-}
-
-.favorite-btn:hover {
-  transform: scale(1.1);
-}
-
-.favorite-btn:focus {
-  outline: 3px solid rgba(13, 110, 253, 0.25);
-  outline-offset: 2px;
-}
-
-/* Visual feedback for active state */
-.favorite-btn:active {
-  transform: scale(0.95);
-}
-
-/* Heart icon transitions */
-.favorite-btn i {
-  transition: all 0.2s ease;
-  color: #dc3545 !important; /* Red color for heart */
-}
-
-/* Subtle pulse animation - filled heart */
-@keyframes heartPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
-
-.favorite-btn i.bi-heart-fill {
-  animation: heartPulse 0.6s ease-in-out;
-}
-
-.card .favorite-btn {
-  padding: 6px;
-}
-
-/* Hide any text in favorite buttons */
-.favorite-btn .favorite-text {
-  display: none !important;
-}
-
-/* Remove additional styling for btn class when it's a favorite button */
-.btn.favorite-btn {
-  display: flex;
-  padding: 6px;
-  background-color: transparent !important;
-  border: none !important;
-  min-width: 44px;
-  min-height: 44px;
-}
-
-/* Ensure heart color is always red regardless of button state */
-.btn.favorite-btn i,
-.btn.favorite-btn.btn-danger i,
-.btn.favorite-btn.btn-outline-danger i,
-.favorite-btn i,
-.favorite-btn.favorited i {
-  color: #dc3545 !important; /* Red heart */
-  margin-right: 0 !important; /* Remove right margin when text is hidden */
-}
-
-/* Ensure heart is visible on any background */
-.favorite-btn i.bi-heart {
-  opacity: 0.8;
-}
-
-.favorite-btn i.bi-heart-fill {
-  opacity: 1;
-}
-
-.cook-time {
-  color: #ff6920;
-  font-size: 0.9rem;
-  margin-top: 2px;
-}
-
-.star-rating {
-  cursor: pointer;
-  font-size: 1.5rem;
-  color: #ffc107;
-  transition: transform 0.1s;
-}
-
-.star-rating:hover {
-  transform: scale(1.1);
-}
-
-.rating-stars {
-  display: inline-block;
-}
-
-.rating-widget {
-  border: 1px solid #dee2e6;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  background-color: #f8f9fa;
-}
-
-/* Footer */
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px;
-  background-color: #f8f9fa;
-  z-index: 1000;
-}
-
-/* Responsive adjustments */
-@media (max-width: 767.98px) {
-  .display-4 {
-    font-size: 2rem;
-  }
-
-  .navbar-nav {
-    padding-top: 1rem;
-  }
-
-  body {
-    margin-bottom: 100px;
-  }
-
-  /* Make search container wider on mobile */
-  .search-container {
-    width: 100%;
-  }
-
-  /* Favorite buttons easy tap on small screens */
-  .favorite-btn {
-    min-width: 48px;
-    min-height: 48px;
-  }
-}
-
-/* Animation effects */
-.hover-lift {
-  transition: transform 0.3s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-5px);
-}
-
-.hover-shadow {
-  transition: box-shadow 0.3s ease;
-}
-
-.hover-shadow:hover {
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-}
-
-/* Custom utility classes */
-.text-truncate-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.text-truncate-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Recipe detail page */
 .recipe-header {
   background-color: var(--light-color);
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
   padding: 2rem;
   margin-bottom: 2rem;
-  clear: both; /* Fix for corrupted display */
-  overflow: hidden; /* Ensure content doesn't spill out */
+  clear: both;
+  overflow: hidden;
 }
 
 .recipe-meta {
@@ -437,20 +432,24 @@ body {
   flex-wrap: wrap;
   gap: 1rem;
   margin: 1rem 0;
-  clear: both; /* Fix for corrupted display */
+  clear: both;
 }
 
 .recipe-meta-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  clear: both; /* Fix for possible float issues */
-  overflow: hidden; /* Prevent content overflow */
+  clear: both;
+  overflow: hidden;
+}
+
+.recipe-meta-item .d-flex {
+  align-items: center;
 }
 
 .recipe-section {
   margin-bottom: 2rem;
-  clear: both; /* Fix for corrupted display */
+  clear: both;
 }
 
 .recipe-section-title {
@@ -458,6 +457,24 @@ body {
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
   display: inline-block;
+}
+
+/* Ingredients */
+.ingredients-section {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  clear: both;
+}
+
+.ingredient-chip {
+  background-color: var(--light-color);
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: inline-flex;
+  align-items: center;
 }
 
 .ingredients-list {
@@ -468,12 +485,19 @@ body {
 .ingredients-list li {
   padding: 0.5rem 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s ease;
+}
+
+.ingredients-list li.highlight {
+  background-color: rgba(13, 110, 253, 0.1);
+  animation: pulse 0.3s ease-in-out;
 }
 
 .ingredients-list li:last-child {
   border-bottom: none;
 }
 
+/* Instructions */
 .instructions-list {
   counter-reset: step-counter;
   list-style-type: none;
@@ -507,129 +531,168 @@ body {
   font-weight: bold;
 }
 
-main {
-  padding-bottom: 80px !important;
-  clear: both; /* Fix for possible float issues */
-  overflow: hidden; /* Prevent content overflow that might cause the "dddd" issue */
-}
-
-/* Fix for text replacement issues - change "modules" to "recipe" in UI elements */
-.rating-widget h6 {
-  content: "Rate this recipe:";
-}
-
-/* Ensure all headings are properly cleared */
-h1, h2, h3, h4, h5, h6 {
-  clear: both;
-}
-
-/* Fix for display corruption */
-.clearfix::after {
-  content: "";
-  clear: both;
-  display: table;
-}
-
-/* Ensure proper padding and margins in lists to prevent visual corruption */
+/* Lists */
 ol, ul {
   padding-left: 0;
   margin-bottom: 1rem;
 }
 
-/* Fix for issues in DeleteConfirm dialog - ensure text is readable */
-.modal-content {
-  color: #212529;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* Utility classes */
+.hover-scale {
+  transition: transform 0.3s ease;
 }
 
-/* Ensure favorite button is consistent on details page */
-.favorite-container .favorite-btn,
-.favorite-container .btn.favorite-btn {
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: normal;
-  background-color: transparent !important;
-  border: none !important;
-  min-width: 44px;
-  min-height: 44px;
+.hover-scale:hover {
+  transform: translateY(-5px);
 }
 
-.favorite-container .favorite-btn i,
-.favorite-container .btn.favorite-btn i {
-  margin-right: 0;
-  color: #dc3545 !important;
+.hover-lift {
+  transition: transform 0.3s ease;
 }
 
-/* Ensure confirm dialog buttons have proper color and contrast */
-.modal-footer .btn,
-.modal-dialog .btn {
-  color: #212529;
-  background-color: #f8f9fa;
-  border-color: #f8f9fa;
+.hover-lift:hover {
+  transform: translateY(-5px);
 }
 
-.modal-footer .btn-primary,
-.modal-dialog .btn-primary {
-  color: #fff;
-  background-color: #0d6efd;
-  border-color: #0d6efd;
+.hover-shadow {
+  transition: box-shadow 0.3s ease;
 }
 
-/* Make sure inputs, selects, and buttons have proper contrast */
-input, select, textarea, button {
-  color: #212529;
+.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
 
-/* Ensure no text is white on white background */
-.btn-outline-danger,
-.btn-outline-primary,
-.btn-outline-success,
-.btn-outline-secondary {
-  color: inherit; /* Use the default text color instead of white */
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.btn-outline-danger:hover,
-.btn-outline-primary:hover,
-.btn-outline-success:hover,
-.btn-outline-secondary:hover {
-  color: white; /* On hover, text is white for contrast */
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Added for consistent favorite button styling in all contexts */
-.btn-remove-text {
-  display: flex !important;
-  min-width: 44px !important;
-  width: auto !important;
-  min-height: 44px !important;
-  padding: 8px !important;
-  background-color: transparent !important;
-  border: none !important;
-  justify-content: center !important;
-  align-items: center !important;
+/* Servings adjustment */
+#servings-input {
+  min-width: 80px;
+  text-align: center;
+  font-weight: 500;
+  transition: all var(--transition-speed) ease;
 }
 
-.btn-remove-text span,
-.btn-remove-text .favorite-text {
-  display: none !important;
+#apply-servings {
+  transition: all var(--transition-speed) ease;
 }
 
-.btn-remove-text i {
-  margin: 0 !important;
+#apply-servings:hover {
+  background-color: var(--success-color);
+  color: white;
 }
 
-/* Fix for header in recipe listings with heart-only buttons */
-.favorite-time-container {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-end !important;
+#reset-servings {
+  transition: all var(--transition-speed) ease;
 }
 
-/* Ensure proper sizing of favorite button container */
-.favorite-container {
-  margin-bottom: 5px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+#reset-servings:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Animations */
+@keyframes heartPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Responsive styles */
+@media (max-width: 767.98px) {
+  .display-4 {
+    font-size: 2rem;
+  }
+
+  .navbar-nav {
+    padding-top: 1rem;
+  }
+
+  body {
+    margin-bottom: 100px;
+  }
+
+  .search-container {
+    width: 100%;
+  }
+
+  .favorite-btn {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+/* Print styles */
+@media print {
+  header,
+  footer,
+  .recipe-header .col-lg-4,
+  .cooking-tools-section,
+  .btn,
+  .favorite-container,
+  .rating-widget {
+    display: none !important;
+  }
+
+  body {
+    font-size: 12pt;
+  }
+
+  .recipe-header {
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  a {
+    text-decoration: none !important;
+    color: #000 !important;
+  }
+
+  .form-check-input {
+    display: inline-block !important;
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .recipe-section {
+    margin-bottom: 20pt !important;
+    page-break-inside: avoid;
+  }
+
+  h1 {
+    page-break-after: avoid;
+  }
+
+  .ingredients-list,
+  .instructions-list {
+    page-break-inside: avoid;
+  }
+
+  .text-muted {
+    color: #333 !important;
+  }
+
+  .instructions-section {
+    page-break-before: auto;
+  }
 }

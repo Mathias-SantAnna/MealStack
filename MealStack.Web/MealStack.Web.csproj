@@ -33,4 +33,12 @@
       <Folder Include="Areas\Identity\Data\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\js\old\ingredientManager.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\js\old\ingredients.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\js\old\recipeForm.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\js\old\search.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\js\old\servings2.js" />
+    </ItemGroup>
+
 </Project>

@@ -38,7 +38,6 @@ const MealStack = (function() {
 
         console.log("Current path:", path);
 
-        // Initialize Favorite module if available
         if ($('.favorite-btn').length) {
             console.log("Initializing FavoriteModule - found favorite buttons on page.");
             FavoriteModule.init();
@@ -72,6 +71,11 @@ const MealStack = (function() {
         if (path.includes('/recipe/details/')) {
             console.log("Initializing RatingModule for Recipe Details.");
             RatingModule.init();
+
+            if (typeof ServingsModule !== 'undefined') {
+                console.log("Initializing ServingsModule for Recipe Details.");
+                ServingsModule.init();
+            }
         }
 
         if ($('#searchForm').length > 0) {
@@ -86,7 +90,6 @@ const MealStack = (function() {
     };
 })();
 
-// Initialize the application when the document is ready
 $(document).ready(function() {
     console.log("Document ready, initializing MealStack application...");
     MealStack.init();
