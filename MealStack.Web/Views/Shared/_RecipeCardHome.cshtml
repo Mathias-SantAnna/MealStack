@@ -1,0 +1,76 @@
+@model MealStack.Infrastructure.Data.RecipeEntity
+
+<div class="recipe-card-featured h-100 shadow-sm">
+    <div class="recipe-card-image">
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <img src="@Model.ImagePath" alt="@Model.Title" class="recipe-img">
+        }
+        else
+        {
+            <div class="img-placeholder">
+                <i class="bi bi-card-image fs-1 text-white-50"></i>
+            </div>
+        }
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="favorite-container" data-recipe-id="@Model.Id">
+                <button class="favorite-btn @(ViewBag.FavoriteRecipes != null && ((List<int>)ViewBag.FavoriteRecipes).Contains(Model.Id) ? "favorited" : "")"
+                        data-recipe-id="@Model.Id"
+                        data-is-favorite="@(ViewBag.FavoriteRecipes != null && ((List<int>)ViewBag.FavoriteRecipes).Contains(Model.Id) ? "true" : "false")">
+                    <i class="bi @(ViewBag.FavoriteRecipes != null && ((List<int>)ViewBag.FavoriteRecipes).Contains(Model.Id) ? "bi-heart-fill" : "bi-heart") fs-5"></i>
+                </button>
+            </div>
+        }
+    </div>
+    <div class="recipe-card-content p-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <span class="badge bg-@(Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Easy ? "success" :
+                                  Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Medium ? "warning" : "danger")">
+                @Model.Difficulty
+            </span>
+            <span class="cook-time">
+                <i class="bi bi-clock"></i> @(Model.PrepTimeMinutes + Model.CookTimeMinutes) min
+            </span>
+        </div>
+        <h5 class="recipe-card-title mb-2">@Model.Title</h5>
+        <div class="d-flex align-items-center mb-2">
+            <div class="rating-stars small">
+                @{
+                    var avgRating = Model.AverageRating;
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= avgRating)
+                        {
+                            <i class="bi bi-star-fill text-warning"></i>
+                        }
+                        else if (i - 0.5 <= avgRating)
+                        {
+                            <i class="bi bi-star-half text-warning"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-star text-warning"></i>
+                        }
+                    }
+                }
+            </div>
+            <span class="ms-2 text-muted small">(@Model.TotalRatings)</span>
+        </div>
+        <p class="recipe-card-desc text-truncate-2 mb-3">@Model.Description</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                @if (Model.RecipeCategories != null && Model.RecipeCategories.Any())
+                {
+                    foreach (var recipeCategory in Model.RecipeCategories.Take(2))
+                    {
+                        <span class="badge bg-@(string.IsNullOrEmpty(recipeCategory.Category.ColorClass) ? "secondary" : recipeCategory.Category.ColorClass) me-1">
+                            @recipeCategory.Category.Name
+                        </span>
+                    }
+                }
+            </div>
+            <a asp-controller="Recipe" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">View</a>
+        </div>
+    </div>
+</div>

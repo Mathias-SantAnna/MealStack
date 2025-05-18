@@ -12,7 +12,7 @@ namespace MealStack.Web.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly MealStackDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager; // Add local instance
+        private readonly UserManager<ApplicationUser> _userManager; 
 
         public HomeController(
             ILogger<HomeController> logger, 
@@ -21,7 +21,7 @@ namespace MealStack.Web.Controllers
         {
             _logger = logger;
             _context = context;
-            _userManager = userManager; // Store locally
+            _userManager = userManager; 
         }
 
         public async Task<IActionResult> Index(string searchTerm, string searchType = "all", bool matchAllIngredients = true)
@@ -36,8 +36,16 @@ namespace MealStack.Web.Controllers
             ViewData["SearchType"] = "all";
             ViewData["MatchAllIngredients"] = "true";
 
+            // Get categories for navigation and showcase
             ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
 
+            // Select hero image
+            Random r = new Random();
+            ViewBag.HeroImage = r.Next(0, 2) == 0 
+                ? "/images/heroes/HeroBanner.jpg" 
+                : "/images/heroes/HeroBanner2.jpg";
+
+            // Get latest recipes
             var latestRecipes = await _context.Recipes
                 .Include(r => r.CreatedBy)
                 .Include(r => r.RecipeCategories).ThenInclude(rc => rc.Category)
@@ -45,6 +53,7 @@ namespace MealStack.Web.Controllers
                 .OrderByDescending(r => r.CreatedDate)
                 .Take(3).ToListAsync();
 
+            // Get favorite recipes for logged in user
             if (User.Identity.IsAuthenticated)
             {
                 var userId = _userManager.GetUserId(User);
@@ -54,7 +63,6 @@ namespace MealStack.Web.Controllers
 
             return View(latestRecipes);
         }
-
 
         public IActionResult Privacy()
         {

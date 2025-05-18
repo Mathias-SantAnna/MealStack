@@ -4,20 +4,19 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq; 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Configure EF Core + PostgreSQL with detailed logging
 if (builder.Environment.IsDevelopment())
 {
-    // Development configuration with detailed logging
     builder.Services.AddDbContext<MealStackDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-            x => x.MigrationsAssembly("MealStack.Infrastructure"))
+                x => x.MigrationsAssembly("MealStack.Infrastructure"))
             .EnableSensitiveDataLogging()
             .LogTo(Console.WriteLine, LogLevel.Information));
     
-    // More detailed logging
     builder.Logging.AddConsole()
         .AddDebug()
         .SetMinimumLevel(LogLevel.Debug);
@@ -77,7 +76,7 @@ using (var scope = app.Services.CreateScope())
     // admin credentials
     string adminEmail    = "admin@mealstack.com";
     string adminPassword = "Admin@123";
-    string adminUsername = adminEmail;   // use email as the username
+    string adminUsername = adminEmail;
 
     // find or create admin user
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
@@ -109,7 +108,7 @@ else
     app.UseDeveloperExceptionPage();
 }
 
-// Add a custom error handling middleware (optional)
+// Add a custom error handling middleware
 app.Use(async (context, next) =>
 {
     try
@@ -124,7 +123,6 @@ app.Use(async (context, next) =>
     }
     catch (Exception ex)
     {
-        // Log the error
         var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An unhandled exception occurred");
         

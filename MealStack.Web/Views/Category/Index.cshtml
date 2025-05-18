@@ -7,7 +7,7 @@
 <div class="row align-items-center mb-4">
     <div class="col-md-8">
         <h1>Categories</h1>
-        <p class="text-muted">View modules categories for better organization.</p>
+        <p class="text-muted">View recipe categories for better organization.</p>
     </div>
     <div class="col-md-4 text-md-end">
         @if (User.IsInRole("Admin"))
@@ -54,9 +54,9 @@
                     <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Image</th>
                         <th>Description</th>
                         <th>Color</th>
-                        <!-- Removed both CreatedBy and CreatedDate columns -->
                         @if (User.IsInRole("Admin"))
                         {
                             <th>Actions</th>
@@ -68,22 +68,31 @@
                     {
                         <tr>
                             <td>
-                                <span class="badge" style="background-color: @(string.IsNullOrEmpty(category.ColorClass) ? "#6c757d" : "var(--bs-" + category.ColorClass + ")")">
+                                <span class="badge" style="background-color: @(string.IsNullOrEmpty(category.ColorClass) ? "#6c757d" : "var(--" + category.ColorClass + "-color)")">
                                     @category.Name
                                 </span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(category.ImagePath))
+                                {
+                                    <img src="@category.ImagePath" alt="@category.Name" class="img-thumbnail" style="max-height: 50px;" />
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No image</span>
+                                }
                             </td>
                             <td>@category.Description</td>
                             <td>
                                 @if (!string.IsNullOrEmpty(category.ColorClass))
                                 {
-                                    <div class="color-preview" style="background-color: var(--bs-@category.ColorClass); width: 24px; height: 24px; border-radius: 4px;"></div>
+                                    <div class="color-preview" style="background-color: var(--@category.ColorClass-color); width: 24px; height: 24px; border-radius: 4px;"></div>
                                 }
                                 else
                                 {
                                     <span class="text-muted">Default</span>
                                 }
                             </td>
-                            <!-- Removed CreatedDate column data -->
                             @if (User.IsInRole("Admin"))
                             {
                                 <td>
@@ -99,6 +108,36 @@
                 </table>
             </div>
         }
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-12">
+        <h3 class="mb-4">Category Cards</h3>
+        <div class="row g-4">
+            @foreach (var category in Model)
+            {
+                <div class="col-6 col-md-4 col-lg-2">
+                    <a href="@Url.Action("Index", "Recipe", new { categoryId = category.Id })" class="text-decoration-none">
+                        <div class="category-card shadow-sm">
+                            <div class="category-image">
+                                @if (!string.IsNullOrEmpty(category.ImagePath))
+                                {
+                                    <img src="@category.ImagePath" alt="@category.Name" class="category-img">
+                                    <div class="category-name">@category.Name</div>
+                                }
+                                else
+                                {
+                                    <div class="img-placeholder" style="background-color: var(--@(string.IsNullOrEmpty(category.ColorClass) ? "secondary" : category.ColorClass)-color)">
+                                        <div class="category-name">@category.Name</div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
     </div>
 </div>
 

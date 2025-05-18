@@ -1,0 +1,21 @@
+@model MealStack.Infrastructure.Data.Entities.CategoryEntity
+
+@{
+    var colorClass = string.IsNullOrEmpty(Model.ColorClass) ? "secondary" : Model.ColorClass;
+}
+
+<div class="category-card">
+    <div class="category-image">
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <img src="@Model.ImagePath" alt="@Model.Name" class="category-img" loading="lazy">
+        }
+        else
+        {
+            <div class="img-placeholder" style="background-color: var(@colorClass);">
+                <i class="bi bi-tag fs-3"></i>
+            </div>
+        }
+        <div class="category-name">@Model.Name</div>
+    </div>
+</div>

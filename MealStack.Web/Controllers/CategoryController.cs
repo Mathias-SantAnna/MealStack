@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
-
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace MealStack.Web.Controllers
 {
@@ -12,14 +13,17 @@ namespace MealStack.Web.Controllers
     {
         private readonly MealStackDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public CategoryController(
             MealStackDbContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IWebHostEnvironment webHostEnvironment)
             : base(userManager)
         {
             _context = context;
             _userManager = userManager;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: Category - View is accessible to all
@@ -44,10 +48,33 @@ namespace MealStack.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(CategoryEntity category)
+        public async Task<IActionResult> Create(CategoryEntity category, IFormFile ImageFile)
         {
             if (ModelState.IsValid)
             {
+                // Handle image upload if provided
+                if (ImageFile != null && ImageFile.Length > 0)
+                {
+                    // Generate unique filename
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
+                    
+                    // Ensure directory exists
+                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "categories");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+                    
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+                    
+                    // Save the image
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await ImageFile.CopyToAsync(stream);
+                    }
+                    
+                    category.ImagePath = "/images/categories/" + fileName;
+                }
                 
                 _context.Add(category);
                 await _context.SaveChangesAsync();
@@ -75,7 +102,7 @@ namespace MealStack.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, CategoryEntity category)
+        public async Task<IActionResult> Edit(int id, CategoryEntity category, IFormFile ImageFile)
         {
             if (id != category.Id)
             {
@@ -94,6 +121,49 @@ namespace MealStack.Web.Controllers
             {
                 try
                 {
+                    // Handle image upload if new image is provided
+                    if (ImageFile != null && ImageFile.Length > 0)
+                    {
+                        // Delete the old image if it exists
+                        if (!string.IsNullOrEmpty(existingCategory.ImagePath))
+                        {
+                            var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, 
+                                existingCategory.ImagePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                            if (System.IO.File.Exists(oldImagePath))
+                            {
+                                try
+                                {
+                                    System.IO.File.Delete(oldImagePath);
+                                }
+                                catch (Exception ex)
+                                {
+                                    // Log the error but continue
+                                    Console.WriteLine($"Error deleting old image: {ex.Message}");
+                                }
+                            }
+                        }
+                        
+                        // Generate unique filename
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
+                        
+                        // Ensure directory exists
+                        var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "categories");
+                        if (!Directory.Exists(uploadsFolder))
+                        {
+                            Directory.CreateDirectory(uploadsFolder);
+                        }
+                        
+                        var filePath = Path.Combine(uploadsFolder, fileName);
+                        
+                        // Save the image
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await ImageFile.CopyToAsync(stream);
+                        }
+                        
+                        existingCategory.ImagePath = "/images/categories/" + fileName;
+                    }
+                    
                     existingCategory.Name = category.Name;
                     existingCategory.Description = category.Description;
                     existingCategory.ColorClass = category.ColorClass;
@@ -143,6 +213,25 @@ namespace MealStack.Web.Controllers
                 return NotFound();
             }
 
+            // Delete the image file if it exists
+            if (!string.IsNullOrEmpty(category.ImagePath))
+            {
+                var imagePath = Path.Combine(_webHostEnvironment.WebRootPath, 
+                    category.ImagePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                if (System.IO.File.Exists(imagePath))
+                {
+                    try
+                    {
+                        System.IO.File.Delete(imagePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the error but continue with category deletion
+                        Console.WriteLine($"Error deleting category image: {ex.Message}");
+                    }
+                }
+            }
+
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
             
@@ -161,7 +250,8 @@ namespace MealStack.Web.Controllers
                 {
                     id = c.Id,
                     name = c.Name,
-                    colorClass = c.ColorClass ?? "secondary"
+                    colorClass = c.ColorClass ?? "secondary",
+                    imagePath = c.ImagePath
                 })
                 .ToListAsync();
                 

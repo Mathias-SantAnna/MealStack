@@ -17,6 +17,7 @@ namespace MealStack.Infrastructure.Data.Entities
         
         public string ColorClass { get; set; }
 
+        public string ImagePath { get; set; }
         
         public virtual ICollection<RecipeCategoryEntity> RecipeCategories { get; set; } = new List<RecipeCategoryEntity>();
     }

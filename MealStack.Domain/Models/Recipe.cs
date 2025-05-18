@@ -14,6 +14,9 @@ namespace MealStack.Domain.Models
         public DifficultyLevel Difficulty { get; set; }
         public int Servings { get; set; }
         
+        // Add this new property
+        public string ImagePath { get; set; }
+        
         public string CreatedById { get; set; }
         public string CreatedByName { get; set; }
         

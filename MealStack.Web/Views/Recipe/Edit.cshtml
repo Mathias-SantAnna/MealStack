@@ -9,7 +9,7 @@
 
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <form id="recipeForm" asp-action="Edit">
+            <form id="recipeForm" asp-action="Edit" method="post" enctype="multipart/form-data">
                 <partial name="_RecipeForm" model="Model" />
             </form>
         </div>

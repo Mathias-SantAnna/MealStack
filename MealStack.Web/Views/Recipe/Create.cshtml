@@ -9,7 +9,7 @@ ViewData["Title"] = "Create Recipe";
 
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <form id="recipeForm" asp-controller="Recipe" asp-action="Create" method="post">
+            <form id="recipeForm" asp-controller="Recipe" asp-action="Create" method="post" enctype="multipart/form-data">
                 <partial name="_RecipeForm" model="Model" />
             </form>
         </div>

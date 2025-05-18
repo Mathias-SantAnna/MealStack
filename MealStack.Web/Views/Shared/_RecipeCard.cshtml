@@ -5,6 +5,29 @@
 
 <div class="col-md-6 col-lg-4 recipe-card-wrapper">
     <div class="card h-100 shadow-sm hover-scale">
+        <div class="recipe-card-image">
+            @if (!string.IsNullOrEmpty(Model.ImagePath))
+            {
+                <img src="@Model.ImagePath" alt="@Model.Title" class="recipe-img">
+            }
+            else
+            {
+                <div class="img-placeholder">
+                    <i class="bi bi-card-image fs-1 text-white-50"></i>
+                </div>
+            }
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="favorite-container" data-recipe-id="@Model.Id">
+                    <button class="favorite-btn" 
+                            data-recipe-id="@Model.Id" 
+                            data-is-favorite="@(isFavorite ? "true" : "false")"
+                            aria-label="@(isFavorite ? "Remove from favorites" : "Add to favorites")">
+                        <i class="bi @(isFavorite ? "bi-heart-fill text-danger" : "bi-heart") fs-5"></i>
+                    </button>
+                </div>
+            }
+        </div>
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <span class="badge bg-@(Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Easy ? "success" :
@@ -12,28 +35,16 @@
                     @Model.Difficulty
                 </span>
 
-                <!-- Heart button and Cook Time -->
-                <div class="favorite-time-container d-flex flex-column align-items-end">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <div class="favorite-container" data-recipe-id="@Model.Id">
-                            <button class="favorite-btn" 
-                                    data-recipe-id="@Model.Id" 
-                                    data-is-favorite="@(isFavorite ? "true" : "false")"
-                                    aria-label="@(isFavorite ? "Remove from favorites" : "Add to favorites")">
-                                <i class="bi @(isFavorite ? "bi-heart-fill text-danger" : "bi-heart") fs-5"></i>
-                            </button>
-                        </div>
-                    }
-                    
+                <!-- Cook Time -->
+                <span class="cook-time">
                     @{
                         var totalMinutes = Model.PrepTimeMinutes + Model.CookTimeMinutes;
                         var timeDisplay = totalMinutes >= 60 
                             ? $"{totalMinutes/60}h{(totalMinutes%60 > 0 ? $"{totalMinutes%60}m" : "")}"
                             : $"{totalMinutes}m";
                     }
-                    <span class="cook-time">@timeDisplay</span>
-                </div>
+                    <i class="bi bi-clock me-1"></i>@timeDisplay
+                </span>
             </div>
 
             <!-- Rating stars -->

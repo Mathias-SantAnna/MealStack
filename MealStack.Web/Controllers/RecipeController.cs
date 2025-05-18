@@ -10,6 +10,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace MealStack.Web.Controllers
 {
@@ -17,16 +19,18 @@ namespace MealStack.Web.Controllers
     {
         private readonly MealStackDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public RecipeController(
             MealStackDbContext context, 
-            UserManager<ApplicationUser> userManager) 
+            UserManager<ApplicationUser> userManager,
+            IWebHostEnvironment webHostEnvironment) 
             : base(userManager)
         {
             _context = context;
             _userManager = userManager;
+            _webHostEnvironment = webHostEnvironment;
         }
-
         // GET: Recipe
         public async Task<IActionResult> Index(RecipeSearchViewModel searchModel, int page = 1)
         {
@@ -421,7 +425,7 @@ namespace MealStack.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Create(RecipeEntity recipe, int[]? selectedCategories)
+        public async Task<IActionResult> Create(RecipeEntity recipe, IFormFile ImageFile, int[]? selectedCategories)
         {
             return await TryExecuteAsync(async () =>
             {
@@ -440,6 +444,30 @@ namespace MealStack.Web.Controllers
                 // Ensure Not null to avoid DB constraints
                 recipe.Ingredients = recipe.Ingredients ?? string.Empty;
                 recipe.Description = recipe.Description ?? string.Empty;
+                
+                // Handle image upload if present
+                if (ImageFile != null && ImageFile.Length > 0)
+                {
+                    // Generate unique filename
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
+                    
+                    // Ensure directory exists
+                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "recipes");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+                    
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+                    
+                    // Save the image
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await ImageFile.CopyToAsync(stream);
+                    }
+                    
+                    recipe.ImagePath = "/images/recipes/" + fileName;
+                }
                 
                 if (ModelState.IsValid)
                 {
@@ -516,7 +544,7 @@ namespace MealStack.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Edit(int id, RecipeEntity recipe, int[] selectedCategories)
+        public async Task<IActionResult> Edit(int id, RecipeEntity recipe, IFormFile ImageFile, int[] selectedCategories)
         {
             return await TryExecuteAsync(async () =>
             {
@@ -543,6 +571,47 @@ namespace MealStack.Web.Controllers
                 recipe.CreatedById = existingRecipe.CreatedById;
                 recipe.CreatedDate = existingRecipe.CreatedDate;
                 recipe.UpdatedDate = DateTime.UtcNow;
+                recipe.ImagePath = existingRecipe.ImagePath; // Preserve existing image path
+                
+                // Handle image upload if a new image is provided
+                if (ImageFile != null && ImageFile.Length > 0)
+                {
+                    // Delete the old image if it exists
+                    if (!string.IsNullOrEmpty(existingRecipe.ImagePath))
+                    {
+                        var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, existingRecipe.ImagePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            try
+                            {
+                                System.IO.File.Delete(oldImagePath);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Log the error but continue
+                                Console.WriteLine($"Error deleting old image: {ex.Message}");
+                            }
+                        }
+                    }
+                    
+                    // Save the new image
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
+                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "recipes");
+                    
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+                    
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+                    
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await ImageFile.CopyToAsync(stream);
+                    }
+                    
+                    recipe.ImagePath = "/images/recipes/" + fileName;
+                }
                 
                 // Skip validation for
                 ModelState.Remove("CreatedById");
@@ -635,10 +704,27 @@ namespace MealStack.Web.Controllers
                 {
                     return NotFound();
                 }
-
                 
                 if (recipe.CreatedById == _userManager.GetUserId(User) || User.IsInRole("Admin"))
                 {
+                    // Delete associated image if exists
+                    if (!string.IsNullOrEmpty(recipe.ImagePath))
+                    {
+                        var imagePath = Path.Combine(_webHostEnvironment.WebRootPath, recipe.ImagePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                        if (System.IO.File.Exists(imagePath))
+                        {
+                            try
+                            {
+                                System.IO.File.Delete(imagePath);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Log the error but continue with deletion
+                                Console.WriteLine($"Error deleting recipe image: {ex.Message}");
+                            }
+                        }
+                    }
+                    
                     _context.Recipes.Remove(recipe);
                     await _context.SaveChangesAsync();
                     

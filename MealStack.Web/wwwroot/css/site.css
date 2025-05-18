@@ -1,4 +1,4 @@
-/* Base styles and variables */
+/* BASE STYLES AND VARIABLES */
 :root {
   --primary-color: #0d6efd;
   --secondary-color: #6c757d;
@@ -7,6 +7,8 @@
   --danger-color: #dc3545;
   --light-color: #f8f9fa;
   --dark-color: #212529;
+
+  /* UI elements */
   --border-radius: 0.5rem;
   --transition-speed: 0.2s;
   --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
@@ -31,7 +33,7 @@ main {
   overflow: hidden;
 }
 
-/* Typography */
+/* TYPOGRAPHY */
 h1, h2, h3, h4, h5, h6 {
   clear: both;
 }
@@ -42,7 +44,28 @@ h1, h2, h3, h4, h5, h6 {
   display: table;
 }
 
-/* Layout components */
+/* Text utilities */
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-shadow {
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* LAYOUT COMPONENTS */
 .navbar-brand {
   font-weight: 600;
   font-size: 1.25rem;
@@ -68,7 +91,7 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 1000;
 }
 
-/* UI Elements */
+/* Buttons */
 .btn {
   border-radius: 0.25rem;
   padding: 0.5rem 1rem;
@@ -93,6 +116,7 @@ h1, h2, h3, h4, h5, h6 {
   color: inherit;
 }
 
+/* Form controls */
 input, select, textarea, button {
   color: var(--dark-color);
 }
@@ -129,25 +153,6 @@ input, select, textarea, button {
   border-bottom-right-radius: var(--border-radius) !important;
 }
 
-.modal-content {
-  color: var(--dark-color);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.modal-footer .btn,
-.modal-dialog .btn {
-  color: var(--dark-color);
-  background-color: var(--light-color);
-  border-color: var(--light-color);
-}
-
-.modal-footer .btn-primary,
-.modal-dialog .btn-primary {
-  color: #fff;
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
 /* Badges */
 .badge {
   font-weight: 500;
@@ -170,25 +175,58 @@ input, select, textarea, button {
   color: white;
 }
 
-/* Category pills */
-.category-pill {
-  padding: 0.5rem 1rem;
-  background-color: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 50rem;
-  text-decoration: none;
-  color: var(--dark-color);
-  transition: all var(--transition-speed) ease;
-  white-space: nowrap;
+/* Lists */
+ol, ul {
+  padding-left: 0;
+  margin-bottom: 1rem;
 }
 
-.category-pill:hover, .category-pill.active {
+/* Modals */
+.modal-content {
+  color: var(--dark-color);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.modal-footer .btn,
+.modal-dialog .btn {
+  color: var(--dark-color);
+  background-color: var(--light-color);
+  border-color: var(--light-color);
+}
+
+.modal-footer .btn-primary,
+.modal-dialog .btn-primary {
+  color: #fff;
   background-color: var(--primary-color);
   border-color: var(--primary-color);
-  color: white;
 }
 
-/* Recipe Cards */
+/* UTILITY CLASSES */
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: translateY(-5px);
+}
+
+.hover-lift {
+  transition: transform 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+}
+
+.hover-shadow {
+  transition: box-shadow 0.3s ease;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* RECIPE COMPONENTS */
 .recipe-card {
   height: 100%;
   display: flex;
@@ -209,7 +247,139 @@ input, select, textarea, button {
   margin-top: 2px;
 }
 
-/* Favorite button styling */
+/* Recipe Featured Card */
+.recipe-card-featured {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  background-color: white;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.recipe-card-featured:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.recipe-card-image {
+  position: relative;
+  overflow: hidden;
+}
+
+.recipe-card-title {
+  font-weight: 600;
+}
+
+.recipe-card-desc {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.recipe-card-content {
+  background-color: white;
+}
+
+.recipe-card-featured:hover .recipe-img {
+  transform: scale(1.05);
+}
+
+/* Recipe Images */
+.recipe-img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+/* CATEGORY COMPONENTS */
+/* Category Pills */
+.category-pill {
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50rem;
+  text-decoration: none;
+  color: var(--dark-color);
+  transition: all var(--transition-speed) ease;
+  white-space: nowrap;
+}
+
+.category-pill:hover, .category-pill.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+/* Category Cards */
+.category-card {
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.category-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.category-card:hover .category-img {
+  transform: scale(1.05);
+}
+
+.category-image {
+  position: relative;
+}
+
+.category-img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.category-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  text-align: center;
+  padding: 0.5rem;
+  font-weight: 500;
+}
+
+/* Placeholders */
+.img-placeholder {
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(45deg, #6c757d, #343a40);
+  color: white;
+}
+
+/* Categories Scrolling Bar */
+.categories-section {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.categories-scroll {
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  padding-bottom: 0.5rem;
+}
+
+.categories-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* FAVORITE BUTTON */
 .favorite-btn {
   background: transparent;
   border: none;
@@ -343,7 +513,25 @@ input, select, textarea, button {
   margin: 0 !important;
 }
 
-/* Rating styles */
+/* Position the favorite button on the image */
+.recipe-card-image .favorite-container {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+}
+
+.recipe-card-image .favorite-btn {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* RATING COMPONENT */
 .star-rating {
   cursor: pointer;
   font-size: 1.5rem;
@@ -370,7 +558,7 @@ input, select, textarea, button {
   content: "Rate this recipe:";
 }
 
-/* Search styles */
+/* SEARCH COMPONENTS */
 .search-container {
   width: 70%;
   margin: 0 auto;
@@ -417,7 +605,7 @@ input, select, textarea, button {
   margin: 0 !important;
 }
 
-/* Recipe detail page */
+/* RECIPE DETAIL PAGE */
 .recipe-header {
   background-color: var(--light-color);
   border-radius: var(--border-radius);
@@ -459,7 +647,7 @@ input, select, textarea, button {
   display: inline-block;
 }
 
-/* Ingredients */
+/* Ingredients Section */
 .ingredients-section {
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: var(--border-radius);
@@ -497,7 +685,7 @@ input, select, textarea, button {
   border-bottom: none;
 }
 
-/* Instructions */
+/* Instructions Section */
 .instructions-list {
   counter-reset: step-counter;
   list-style-type: none;
@@ -531,53 +719,6 @@ input, select, textarea, button {
   font-weight: bold;
 }
 
-/* Lists */
-ol, ul {
-  padding-left: 0;
-  margin-bottom: 1rem;
-}
-
-/* Utility classes */
-.hover-scale {
-  transition: transform 0.3s ease;
-}
-
-.hover-scale:hover {
-  transform: translateY(-5px);
-}
-
-.hover-lift {
-  transition: transform 0.3s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-5px);
-}
-
-.hover-shadow {
-  transition: box-shadow 0.3s ease;
-}
-
-.hover-shadow:hover {
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-}
-
-.text-truncate-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.text-truncate-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* Servings adjustment */
 #servings-input {
   min-width: 80px;
@@ -604,7 +745,36 @@ ol, ul {
   color: white;
 }
 
-/* Animations */
+/* PAGE SECTIONS */
+.hero-section {
+  position: relative;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  background-size: cover;
+  background-position: center;
+  color: white;
+}
+
+.hero-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  padding: 5rem 0;
+}
+
+/* Section Padding */
+.featured-recipes,
+.categories-showcase,
+.features-section {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.cta-section {
+  margin-bottom: 0;
+}
+
+/* ANIMATIONS */
 @keyframes heartPulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.15); }
@@ -617,7 +787,7 @@ ol, ul {
   100% { transform: scale(1); }
 }
 
-/* Responsive styles */
+/* RESPONSIVE STYLES */
 @media (max-width: 767.98px) {
   .display-4 {
     font-size: 2rem;
@@ -641,7 +811,7 @@ ol, ul {
   }
 }
 
-/* Print styles */
+/* PRINT STYLES */
 @media print {
   header,
   footer,

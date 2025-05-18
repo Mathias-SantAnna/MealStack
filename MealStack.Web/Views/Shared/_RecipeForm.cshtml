@@ -15,6 +15,20 @@
     <span asp-validation-for="Description" class="text-danger"></span>
 </div>
 
+<!-- Image Upload -->
+<div class="mb-3">
+    <label class="form-label">Recipe Image</label>
+    <input type="file" class="form-control" name="ImageFile" accept="image/*" />
+    @if (!string.IsNullOrEmpty(Model.ImagePath))
+    {
+        <div class="mt-2">
+            <img src="@Model.ImagePath" alt="Recipe Image" class="img-thumbnail" style="max-height: 150px" />
+            <div class="form-text">Current image</div>
+        </div>
+    }
+    <small class="text-muted">Upload an image of your dish (optional)</small>
+</div>
+
 <!-- Ingredients section -->
 <div class="mb-3">
     <label for="ingredients-section" class="form-label">Ingredients</label>

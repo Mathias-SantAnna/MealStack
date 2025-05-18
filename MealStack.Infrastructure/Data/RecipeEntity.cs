@@ -47,6 +47,7 @@ namespace MealStack.Infrastructure.Data
      
         public string Notes { get; set; }
         
+        public string ImagePath { get; set; }
         public virtual ICollection<RecipeCategoryEntity> RecipeCategories { get; set; } = new List<RecipeCategoryEntity>();
         
         // Rating Properties

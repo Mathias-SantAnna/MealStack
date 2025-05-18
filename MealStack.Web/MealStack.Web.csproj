@@ -31,6 +31,8 @@
 
     <ItemGroup>
       <Folder Include="Areas\Identity\Data\" />
+      <Folder Include="wwwroot\images\categories\" />
+      <Folder Include="wwwroot\images\recipes\" />
     </ItemGroup>
 
     <ItemGroup>

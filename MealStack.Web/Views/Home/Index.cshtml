@@ -4,162 +4,170 @@
 }
 
 <!-- Hero Section -->
-<div class="container-fluid bg-light py-5 mb-5">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h1 class="display-4 fw-bold mb-4">🍽️ MealStack</h1>
-                <p class="lead mb-4">Your personal recipe collection - organized, searchable, and always at your fingertips.</p>
-                <div class="d-flex flex-wrap gap-2">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary btn-lg">Create Recipe</a>
-                        <a asp-controller="Recipe" asp-action="MyRecipes" class="btn btn-outline-primary btn-lg">My Recipes</a>
-                    }
-                    else
-                    {
-                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg">Join Now</a>
-                        <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary btn-lg">Browse Recipes</a>
-                    }
-                </div>
-            </div>
-            <div class="col-md-6 d-none d-md-block">
-                <div class="p-4 bg-white shadow-sm rounded">
-                    <div class="text-center">
-                        <div class="display-1 text-primary mb-3">
-                            <i class="bi bi-journal-richtext"></i>
+<section class="hero-section py-5" style="background-image: url('@ViewBag.HeroImage'); background-size: cover; background-position: center;">
+    <div class="hero-overlay py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mx-auto text-center text-white">
+                    <h1 class="display-4 fw-bold mb-3 text-shadow">MealStack</h1>
+                    <p class="lead mb-4 text-shadow">Discover, create, and organize your favorite recipes in one place.</p>
+                    
+                    <!-- Search Bar -->
+                    <form id="searchForm" asp-controller="Recipe" asp-action="Index" method="get">
+                        <div class="search-container mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" id="searchTerm" name="searchTerm" 
+                                    placeholder="Search recipes or ingredients..." value="@ViewData["SearchTerm"]">
+                                <button class="btn btn-primary" type="submit">Search</button>
+                                <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#advancedSearchOptions" aria-expanded="false">
+                                    <i class="bi bi-sliders"></i>
+                                </button>
+                            </div>
                         </div>
-                        <h3 class="mb-3">Everything in One Place</h3>
-                        <p class="text-muted">Store, organize, and discover recipes with ease.</p>
+                    </form>
+                    
+                    <!-- CTA Buttons -->
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a asp-controller="Recipe" asp-action="Create" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i> Create Recipe
+                            </a>
+                            <a asp-controller="Recipe" asp-action="MyRecipes" class="btn btn-outline-light">
+                                <i class="bi bi-collection me-1"></i> My Recipes
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary">Join Now</a>
+                            <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-light">Browse Recipes</a>
+                        }
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<!-- Search Bar -->
-<partial name="_SearchBar" model="@null" />
-
-<!-- Categories Section -->
-<div class="container mb-5">
-    <h2 class="text-center mb-4">Explore Recipe Categories</h2>
-    <div class="row g-4 justify-content-center">
-        <div class="col-6 col-md-4 col-lg-3">
-            <a asp-controller="Recipe" asp-action="Index" asp-route-categoryId="1" class="text-decoration-none">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="display-4 mb-3 text-primary">🍳</div>
-                        <h5 class="card-title">Breakfast</h5>
-                        <p class="card-text text-muted small">Start your day right</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <a asp-controller="Recipe" asp-action="Index" asp-route-categoryId="2" class="text-decoration-none">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="display-4 mb-3 text-primary">🥪</div>
-                        <h5 class="card-title">Lunch</h5>
-                        <p class="card-text text-muted small">Quick & satisfying</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <a asp-controller="Recipe" asp-action="Index" asp-route-categoryId="3" class="text-decoration-none">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="display-4 mb-3 text-primary">🍲</div>
-                        <h5 class="card-title">Dinner</h5>
-                        <p class="card-text text-muted small">Evening meals</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <a asp-controller="Recipe" asp-action="Index" asp-route-categoryId="4" class="text-decoration-none">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="display-4 mb-3 text-primary">🍰</div>
-                        <h5 class="card-title">Desserts</h5>
-                        <p class="card-text text-muted small">Sweet treats</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-    </div>
-</div>
-
-<!-- Latest Recipes Section -->
-<div class="container mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="m-0">Latest Recipes</h2>
-        <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary">View All</a>
-    </div>
-
-    @if (Model != null && Model.Any())
-    {
-        <div class="row g-4">
-            @foreach (var recipe in Model)
+<!-- Categories Bar -->
+<section class="categories-section py-3 bg-light">
+    <div class="container">
+        <div class="categories-scroll d-flex overflow-auto pb-2">
+            <a href="@Url.Action("Index", "Recipe")" 
+               class="category-pill @(ViewBag.SelectedCategoryId == null ? "active" : "")">All</a>
+            @if (ViewBag.Categories != null)
             {
-                <partial name="_RecipeCard" model="recipe" />
+                foreach (var category in ViewBag.Categories)
+                {
+                    <a href="@Url.Action("Index", "Recipe", new { categoryId = category.Id })"
+                       class="category-pill @(ViewBag.SelectedCategoryId != null && ViewBag.SelectedCategoryId == category.Id ? "active" : "") me-2"
+                       style="@(string.IsNullOrEmpty(category.ColorClass) ? "" : $"background-color: var(--bs-{category.ColorClass}); border-color: var(--bs-{category.ColorClass}); color: #fff;")">
+                        @category.Name
+                    </a>
+                }
             }
         </div>
-    }
-    else
-    {
-        <div class="alert alert-info">
-            <p class="mb-0">No recipes found. Be the first to add a recipe!</p>
+    </div>
+</section>
+
+<!-- Featured Recipes -->
+<section class="featured-recipes py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Latest Recipes</h2>
+            <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary">View All</a>
         </div>
-    }
-</div>
+        <div class="row g-4">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var recipe in Model)
+                {
+                    <div class="col-sm-6 col-lg-4">
+                        <partial name="_RecipeCardHome" model="recipe" />
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <p class="mb-0">No recipes found. Be the first to add a recipe!</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Categories Showcase -->
+<section class="categories-showcase py-5 bg-light">
+    <div class="container">
+        <h2 class="mb-4">Browse by Category</h2>
+        <div class="row g-4">
+            @if (ViewBag.Categories != null)
+            {
+                var categories = ((IEnumerable<MealStack.Infrastructure.Data.Entities.CategoryEntity>)ViewBag.Categories).Take(6);
+                foreach (var category in categories)
+                {
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="@Url.Action("Index", "Recipe", new { categoryId = category.Id })" class="text-decoration-none">
+                            <partial name="_CategoryCard" model="category" />
+                        </a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>
 
 <!-- Features Section -->
-<div class="container mb-5">
-    <h2 class="text-center mb-4">Why Use MealStack?</h2>
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="display-5 mb-3 text-primary">
-                        <i class="bi bi-collection"></i>
+<section class="features-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Cook & Organize with Ease</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="display-5 mb-3 text-primary">
+                            <i class="bi bi-collection"></i>
+                        </div>
+                        <h5 class="card-title">Store Your Recipes</h5>
+                        <p class="card-text">Keep all your recipes organized in one place, accessible from anywhere.</p>
                     </div>
-                    <h5 class="card-title">Organize Your Recipes</h5>
-                    <p class="card-text">Keep all your recipes in one place and organized by categories.</p>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="display-5 mb-3 text-primary">
-                        <i class="bi bi-search"></i>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="display-5 mb-3 text-primary">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h5 class="card-title">Find Recipes Quickly</h5>
+                        <p class="card-text">Search by ingredients, difficulty, or prep time to find exactly what you need.</p>
                     </div>
-                    <h5 class="card-title">Find Recipes Quickly</h5>
-                    <p class="card-text">Search by ingredients, difficulty, or prep time to find exactly what you need.</p>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="display-5 mb-3 text-primary">
-                        <i class="bi bi-share"></i>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="display-5 mb-3 text-primary">
+                            <i class="bi bi-heart"></i>
+                        </div>
+                        <h5 class="card-title">Save Favorites</h5>
+                        <p class="card-text">Mark recipes as favorites for quick access to your most-loved dishes.</p>
                     </div>
-                    <h5 class="card-title">Share Your Favorites</h5>
-                    <p class="card-text">Easily share recipes with friends and family or save favorites for later.</p>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<!-- Call to Action -->
+<!-- CTA Section -->
 @if (!User.Identity.IsAuthenticated)
 {
-    <div class="container-fluid bg-primary text-white py-5 mb-5">
+    <section class="cta-section bg-primary text-white py-5">
         <div class="container text-center">
             <h2 class="display-5 mb-3">Ready to start your recipe collection?</h2>
             <p class="lead mb-4">Join MealStack today and start organizing your favorite recipes.</p>
@@ -168,12 +176,10 @@
                 <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-light btn-lg">Log In</a>
             </div>
         </div>
-    </div>
+    </section>
 }
 
 @section Scripts {
-    <script src="~/js/search.js"></script>
-    
-    <!-- Ajax token -->
+    <script src="~/js/modules/search.js"></script>
     <partial name="_AjaxAntiForgeryToken" />
 }
