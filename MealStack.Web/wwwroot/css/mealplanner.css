@@ -1,0 +1,105 @@
+/* Calendar Styles */
+.meal-day {
+    border-radius: 0.25rem;
+}
+
+.meal-day-header {
+    padding-bottom: 0.5rem;
+}
+
+.meal-type-badge {
+    min-width: 80px;
+    text-align: center;
+}
+
+/* Shopping List Styles */
+.shopping-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.shopping-item:last-child {
+    border-bottom: none;
+}
+
+.shopping-item.checked {
+    opacity: 0.6;
+}
+
+.shopping-item-label {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.shopping-item.checked .shopping-item-label {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.shopping-item-quantity {
+    min-width: 80px;
+    display: inline-block;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.shopping-category-header {
+    color: #343a40;
+    font-weight: 600;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 0.5rem;
+}
+
+/* Select2 custom styling */
+.select2-container--default .select2-selection--single {
+    height: 38px;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 1.5;
+    padding-left: 0;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px;
+}
+
+/* Print styles */
+@media print {
+    .print-container {
+        padding: 0;
+        margin: 0;
+    }
+
+    .shopping-item-print {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        page-break-inside: avoid;
+    }
+
+    .checkbox-placeholder {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 1px solid #333;
+        margin-right: 10px;
+    }
+
+    .item-quantity {
+        min-width: 80px;
+        display: inline-block;
+        color: #555;
+        font-weight: 500;
+    }
+}

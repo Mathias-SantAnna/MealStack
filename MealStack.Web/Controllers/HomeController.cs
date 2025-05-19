@@ -36,24 +36,20 @@ namespace MealStack.Web.Controllers
             ViewData["SearchType"] = "all";
             ViewData["MatchAllIngredients"] = "true";
 
-            // Get categories for navigation and showcase
+            // Get categories for dropdown
             ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-
-            // Select hero image
-            Random r = new Random();
-            ViewBag.HeroImage = r.Next(0, 2) == 0 
-                ? "/images/heroes/HeroBanner.jpg" 
-                : "/images/heroes/HeroBanner2.jpg";
-
-            // Get latest recipes
+            
+            var r = new Random();
+            int idx = r.Next(0, 9);
+            ViewBag.HeroImage = $"/images/heroes/HeroBanner{idx}.jpg";
+            
             var latestRecipes = await _context.Recipes
                 .Include(r => r.CreatedBy)
                 .Include(r => r.RecipeCategories).ThenInclude(rc => rc.Category)
                 .Include(r => r.Ratings)
                 .OrderByDescending(r => r.CreatedDate)
                 .Take(3).ToListAsync();
-
-            // Get favorite recipes for logged in user
+            
             if (User.Identity.IsAuthenticated)
             {
                 var userId = _userManager.GetUserId(User);

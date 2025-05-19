@@ -1,0 +1,61 @@
+@model MealStack.Web.Models.MealPlanViewModel
+
+@{
+    ViewData["Title"] = "Delete Meal Plan";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Meal Plans</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Delete</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Delete Meal Plan</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone. All planned meals and shopping list items will be permanently deleted.
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.Name</h5>
+                            <p class="card-text">@Model.Description</p>
+                            
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Date Range:</dt>
+                                <dd class="col-sm-8">@Model.DateRange</dd>
+                                
+                                <dt class="col-sm-4">Total Meals:</dt>
+                                <dd class="col-sm-8">@Model.MealItems.Count</dd>
+                                
+                                <dt class="col-sm-4">Created:</dt>
+                                <dd class="col-sm-8">@Model.CreatedDate.ToString("MMM d, yyyy")</dd>
+                            </dl>
+                        </div>
+                    </div>
+                    
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Back to Details
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i> Delete Meal Plan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MealStack Print</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />  
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /> 
+    <style>
+        @@media screen {
+            .btn-print-action { 
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+            }
+        }
+        @@media print {
+            .btn-print-action {
+                display: none !important;
+            }
+            body {
+                 -webkit-print-color-adjust: exact !important; 
+                color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<button class="btn btn-primary btn-print-action" onclick="window.print()">
+    <i class="bi bi-printer"></i> Print
+</button>
+<main role="main" class="pb-3">
+    @RenderBody()
+</main>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

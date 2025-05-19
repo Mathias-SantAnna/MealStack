@@ -50,10 +50,8 @@ namespace MealStack.Infrastructure.Data
         public string ImagePath { get; set; }
         public virtual ICollection<RecipeCategoryEntity> RecipeCategories { get; set; } = new List<RecipeCategoryEntity>();
         
-        // Rating Properties
         public virtual ICollection<UserRatingEntity> Ratings { get; set; } = new List<UserRatingEntity>();
         
-        // Computed properties
         public double AverageRating => Ratings.Any() ? Ratings.Average(r => r.Rating) : 0;
         public int TotalRatings => Ratings.Count;
     }

@@ -1,0 +1,33 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace MealStack.Web.Models
+{
+public class ShoppingListItemViewModel
+{
+public int Id { get; set; }
+
+public int MealPlanId { get; set; }
+
+[Required]
+[Display(Name = "Ingredient")]
+public string IngredientName { get; set; }
+
+[Required]
+[Display(Name = "Quantity")]
+public string Quantity { get; set; }
+
+[Display(Name = "Unit")]
+public string Unit { get; set; }
+
+public bool IsChecked { get; set; }
+
+public int? IngredientId { get; set; }
+
+[Display(Name = "Category")]
+public string Category { get; set; }
+
+// Combined display properties
+public string DisplayAmount => $"{Quantity} {Unit}".Trim();
+public string DisplayWithAmount => $"{Quantity} {Unit} {IngredientName}".Trim();
+}
+}

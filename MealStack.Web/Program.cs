@@ -1,5 +1,7 @@
 using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
+using MealStack.Web.Services.Interfaces;
+using MealStack.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -28,6 +30,9 @@ else
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
             x => x.MigrationsAssembly("MealStack.Infrastructure")));
 }
+
+// Register application services
+builder.Services.AddScoped<IMealPlanService, MealPlanService>();
 
 // 2. Add Identity with Role support - SINGLE REGISTRATION
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -97,6 +102,8 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+
+
 // 6. Middleware pipeline
 if (!app.Environment.IsDevelopment())
 {
@@ -126,7 +133,6 @@ app.Use(async (context, next) =>
         var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An unhandled exception occurred");
         
-        // Redirect to error page
         context.Request.Path = "/Home/Error";
         await next();
     }

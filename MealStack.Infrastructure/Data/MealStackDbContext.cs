@@ -19,26 +19,26 @@ namespace MealStack.Infrastructure.Data
         public DbSet<RecipeCategoryEntity> RecipeCategories { get; set; }
         public DbSet<UserFavoriteEntity> UserFavorites { get; set; }
         public DbSet<UserRatingEntity> UserRatings { get; set; }
+        public DbSet<MealPlanEntity> MealPlans { get; set; }
+        public DbSet<MealPlanItemEntity> MealPlanItems { get; set; }
+        public DbSet<ShoppingListItemEntity> ShoppingListItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
             
-            // Recipe creation user relationship
             builder.Entity<RecipeEntity>()
                 .HasOne(r => r.CreatedBy)
                 .WithMany()
                 .HasForeignKey(r => r.CreatedById)
                 .OnDelete(DeleteBehavior.Restrict);
-                
-            // Ingredient creation user relationship
+            
             builder.Entity<IngredientEntity>()
                 .HasOne(i => i.CreatedBy)
                 .WithMany()
                 .HasForeignKey(i => i.CreatedById)
                 .OnDelete(DeleteBehavior.Restrict);
                 
-            // Configure many-to-many relationship
             builder.Entity<RecipeCategoryEntity>()
                 .HasKey(rc => new { rc.RecipeId, rc.CategoryId });
                 
@@ -54,11 +54,9 @@ namespace MealStack.Infrastructure.Data
                 .HasForeignKey(rc => rc.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            // Configure composite key for UserFavorites
             builder.Entity<UserFavoriteEntity>()
                 .HasKey(uf => new { uf.UserId, uf.RecipeId });
                 
-            // Configure relationships for UserFavorites
             builder.Entity<UserFavoriteEntity>()
                 .HasOne(uf => uf.User)
                 .WithMany()
@@ -71,7 +69,6 @@ namespace MealStack.Infrastructure.Data
                 .HasForeignKey(uf => uf.RecipeId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            // Configure relationships for UserRating
             builder.Entity<UserRatingEntity>()
                 .HasKey(ur => new { ur.UserId, ur.RecipeId });
 
@@ -86,6 +83,36 @@ namespace MealStack.Infrastructure.Data
                 .WithMany(r => r.Ratings)
                 .HasForeignKey(ur => ur.RecipeId)
                 .OnDelete(DeleteBehavior.Cascade);
+                
+            builder.Entity<MealPlanEntity>()
+                .HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
+            builder.Entity<MealPlanItemEntity>()
+                .HasOne(mi => mi.MealPlan)
+                .WithMany(m => m.MealItems)
+                .HasForeignKey(mi => mi.MealPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
+            builder.Entity<MealPlanItemEntity>()
+                .HasOne(mi => mi.Recipe)
+                .WithMany()
+                .HasForeignKey(mi => mi.RecipeId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            builder.Entity<ShoppingListItemEntity>()
+                .HasOne(si => si.MealPlan)
+                .WithMany(m => m.ShoppingItems)
+                .HasForeignKey(si => si.MealPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
+            builder.Entity<ShoppingListItemEntity>()
+                .HasOne(si => si.Ingredient)
+                .WithMany()
+                .HasForeignKey(si => si.IngredientId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

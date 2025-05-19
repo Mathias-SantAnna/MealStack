@@ -78,6 +78,14 @@ const MealStack = (function() {
             }
         }
 
+        // --- Meal Planner Module ---
+        if (path.includes('/mealplan')) {
+            console.log("Initializing MealPlannerModule.");
+            if (typeof MealPlannerModule !== 'undefined') {
+                MealPlannerModule.init();
+            }
+        }
+
         if ($('#searchForm').length > 0) {
             console.log("Initializing SearchModule.");
             SearchModule.init();

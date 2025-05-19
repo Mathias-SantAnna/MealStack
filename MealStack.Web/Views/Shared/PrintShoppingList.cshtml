@@ -1,0 +1,89 @@
+@model MealStack.Web.Models.MealPlanViewModel
+@{
+ViewData["Title"] = "Shopping List - " + Model.Name;
+Layout = "_PrintLayout"; 
+}
+
+<div class="container print-container">
+    <div class="print-header mb-4">
+        <h1>Shopping List</h1>
+        <h3>@Model.Name (@Model.DateRange)</h3>
+    </div>
+
+    @if (Model.ShoppingItems == null || !Model.ShoppingItems.Any())
+    {
+    <div class="alert alert-info" role="alert">
+        <p class="mb-0">There are no items in your shopping list. Return to the meal plan and regenerate the shopping list.</p>
+    </div>
+    }
+    else
+    {
+    var groupedItems = Model.ShoppingItems
+    .GroupBy(s => string.IsNullOrEmpty(s.Category) ? "Other" : s.Category)
+    .OrderBy(g => g.Key == "Other" ? "zzz" : g.Key); 
+
+    <div class="shopping-list-print">
+        @foreach (var categoryGroup in groupedItems)
+        {
+        <div class="shopping-category mb-4">
+            <h4 class="shopping-category-header">@categoryGroup.Key</h4>
+            <ul class="shopping-items-list list-unstyled">
+                @foreach (var item in categoryGroup.OrderBy(s => s.IngredientName))
+                {
+                <li class="shopping-item-print d-flex align-items-center">
+                    <span class="checkbox-placeholder me-2 fs-5">☐</span>
+                    <span class="item-quantity me-3" style="min-width: 70px; font-weight: 500; color: #555;">
+                                    @item.DisplayAmount
+                                </span>
+                    <span class="item-name">@item.IngredientName</span>
+                </li>
+                }
+            </ul>
+        </div>
+        }
+    </div>
+    }
+
+    <div class="print-footer mt-4">
+        <p class="text-center text-muted small">Generated from MealStack on @DateTime.Now.ToString("MMM d, yyyy")</p>
+    </div>
+</div>
+
+<style>
+    body.print-mode { 
+        font-size: 12pt;
+    }
+    .print-container {
+        max-width: 100%; 
+    }
+    .shopping-category-header {
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 0.25rem;
+        margin-bottom: 0.5rem;
+    }
+    .shopping-item-print {
+        margin-bottom: 0.3rem;
+        page-break-inside: avoid;
+    }
+
+    @@media print {
+        body {
+            font-size: 11pt; 
+            line-height: 1.3;
+            margin: 0.5in; 
+        }
+        .print-container {
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .print-header h1 { font-size: 18pt; margin-bottom: 5px; }
+        .print-header h3 { font-size: 14pt; margin-bottom: 15px; }
+        .shopping-category-header { font-size: 12pt; }
+        .checkbox-placeholder { font-size: 14pt; } 
+        .alert { display: none; } 
+        .print-footer { font-size: 9pt; }
+    }
+</style>
