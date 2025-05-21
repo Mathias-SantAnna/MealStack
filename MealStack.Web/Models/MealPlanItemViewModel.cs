@@ -37,5 +37,29 @@ namespace MealStack.Web.Models
         public string MealTypeDisplay => MealType.ToString();
         public string DateDisplay => PlannedDate.ToString("MMM d, yyyy");
         public string DayOfWeek => PlannedDate.DayOfWeek.ToString();
+        
+        public string GetMealTypeClass()
+        {
+            return MealType switch
+            {
+                MealType.Breakfast => "bg-warning text-dark",
+                MealType.Lunch => "bg-info text-dark",
+                MealType.Dinner => "bg-primary text-white",
+                MealType.Snack => "bg-success text-white",
+                _ => "bg-secondary text-white"
+            };
+        }
+
+        public string GetMealTypeIcon()
+        {
+            return MealType switch
+            {
+                MealType.Breakfast => "bi-sunrise",
+                MealType.Lunch => "bi-sun",
+                MealType.Dinner => "bi-moon-stars",
+                MealType.Snack => "bi-apple",
+                _ => "bi-cup"
+            };
+        }
     }
 }

@@ -5,223 +5,187 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - MealStack</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <!-- Add Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/lib/jquery-ui/themes/base/jquery-ui.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/MealStack.styles.css" asp-append-version="true" />
-    <!-- jQuery UI CSS -->
-    <link rel="stylesheet" href="~/lib/jquery-ui/jquery-ui.min.css" />
+    <link rel="stylesheet" href="~/css/mealplanner.css" asp-append-version="true" />
 </head>
 <body>
-<header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
-                <i class="bi bi-journal-richtext me-2 text-primary fs-4"></i>
-                <span>MealStack</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
-                            <i class="bi bi-house-door me-1"></i> Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Recipe" asp-action="Index">
-                            <i class="bi bi-collection me-1"></i> All Recipes
-                        </a>
-                    </li>
-                    @if (User.Identity.IsAuthenticated)
-                    {
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom mb-3">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-journal-richtext me-2 text-primary fs-4"></i>
+                    <span>MealStack</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Recipe" asp-action="MyRecipes">
-                                <i class="bi bi-journal-text me-1"></i> My Recipes
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door me-1"></i>Home
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Recipe" asp-action="Create">
-                                <i class="bi bi-plus-circle me-1"></i> Add Recipe
+                            <a class="nav-link" asp-area="" asp-controller="Recipe" asp-action="Index">
+                                <i class="bi bi-collection me-1"></i>All Recipes
                             </a>
                         </li>
-                    }
-                    @if (User.Identity.IsAuthenticated)
-                    {
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Recipe" asp-action="MyRecipes">
+                                    <i class="bi bi-journal-text me-1"></i>My Recipes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Recipe" asp-action="Create">
+                                    <i class="bi bi-plus-circle me-1"></i>Add Recipe
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Recipe" asp-action="MyFavorites">
+                                    <i class="bi bi-heart me-1"></i>My Favorites
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="MealPlan" asp-action="Index">
+                                    <i class="bi bi-calendar-week me-1"></i>Meal Plans
+                                </a>
+                            </li>
+                        }
+
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Recipe" asp-action="MyFavorites">
-                                <i class="bi bi-heart me-1"></i> My Favorites
+                            <a class="nav-link" asp-area="" asp-controller="Ingredient" asp-action="Index">
+                                <i class="bi bi-basket me-1"></i>Ingredients
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="MealPlan" asp-action="Index">
-                                <i class="bi bi-calendar-week me-1"></i> Meal Plans
-                            </a>
-                        </li>
-                    }
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Ingredient" asp-action="Index">
-                            <i class="bi bi-basket me-1"></i> Ingredients
-                        </a>
-                    </li>
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <!-- Admin Dropdown Menu -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-shield-lock me-1"></i> Admin
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Index">
-                                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Users">
-                                        <i class="bi bi-people me-2"></i> Manage Users
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="ManageRecipes">
-                                        <i class="bi bi-journal-bookmark me-2"></i> Manage Recipes
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Ingredient" asp-action="Index">
-                                        <i class="bi bi-basket3 me-2"></i> Manage Ingredients
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Category" asp-action="Index">
-                                        <i class="bi bi-tags me-2"></i> Manage Categories
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    }
-                </ul>
-                <ul class="navbar-nav">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle me-1"></i> @(ViewData["DisplayName"] ?? User.Identity.Name)
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
-                                        <i class="bi bi-person me-2"></i> Profile
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
-                                        <i class="bi bi-gear me-2"></i> Settings
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form id="logoutForm" class="dropdown-item p-0" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                                        <button type="submit" class="dropdown-item">
-                                            <i class="bi bi-box-arrow-right me-2"></i> Logout
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register">
-                                <i class="bi bi-person-plus me-1"></i> Register
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Login
-                            </a>
-                        </li>
-                    }
-                </ul>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-shield-lock me-1"></i>Admin
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Index">
+                                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Users">
+                                            <i class="bi bi-people me-2"></i>Manage Users
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="ManageRecipes">
+                                            <i class="bi bi-journal-text me-2"></i>Manage Recipes
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Category" asp-action="Index">
+                                            <i class="bi bi-tags me-2"></i>Manage Categories
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Ingredient" asp-action="Index">
+                                            <i class="bi bi-basket me-2"></i>Manage Ingredients
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="ManageMealPlans">
+                                            <i class="bi bi-calendar-week me-2"></i>Manage Meal Plans
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        @if (!User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">
+                                    <i class="bi bi-person-plus me-1"></i>Register
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle me-1"></i>@User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                                            <i class="bi bi-gear me-2"></i>Profile
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <form id="logoutForm2" asp-area="Identity" asp-page="/Account/Logout"
+                                              asp-route-returnUrl="~/" class="d-inline">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
-</header>
-<div class="container">
-    <main role="main" class="pb-3 clearfix">
-        @RenderBody()
-    </main>
-</div>
+        </nav>
+    </header>
 
-<footer class="border-top footer text-muted">
     <div class="container">
-        &copy; @DateTime.Now.Year - MealStack - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
     </div>
-</footer>
 
-    <!-- Core Libraries (jQuery, Bootstrap) -->
+    <footer class="footer mt-auto py-3 bg-light border-top">
+        <div class="container">
+            <span class="text-muted">&copy; @DateTime.Now.Year – MealStack – <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></span>
+        </div>
+    </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- jQuery UI - local copy  -->
     <script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
-    
-    <!-- Include Anti-Forgery Token early to ensure it's available -->
-    @if (User.Identity.IsAuthenticated)
-    {
+
+    @if (User.Identity.IsAuthenticated) {
         <partial name="_AjaxAntiForgeryToken" />
     }
 
-    <!-- MEALSTACK CORE JS MODULES -->
     <script src="~/js/core/utils.js" asp-append-version="true"></script>
     <script src="~/js/core/ajax.js" asp-append-version="true"></script>
     <script src="~/js/core/validation.js" asp-append-version="true"></script>
-
-    <!-- MEALSTACK FEATURE JS MODULES - Loaded based on page needs -->
     <script src="~/js/modules/recipe.js" asp-append-version="true"></script>
     <script src="~/js/modules/favorite.js" asp-append-version="true"></script>
     <script src="~/js/modules/search.js" asp-append-version="true"></script>
-    
-    @if (Context.Request.Path.Value?.ToLowerInvariant().Contains("/recipe/details") ?? false)
+
+    @* MealPlanner module only on /mealplan routes *@
+    @if (Context.Request.Path.StartsWithSegments("/MealPlan", StringComparison.OrdinalIgnoreCase))
     {
-        <script src="~/js/modules/rating.js" asp-append-version="true"></script>
-        <script src="~/js/modules/servings.js" asp-append-version="true"></script>
-    }
-    
-    @if ((Context.Request.Path.Value?.ToLowerInvariant().Contains("/recipe/create") ?? false) || 
-         (Context.Request.Path.Value?.ToLowerInvariant().Contains("/recipe/edit") ?? false))
-    {
-        <script src="~/js/modules/ingredient.js" asp-append-version="true"></script>
+        <script src="~/js/modules/mealplanner.js" asp-append-version="true"></script>
     }
 
-    <!-- MAIN APPLICATION INITIALIZER -->
     <script src="~/js/app.js" asp-append-version="true"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
-    
-    <!-- Diagnostic script -->
-    <script>
-        $(document).ready(function() {
-            const brokenElements = $('*').filter(function() {
-                return $(this).css('display') === 'none' && 
-                      ($(this).width() > 1000 || $(this).height() > 1000);
-            });
-            
-            if (brokenElements.length > 0) {
-                console.warn('Potentially broken elements found:', brokenElements);
-            }
-            
-            $(document).on('click', '.favorite-btn', function() {
-                console.log('Favorite button clicked', {
-                    recipeId: $(this).data('recipe-id'),
-                    isFavorite: $(this).data('is-favorite')
-                });
-            });
-        });
-    </script>
-    </body>
-</html>`
+</body>
+</html>

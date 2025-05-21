@@ -136,7 +136,6 @@ const IngredientModule = (function() {
                         if (matchedIngredient) {
                             addIngredientChip({ ...matchedIngredient, quantity: quantity, unit: unit });
                         } else {
-                            // If not found, add as a new temporary ingredient
                             addIngredientChip({
                                 id: 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), 
                                 name: name,
@@ -241,12 +240,10 @@ const IngredientModule = (function() {
                 if (existing) {
                     addIngredientChip(existing);
                 } else {
-                    // If not found, try searching via AJAX
                     AjaxService.get(options.searchIngredientsUrl, { term: searchTerm }, function(data) {
                         if (data && data.length > 0) {
                             addIngredientChip(data[0]); 
                         } else {
-                            // If no match, add as a new temporary ingredient
                             addIngredientChip({
                                 id: 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                                 name: searchTerm,

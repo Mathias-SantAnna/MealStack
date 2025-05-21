@@ -16,7 +16,7 @@ const SearchModule = (function() {
                     console.log("Autocomplete request for: " + request.term);
                     AjaxService.get(options.suggestionsUrl, { term: request.term }, function(data) {
                         console.log("Received " + data.length + " suggestions");
-                        response(data); // Assuming data is already an array of strings or {label, value}
+                        response(data); 
                     });
                 },
                 minLength: 2,

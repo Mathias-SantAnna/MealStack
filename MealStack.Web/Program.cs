@@ -1,155 +1,127 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
-using MealStack.Web.Services.Interfaces;
 using MealStack.Web.Services;
+using MealStack.Web.Services.Interface;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq; 
+
+// Allow Npgsql to accept UTC dates without “Kind=Unspecified” errors
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
+IConfiguration Configuration = builder.Configuration;
 
-// 1. Configure EF Core + PostgreSQL with detailed logging
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddDbContext<MealStackDbContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-                x => x.MigrationsAssembly("MealStack.Infrastructure"))
-            .EnableSensitiveDataLogging()
-            .LogTo(Console.WriteLine, LogLevel.Information));
-    
-    builder.Logging.AddConsole()
-        .AddDebug()
-        .SetMinimumLevel(LogLevel.Debug);
-}
-else
-{
-    // Production configuration without detailed logging
-    builder.Services.AddDbContext<MealStackDbContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-            x => x.MigrationsAssembly("MealStack.Infrastructure")));
-}
+// 1. EF Core + PostgreSQL
+builder.Services.AddDbContext<MealStackDbContext>(options =>
+    options.UseNpgsql(
+            Configuration.GetConnectionString("DefaultConnection"),
+            x => x.MigrationsAssembly("MealStack.Infrastructure")
+        )
+        .EnableSensitiveDataLogging()
+        .LogTo(Console.WriteLine, LogLevel.Information)
+);
 
-// Register application services
+// 2. Identity & Application services
 builder.Services.AddScoped<IMealPlanService, MealPlanService>();
 
-// 2. Add Identity with Role support - SINGLE REGISTRATION
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opts =>
     {
-        // Combine your desired options here
-        options.SignIn.RequireConfirmedAccount = false;
-        options.User.RequireUniqueEmail = true;
-        options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        options.Password.RequireDigit = true;
-        options.Password.RequireLowercase = true;
-        options.Password.RequireNonAlphanumeric = true;
-        options.Password.RequireUppercase = true;
-        options.Password.RequiredLength = 8;
+        opts.SignIn.RequireConfirmedAccount    = false;
+        opts.User.RequireUniqueEmail           = true;
+        opts.Password.RequiredLength           = 8;
+        opts.Password.RequireDigit             = true;
+        opts.Password.RequireLowercase         = true;
+        opts.Password.RequireUppercase         = true;
+        opts.Password.RequireNonAlphanumeric   = true;
     })
     .AddEntityFrameworkStores<MealStackDbContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddDefaultUI();
 
-// 3. Configure cookie login paths
-builder.Services.ConfigureApplicationCookie(options =>
+builder.Services.ConfigureApplicationCookie(opts =>
 {
-    options.LoginPath = "/Identity/Account/Login";
-    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    opts.LoginPath        = "/Identity/Account/Login";
+    opts.AccessDeniedPath = "/Identity/Account/AccessDenied";
 });
 
-// 4. Add MVC and Razor Pages
+// 3. Localization: en-GB default
+var gbCulture = new CultureInfo("en-GB");
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture   = new RequestCulture(gbCulture);
+    options.SupportedCultures       = new List<CultureInfo> { gbCulture };
+    options.SupportedUICultures     = new List<CultureInfo> { gbCulture };
+});
+
+// 4. MVC & Razor Pages
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// 5. Seed roles and default admin user (only create if missing)
+// 5. Auto-migrate & seed roles/admin
 using (var scope = app.Services.CreateScope())
 {
-    var services    = scope.ServiceProvider;
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var services = scope.ServiceProvider;
+    var db       = services.GetRequiredService<MealStackDbContext>();
+    db.Database.Migrate();
 
-    // ensure roles exist
-    string[] roles = { "Admin", "User", "Guest" };
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-            await roleManager.CreateAsync(new IdentityRole(role));
-    }
-
-    // admin credentials
-    string adminEmail    = "admin@mealstack.com";
-    string adminPassword = "Admin@123";
-    string adminUsername = adminEmail;
-
-    // find or create admin user
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    if (adminUser == null)
-    {
-        adminUser = new ApplicationUser
-        {
-            UserName       = adminUsername,
-            Email          = adminEmail,
-            EmailConfirmed = true
-        };
-
-        var result = await userManager.CreateAsync(adminUser, adminPassword);
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(adminUser, "Admin");
-        }
-    }
-}
-
-
-
-// 6. Middleware pipeline
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
-else
-{
-    app.UseDeveloperExceptionPage();
-}
-
-// Add a custom error handling middleware
-app.Use(async (context, next) =>
-{
+    var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
-        await next();
-        
-        if (context.Response.StatusCode == 404 && !context.Response.HasStarted)
+        var rm = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var um = services.GetRequiredService<UserManager<ApplicationUser>>();
+        foreach (var role in new[] { "Admin", "User", "Guest" })
+            if (!await rm.RoleExistsAsync(role))
+                await rm.CreateAsync(new IdentityRole(role));
+
+        var adminEmail = "admin@mealstack.com";
+        if (await um.FindByEmailAsync(adminEmail) == null)
         {
-            context.Request.Path = "/Home/NotFound";
-            await next();
+            var admin = new ApplicationUser
+            {
+                UserName       = adminEmail,
+                Email          = adminEmail,
+                EmailConfirmed = true
+            };
+            var res = await um.CreateAsync(admin, "Admin@123");
+            if (res.Succeeded)
+                await um.AddToRoleAsync(admin, "Admin");
         }
     }
     catch (Exception ex)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An unhandled exception occurred");
-        
-        context.Request.Path = "/Home/Error";
-        await next();
+        logger.LogError(ex, "Seeding roles/admin failed");
     }
-});
+}
+
+// 6. Middleware pipeline - Apply en-GB culture to each request
+var locOpts = app.Services
+    .GetRequiredService<Microsoft.Extensions.Options.IOptions<RequestLocalizationOptions>>()
+    .Value;
+app.UseRequestLocalization(locOpts);
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
-// Authentication & Authorization middleware - SINGLE REGISTRATION
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 7. Routing
+// 7. Endpoints
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}"
+);
 app.MapRazorPages();
 
 app.Run();

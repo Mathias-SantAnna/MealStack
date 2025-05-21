@@ -1,0 +1,75 @@
+@model IEnumerable<MealStack.Infrastructure.Data.MealPlanEntity>
+@{
+    ViewData["Title"] = "Manage Meal Plans";
+}
+
+<div class="mb-4">
+    <h1>Manage Meal Plans</h1>
+    <p class="text-muted">Manage all meal plans in the system.</p>
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center bg-light">
+        <h5 class="mb-0">Meal Plans</h5>
+        <span class="badge bg-primary rounded-pill">Total: @Model.Count()</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Date Range</th>
+                        <th>User</th>
+                        <th>Meals</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var plan in Model)
+                    {
+                        <tr>
+                            <td>@plan.Name</td>
+                            <td>@(plan.Description ?? "-")</td>
+                            <td>@plan.StartDate.ToString("MMM d") - @plan.EndDate.ToString("MMM d, yyyy")</td>
+                            <td>@plan.User.UserName</td>
+                            <td>@plan.MealItems.Count</td>
+                            <td>@plan.CreatedDate.ToString("MMM d, yyyy")</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a asp-controller="MealPlan" asp-action="Details" asp-route-id="@plan.Id" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a asp-controller="MealPlan" asp-action="Edit" asp-route-id="@plan.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <a asp-controller="MealPlan" asp-action="Delete" asp-route-id="@plan.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Admin Dashboard
+    </a>
+</div>

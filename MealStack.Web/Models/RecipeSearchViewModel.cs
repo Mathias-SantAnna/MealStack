@@ -4,14 +4,14 @@ namespace MealStack.Web.Models
 {
     public class RecipeSearchViewModel
     {
-        // Basic search parameters
+        // Basic search 
         public string SearchTerm { get; set; }
-        public string SearchType { get; set; } = "all"; // all, title, ingredients
+        public string SearchType { get; set; } = "all";
         public string Difficulty { get; set; }
         public string SortBy { get; set; } = "newest";
         public int? CategoryId { get; set; }
         
-        // Advanced search parameters
+        // Advanced search 
         public List<string> Ingredients { get; set; } = new List<string>();
         public bool MatchAllIngredients { get; set; } = true;
         public int? MinServings { get; set; }
@@ -19,13 +19,11 @@ namespace MealStack.Web.Models
         public int? MinPrepTime { get; set; }
         public int? MaxPrepTime { get; set; }
         
-        // Convert ingredients list to comma-separated string
         public string GetIngredientsAsString()
         {
             return Ingredients != null ? string.Join(",", Ingredients) : string.Empty;
         }
         
-        // Parse comma-separated string to ingredients list
         public void SetIngredientsFromString(string ingredientsString)
         {
             if (string.IsNullOrEmpty(ingredientsString))

@@ -135,7 +135,6 @@ const ServingsModule = (function() {
         });
     };
 
-    // set new servings & recalc all ingredient quantities
     const updateServings = function(newServings) {
         if (newServings < 1) return;
 

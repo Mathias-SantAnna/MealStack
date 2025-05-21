@@ -58,7 +58,6 @@ namespace MealStack.Web.Controllers
                     // Generate unique filename
                     var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
                     
-                    // Ensure directory exists
                     var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "categories");
                     if (!Directory.Exists(uploadsFolder))
                     {
@@ -67,7 +66,6 @@ namespace MealStack.Web.Controllers
                     
                     var filePath = Path.Combine(uploadsFolder, fileName);
                     
-                    // Save the image
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await ImageFile.CopyToAsync(stream);
@@ -121,10 +119,8 @@ namespace MealStack.Web.Controllers
             {
                 try
                 {
-                    // Handle image upload if new image is provided
                     if (ImageFile != null && ImageFile.Length > 0)
                     {
-                        // Delete the old image if it exists
                         if (!string.IsNullOrEmpty(existingCategory.ImagePath))
                         {
                             var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, 
@@ -137,16 +133,13 @@ namespace MealStack.Web.Controllers
                                 }
                                 catch (Exception ex)
                                 {
-                                    // Log the error but continue
                                     Console.WriteLine($"Error deleting old image: {ex.Message}");
                                 }
                             }
                         }
                         
-                        // Generate unique filename
                         var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
                         
-                        // Ensure directory exists
                         var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "categories");
                         if (!Directory.Exists(uploadsFolder))
                         {
@@ -155,7 +148,6 @@ namespace MealStack.Web.Controllers
                         
                         var filePath = Path.Combine(uploadsFolder, fileName);
                         
-                        // Save the image
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
                             await ImageFile.CopyToAsync(stream);
@@ -164,6 +156,7 @@ namespace MealStack.Web.Controllers
                         existingCategory.ImagePath = "/images/categories/" + fileName;
                     }
                     
+                    // Update category properties
                     existingCategory.Name = category.Name;
                     existingCategory.Description = category.Description;
                     existingCategory.ColorClass = category.ColorClass;
@@ -226,7 +219,6 @@ namespace MealStack.Web.Controllers
                     }
                     catch (Exception ex)
                     {
-                        // Log the error but continue with category deletion
                         Console.WriteLine($"Error deleting category image: {ex.Message}");
                     }
                 }

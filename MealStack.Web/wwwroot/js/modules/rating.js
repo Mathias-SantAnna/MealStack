@@ -87,7 +87,6 @@ const RatingModule = (function() {
         $widget.data('user-rating', userRating);
     };
 
-    // Public API
     return {
         init
     };

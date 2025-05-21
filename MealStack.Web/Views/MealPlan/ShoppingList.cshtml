@@ -1,33 +1,42 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace MealStack.Web.Models
-{
-public class ShoppingListItemViewModel
-{
-public int Id { get; set; }
-
-public int MealPlanId { get; set; }
-
-[Required]
-[Display(Name = "Ingredient")]
-public string IngredientName { get; set; }
-
-[Required]
-[Display(Name = "Quantity")]
-public string Quantity { get; set; }
-
-[Display(Name = "Unit")]
-public string Unit { get; set; }
-
-public bool IsChecked { get; set; }
-
-public int? IngredientId { get; set; }
-
-[Display(Name = "Category")]
-public string Category { get; set; }
-
-// Combined display properties
-public string DisplayAmount => $"{Quantity} {Unit}".Trim();
-public string DisplayWithAmount => $"{Quantity} {Unit} {IngredientName}".Trim();
+@model MealStack.Web.Models.MealPlanViewModel
+@{
+ViewData["Title"] = "Shopping List - " + Model.Name;
 }
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Meal Plans</a></li>
+            <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Shopping List</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm mb-4">
+        <partial name="_ShoppingListActions" model="@Model.Id" />
+
+        <div class="card-body">
+            <partial name="_ShoppingListItems" model="@Model" />
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Meal Plan
+        </a>
+    </div>
+</div>
+
+<partial name="_AddShoppingItemModal" model="@Model.Id" />
+
+@section Scripts {
+<script src="~/js/modules/shoppingList.js"></script>
+<script>
+    $(document).ready(function() {
+        ShoppingListModule.init({
+            updateShoppingItemUrl: '@Url.Action("UpdateShoppingItem", "MealPlan")',
+            addShoppingItemUrl: '@Url.Action("AddShoppingItem", "MealPlan")'
+        });
+    });
+</script>
 }

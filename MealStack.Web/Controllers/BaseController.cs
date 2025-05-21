@@ -28,6 +28,11 @@ namespace MealStack.Web.Controllers
             }
             await next();
         }
+        
+        protected string GetUserId()
+        {
+            return _userManager.GetUserId(User);
+        }
 
         protected RecipeSearchViewModel InitializeSearchModel()
         {

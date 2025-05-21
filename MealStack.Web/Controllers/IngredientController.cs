@@ -30,14 +30,13 @@ namespace MealStack.Web.Controllers
     
             var ingredients = await _context.Ingredients
                 .Include(i => i.CreatedBy)
-                .OrderBy(i => i.Name) // Alphabetical
+                .OrderBy(i => i.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
         
             var totalPages = (int)Math.Ceiling(totalIngredients / (double)pageSize);
     
-            // Get all categories and measurements for filters - explicitly cast to List<string>
             var allCategories = await _context.Ingredients
                 .Where(i => !string.IsNullOrEmpty(i.Category))
                 .Select(i => i.Category)
@@ -61,7 +60,7 @@ namespace MealStack.Web.Controllers
             return View(ingredients);
         }
 
-        // API endpoint to get all ingredients for autocomplete
+        // API endpoint - Ingredients autocomplete
         [HttpGet]
         public async Task<IActionResult> GetAllIngredients()
         {
@@ -80,7 +79,7 @@ namespace MealStack.Web.Controllers
             return Json(ingredients);
         }
 
-        // API endpoint to search ingredients
+        // API endpoint - Search ingredients
         [HttpGet]
         public async Task<IActionResult> SearchIngredients(string term)
         {
@@ -106,7 +105,7 @@ namespace MealStack.Web.Controllers
             return Json(ingredients);
         }
 
-        // API endpoint to add a new ingredient via AJAX
+        // API endpoint - New ingredient via AJAX
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> AddIngredientAjax([FromBody] IngredientEntity ingredient)
@@ -118,7 +117,6 @@ namespace MealStack.Web.Controllers
     
             try
             {
-                // Check for duplicate name
                 bool duplicateExists = await _context.Ingredients
                     .AnyAsync(i => i.Name.ToLower() == ingredient.Name.ToLower());
             
@@ -127,7 +125,6 @@ namespace MealStack.Web.Controllers
                     return BadRequest(new { success = false, message = "An ingredient with this name already exists" });
                 }
         
-                // Set required fields
                 ingredient.CreatedById = _userManager.GetUserId(User) ?? string.Empty;
                 ingredient.CreatedDate = DateTime.UtcNow;
         
@@ -182,7 +179,6 @@ namespace MealStack.Web.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    // Check for duplicate name
                     bool duplicateExists = await _context.Ingredients
                         .AnyAsync(i => i.Name.ToLower() == ingredient.Name.ToLower());
                 

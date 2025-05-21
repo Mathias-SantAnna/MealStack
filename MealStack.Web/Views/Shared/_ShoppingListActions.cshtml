@@ -1,0 +1,22 @@
+@model int
+
+<div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+    <h4 class="mb-0">Shopping List</h4>
+    <div>
+        <a asp-action="PrintShoppingList" asp-route-id="@Model" class="btn btn-light btn-sm" target="_blank">
+            <i class="bi bi-printer me-1"></i> Print
+        </a>
+        <button id="copyToClipboard" class="btn btn-light btn-sm">
+            <i class="bi bi-clipboard me-1"></i> Copy to Clipboard
+        </button>
+        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addShoppingItemModal">
+            <i class="bi bi-plus-circle me-1"></i> Add Item
+        </button>
+        <form asp-action="GenerateShoppingList" asp-route-id="@Model" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-light btn-sm">
+                <i class="bi bi-arrow-repeat me-1"></i> Regenerate
+            </button>
+        </form>
+    </div>
+</div>

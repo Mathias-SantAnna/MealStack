@@ -78,7 +78,7 @@ const MealStack = (function() {
             }
         }
 
-        // --- Meal Planner Module ---
+        // Meal Planner Module 
         if (path.includes('/mealplan')) {
             console.log("Initializing MealPlannerModule.");
             if (typeof MealPlannerModule !== 'undefined') {
@@ -92,7 +92,6 @@ const MealStack = (function() {
         }
     };
 
-    // Public API
     return {
         init
     };

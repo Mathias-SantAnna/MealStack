@@ -68,7 +68,6 @@ const RecipeModule = (function() {
         return false;
     };
 
-    // Public API
     return {
         init,
         confirmDelete

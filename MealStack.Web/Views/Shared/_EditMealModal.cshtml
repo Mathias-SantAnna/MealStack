@@ -1,0 +1,52 @@
+@model MealStack.Web.Models.MealPlanViewModel
+
+<div class="modal fade" id="editMealModal" tabindex="-1" aria-labelledby="editMealModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editMealModalLabel">Edit Meal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editMealForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="EditMealId" name="Id" />
+                    <input type="hidden" id="EditMealPlanId" name="MealPlanId" value="@Model.Id" />
+                    <input type="hidden" id="EditRecipeId" name="RecipeId" />
+                    <div class="mb-3">
+                        <label for="EditRecipeTitle" class="form-label">Recipe</label>
+                        <input type="text" class="form-control" id="EditRecipeTitle" disabled />
+                    </div>
+                    <div class="mb-3">
+                        <label for="EditPlannedDate" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="EditPlannedDate" name="PlannedDate" required
+                               min="@Model.StartDate.ToString("yyyy-MM-dd")"
+                               max="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="EditMealType" class="form-label">Meal</label>
+                        <select class="form-select" id="EditMealType" name="MealType" required>
+                            <option value="0">Breakfast</option>
+                            <option value="1">Lunch</option>
+                            <option value="2">Dinner</option>
+                            <option value="3">Snack</option>
+                            <option value="4">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="EditServings" class="form-label">Servings</label>
+                        <input type="number" class="form-control" id="EditServings" name="Servings" min="1" max="20" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="EditNotes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="EditNotes" name="Notes" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="updateMealBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>

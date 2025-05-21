@@ -2,7 +2,7 @@ using MealStack.Web.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MealStack.Web.Services.Interfaces
+namespace MealStack.Web.Services.Interface
 {
     public interface IMealPlanService
     {
@@ -14,6 +14,9 @@ namespace MealStack.Web.Services.Interfaces
         Task GenerateShoppingListAsync(int mealPlanId, string userId);
         Task UpdateShoppingItemStatusAsync(int itemId, bool isChecked, string userId);
         Task<MealPlanItemViewModel> AddMealItemAsync(MealPlanItemViewModel model);
+        Task<MealPlanItemViewModel> UpdateMealItemAsync(MealPlanItemViewModel model);
+        Task<bool> UserHasAccessToMealPlanAsync(int mealPlanId, string userId);
+        Task<ShoppingListItemViewModel> AddShoppingItemAsync(ShoppingListItemViewModel model, string userId);
         Task RemoveMealItemAsync(int itemId, string userId);
     }
 }

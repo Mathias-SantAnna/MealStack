@@ -127,7 +127,6 @@ const FavoriteModule = (function() {
         setTimeout(() => heart.removeClass('animate-heart'), 600);
     };
 
-    // Public API
     return {
         init
     };

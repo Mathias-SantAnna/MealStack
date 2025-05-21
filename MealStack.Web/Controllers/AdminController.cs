@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,7 +27,10 @@ namespace MealStack.Web.Controllers
             _roleManager = roleManager;
         }
 
-        public IActionResult Index() => View();
+        public IActionResult Index()
+        {
+            return View();
+        }
 
         public async Task<IActionResult> Users()
         {
@@ -53,6 +54,23 @@ namespace MealStack.Web.Controllers
             }
 
             return View(userViewModels);
+        }
+
+        public async Task<IActionResult> ManageMealPlans()
+        {
+            var mealPlans = await _context.MealPlans
+                .Include(mp => mp.User)
+                .Include(mp => mp.MealItems)
+                .OrderByDescending(mp => mp.CreatedDate)
+                .ToListAsync();
+
+            return View(mealPlans);
+        }
+
+        public async Task<IActionResult> ManageCategories()
+        {
+            var categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+            return View(categories);
         }
 
         [HttpPost, ValidateAntiForgeryToken]
@@ -87,46 +105,6 @@ namespace MealStack.Web.Controllers
                 await _userManager.AddToRoleAsync(user, roleName);
                 TempData["Message"] = $"Role '{roleName}' added to user {user.UserName}.";
             }
-
-            return RedirectToAction(nameof(Users));
-        }
-
-        [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateUserUsername(string userId, string username)
-        {
-            if (string.IsNullOrEmpty(userId))
-            {
-                TempData["Error"] = "User ID is required.";
-                return RedirectToAction(nameof(Users));
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["Error"] = "User not found.";
-                return RedirectToAction(nameof(Users));
-            }
-
-            if (string.IsNullOrEmpty(username) || username.Length < 3 || username.Length > 10 || !System.Text.RegularExpressions.Regex.IsMatch(username, "^[a-zA-Z]+$"))
-            {
-                TempData["Error"] = "Invalid username.";
-                return RedirectToAction(nameof(Users));
-            }
-
-            var existingUser = await _userManager.FindByNameAsync(username);
-            if (existingUser != null && existingUser.Id != userId)
-            {
-                TempData["Error"] = "Username already taken.";
-                return RedirectToAction(nameof(Users));
-            }
-
-            user.UserName = username;
-            user.NormalizedUserName = _userManager.NormalizeName(username);
-            var result = await _userManager.UpdateAsync(user);
-
-            TempData[result.Succeeded ? "Message" : "Error"] = result.Succeeded
-                ? $"Username updated to '{username}'."
-                : "Failed to update username.";
 
             return RedirectToAction(nameof(Users));
         }
