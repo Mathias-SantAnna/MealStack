@@ -1,0 +1,64 @@
+<!-- Updated _AddMealModal.cshtml with user-friendly date format -->
+@model MealStack.Web.Models.MealPlanViewModel
+
+<div class="modal fade" id="addMealModal" tabindex="-1" aria-labelledby="addMealModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="addMealForm">
+        @Html.AntiForgeryToken()
+        <div class="modal-header">
+          <h5 class="modal-title" id="addMealModalLabel">Add Meal</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="addMeal_MealPlanId" value="@Model.Id" />
+
+          <div class="mb-3">
+            <label for="addMeal_RecipeId" class="form-label">Recipe</label>
+            <select id="addMeal_RecipeId" class="form-select"></select>
+            <div id="addMeal_RecipeId_Error" class="text-danger"></div>
+          </div>
+
+          <div class="mb-3">
+            <label for="addMeal_PlannedDate" class="form-label">Date</label>
+            <input id="addMeal_PlannedDate" type="text" class="form-control datepicker" 
+                  autocomplete="off" 
+                  placeholder="DD/MM/YYYY"
+                  value="@DateTime.Now.ToString("dd/MM/yyyy")" />
+            <div id="addMeal_PlannedDate_Error" class="text-danger"></div>
+          </div>
+
+          <div class="mb-3">
+            <label for="addMeal_MealType" class="form-label">Meal Type</label>
+            <select id="addMeal_MealType" class="form-select">
+              <option value="">Select meal</option>
+              <option value="0">Breakfast</option>
+              <option value="1">Lunch</option>
+              <option value="2">Dinner</option>
+              <option value="3">Snack</option>
+              <option value="4">Other</option>
+            </select>
+            <div id="addMeal_MealType_Error" class="text-danger"></div>
+          </div>
+
+          <div class="mb-3">
+            <label for="addMeal_Servings" class="form-label">Servings</label>
+            <input id="addMeal_Servings" type="number" min="1" class="form-control" value="1" />
+            <div id="addMeal_Servings_Error" class="text-danger"></div>
+          </div>
+
+          <div class="mb-3">
+            <label for="addMeal_Notes" class="form-label">Notes</label>
+            <textarea id="addMeal_Notes" class="form-control" rows="2"></textarea>
+          </div>
+
+          <div id="addMealGeneralError" class="text-danger"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="saveAddMealItemBtn" type="submit" class="btn btn-primary">Add Meal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

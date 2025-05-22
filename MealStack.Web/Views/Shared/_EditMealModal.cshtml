@@ -19,9 +19,10 @@
                     </div>
                     <div class="mb-3">
                         <label for="EditPlannedDate" class="form-label">Date</label>
-                        <input type="date" class="form-control" id="EditPlannedDate" name="PlannedDate" required
-                               min="@Model.StartDate.ToString("yyyy-MM-dd")"
-                               max="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                        <input type="text" class="form-control datepicker" id="EditPlannedDate" name="PlannedDate" required
+                               autocomplete="off"
+                               placeholder="DD/MM/YYYY" />
+                        <div class="form-text text-muted">Date must be between @Model.StartDate.ToString("dd/MM/yyyy") and @Model.EndDate.ToString("dd/MM/yyyy")</div>
                     </div>
                     <div class="mb-3">
                         <label for="EditMealType" class="form-label">Meal</label>

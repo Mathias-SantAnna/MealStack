@@ -9,6 +9,12 @@
             MealStack.Infrastructure.Data.MealType.Snack => "bg-success text-white",
             _ => "bg-secondary text-white"
         };
+    
+    // Group meals by date and sort chronologically
+    var mealsByDate = Model.MealItems
+        .OrderBy(m => m.PlannedDate)
+        .ThenBy(m => (int)m.MealType)
+        .GroupBy(m => m.PlannedDate.Date);
 }
 
 <div class="card shadow-sm">
@@ -29,11 +35,6 @@
         }
         else
         {
-            var mealsByDate = Model.MealItems
-                .OrderBy(m => m.PlannedDate)
-                .ThenBy(m => m.MealType)
-                .GroupBy(m => m.PlannedDate.Date);
-
             <div class="meal-calendar">
                 @foreach (var dayGroup in mealsByDate)
                 {
@@ -53,7 +54,7 @@
                                         <div class="row align-items-center">
                                             <div class="col-auto">
                                                 <span class="meal-type-badge badge @GetMealTypeColor(meal.MealType)">
-                                                    @meal.MealTypeDisplay
+                                                    @meal.MealType.ToString()
                                                 </span>
                                             </div>
                                             <div class="col">
@@ -71,9 +72,10 @@
                                                     <button type="button" class="btn btn-sm btn-outline-secondary edit-meal-btn"
                                                             data-bs-toggle="modal" data-bs-target="#editMealModal"
                                                             data-meal-id="@meal.Id"
+                                                            data-meal-plan-id="@Model.Id"
                                                             data-recipe-id="@meal.RecipeId"
                                                             data-recipe-title="@meal.RecipeTitle"
-                                                            data-planned-date="@meal.PlannedDate.ToString("yyyy-MM-dd")"
+                                                            data-planned-date="@meal.PlannedDate.ToString("dd/MM/yyyy")"
                                                             data-meal-type="@((int)meal.MealType)"
                                                             data-servings="@meal.Servings"
                                                             data-notes="@meal.Notes">

@@ -215,6 +215,32 @@ namespace MealStack.Web.Services
             await _context.SaveChangesAsync();
         }
 
+        private DateTime ParseAndNormalizeDate(string dateString)
+        {
+            if (DateTime.TryParse(dateString, out DateTime result))
+            {
+                // Ensure UTC kind for database storage
+                return DateTime.SpecifyKind(result.Date, DateTimeKind.Utc);
+            }
+            
+            // Try specific formats if standard parsing fails
+            string[] formats = { "yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy" };
+            
+            foreach (var format in formats)
+            {
+                if (DateTime.TryParseExact(dateString, format, 
+                    System.Globalization.CultureInfo.InvariantCulture, 
+                    System.Globalization.DateTimeStyles.None, out result))
+                {
+                    return DateTime.SpecifyKind(result.Date, DateTimeKind.Utc);
+                }
+            }
+            
+            // If all parsing attempts fail, use current date
+            return DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+        }
+
+        // Then in AddMealItemAsync method:
         public async Task<MealPlanItemViewModel> AddMealItemAsync(MealPlanItemViewModel model)
         {
             var plan = await _context.MealPlans
@@ -224,15 +250,26 @@ namespace MealStack.Web.Services
             var recipe = await _context.Recipes.FindAsync(model.RecipeId)
                          ?? throw new InvalidOperationException("Recipe not found.");
 
+            // Ensure the date is within the meal plan date range
+            // Force UTC kind on user‐entered dates:
+            var plannedDate = model.PlannedDate;
+            
+            // Check if the date is within plan range
+            if (plannedDate.Date < plan.StartDate.Date || plannedDate.Date > plan.EndDate.Date)
+            {
+                throw new InvalidOperationException($"The selected date must be between {plan.StartDate:d} and {plan.EndDate:d}");
+            }
+
             var entity = new MealPlanItemEntity
             {
                 MealPlanId  = model.MealPlanId,
                 RecipeId    = model.RecipeId,
-                PlannedDate = model.PlannedDate,
+                PlannedDate = DateTime.SpecifyKind(plannedDate.Date, DateTimeKind.Utc),
                 MealType    = model.MealType,
                 Servings    = model.Servings,
                 Notes       = model.Notes
             };
+            
             _context.MealPlanItems.Add(entity);
             await _context.SaveChangesAsync();
 
@@ -310,7 +347,7 @@ namespace MealStack.Web.Services
             _context.ShoppingListItems.Remove(si);
             await _context.SaveChangesAsync();
         }
-
+        
         private string DetermineCategory(string name)
         {
             var n = name.ToLowerInvariant();

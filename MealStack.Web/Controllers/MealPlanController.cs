@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MealStack.Infrastructure.Data;
@@ -53,29 +52,25 @@ namespace MealStack.Web.Controllers
             var model = new MealPlanViewModel
             {
                 StartDate = DateTime.Today,
-                EndDate = DateTime.Today.AddDays(6)
+                EndDate   = DateTime.Today.AddDays(6)
             };
             return View(model);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(MealPlanViewModel model)
         {
             model.UserId = GetUserId();
             ModelState.Remove(nameof(model.UserId));
 
             if (model.EndDate < model.StartDate)
-            {
                 ModelState.AddModelError(nameof(model.EndDate), "End date cannot be before start date.");
-            }
 
             if (!ModelState.IsValid)
             {
                 foreach (var kv in ModelState)
-                foreach (var err in kv.Value.Errors)
-                    _logger.LogWarning("ModelState error on '{Field}': {Error}", kv.Key, err.ErrorMessage);
-
+                    foreach (var err in kv.Value.Errors)
+                        _logger.LogWarning("ModelState error on '{Field}': {Error}", kv.Key, err.ErrorMessage);
                 return View(model);
             }
 
@@ -96,7 +91,7 @@ namespace MealStack.Web.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
-            var userId = GetUserId();
+            var userId   = GetUserId();
             var mealPlan = await _mealPlanService.GetMealPlanByIdAsync(id, userId);
             if (mealPlan == null) return NotFound();
             return View(mealPlan);
@@ -143,7 +138,7 @@ namespace MealStack.Web.Controllers
 
         public async Task<IActionResult> Delete(int id)
         {
-            var userId = GetUserId();
+            var userId   = GetUserId();
             var mealPlan = await _mealPlanService.GetMealPlanByIdAsync(id, userId);
             if (mealPlan == null) return NotFound();
             return View(mealPlan);
@@ -153,26 +148,34 @@ namespace MealStack.Web.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userId = GetUserId();
-            var success = await _mealPlanService.DeleteMealPlanAsync(id, userId);
-            if (success)
+            try
             {
-                _logger.LogInformation("User {User} deleted MealPlan {PlanId}", userId, id);
-                TempData["Message"] = "Meal plan deleted successfully.";
+                var success = await _mealPlanService.DeleteMealPlanAsync(id, userId);
+                if (success)
+                {
+                    _logger.LogInformation("User {User} deleted MealPlan {PlanId}", userId, id);
+                    TempData["Message"] = "Meal plan deleted successfully.";
+                }
+                else
+                {
+                    _logger.LogWarning("Failed delete attempt by {User} on MealPlan {PlanId}", userId, id);
+                    TempData["Error"] = "Could not delete meal plan. It may not exist or you lack permission.";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogWarning("Failed delete attempt by {User} on MealPlan {PlanId}", userId, id);
-                TempData["Error"] = "Could not delete meal plan. It may not exist or you lack permission.";
+                _logger.LogError(ex, "Error deleting MealPlan {PlanId} for user {User}", id, userId);
+                TempData["Error"] = "An error occurred while deleting the meal plan. Please try again.";
             }
             return RedirectToAction(nameof(Index));
         }
-
+        
         public async Task<IActionResult> ShoppingList(int id)
         {
-            var userId = GetUserId();
+            var userId   = GetUserId();
             var mealPlan = await _mealPlanService.GetMealPlanByIdAsync(id, userId);
             if (mealPlan == null) return NotFound();
-            ViewBag.CheckedCount = mealPlan.ShoppingItems?.Count(i => i.IsChecked) ?? 0;
+            ViewBag.CheckedCount   = mealPlan.ShoppingItems?.Count(i => i.IsChecked) ?? 0;
             ViewBag.UncheckedCount = mealPlan.ShoppingItems?.Count(i => !i.IsChecked) ?? 0;
             return View(mealPlan);
         }
@@ -241,7 +244,7 @@ namespace MealStack.Web.Controllers
 
         public async Task<IActionResult> PrintShoppingList(int id)
         {
-            var userId = GetUserId();
+            var userId   = GetUserId();
             var mealPlan = await _mealPlanService.GetMealPlanByIdAsync(id, userId);
             if (mealPlan == null) return NotFound();
 
@@ -249,18 +252,29 @@ namespace MealStack.Web.Controllers
                 .Where(i => !i.IsChecked)
                 .OrderBy(i => i.Category)
                 .ThenBy(i => i.IngredientName)
-                .ToList() 
-              ?? new List<ShoppingListItemViewModel>();
+                .ToList()
+              ?? new System.Collections.Generic.List<ShoppingListItemViewModel>();
 
             return View(mealPlan);
         }
 
+        // === AJAX: Add Meal Item ===
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddMealItem(MealPlanItemViewModel model)
+        public async Task<IActionResult> AddMealItem(
+            [Bind("MealPlanId,RecipeId,PlannedDate,MealType,Servings,Notes")]
+            MealPlanItemViewModel model)
         {
+            // Remove validation for fields that will be set programmatically
+            ModelState.Remove("UserId");
+            ModelState.Remove("RecipeTitle");
+            ModelState.Remove("RecipeImagePath");
+
             if (!ModelState.IsValid)
             {
-                var errs = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                var errs = ModelState
+                    .Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
                 _logger.LogWarning("AddMealItem validation failed: {Errors}", string.Join(", ", errs));
                 return Json(new { success = false, errors = errs });
             }
@@ -268,10 +282,43 @@ namespace MealStack.Web.Controllers
             try
             {
                 model.UserId = GetUserId();
+
+                // Check if same meal already exists to prevent duplicates
+                var existingMeal = await _context.MealPlanItems
+                    .FirstOrDefaultAsync(mp => 
+                        mp.MealPlanId == model.MealPlanId && 
+                        mp.RecipeId == model.RecipeId && 
+                        mp.PlannedDate.Date == model.PlannedDate.Date && 
+                        mp.MealType == model.MealType);
+
+                if (existingMeal != null)
+                {
+                    _logger.LogWarning(
+                        "Duplicate meal detected: User {User} attempted to add duplicate MealItem to MealPlan {PlanId}",
+                        model.UserId, model.MealPlanId
+                    );
+                    return Json(new { success = false, message = "This meal is already on your plan for this date." });
+                }
+
+                var recipe = await _context.Recipes
+                    .AsNoTracking()
+                    .Where(r => r.Id == model.RecipeId)
+                    .Select(r => new { r.Title, r.ImagePath })
+                    .FirstOrDefaultAsync();
+
+                if (recipe == null)
+                    return Json(new { success = false, message = "Selected recipe not found." });
+
+                model.RecipeTitle = recipe.Title;
+                model.RecipeImagePath = recipe.ImagePath;
+
                 var added = await _mealPlanService.AddMealItemAsync(model);
-                _logger.LogInformation("User {User} added MealItem {ItemId} to MealPlan {PlanId}",
-                                       model.UserId, added.Id, model.MealPlanId);
-                return Json(new { success = true, item = added });
+                _logger.LogInformation(
+                    "User {User} added MealItem {ItemId} to MealPlan {PlanId}",
+                    model.UserId, added.Id, model.MealPlanId
+                );
+
+                return Json(new { success = true });
             }
             catch (Exception ex)
             {
@@ -280,12 +327,18 @@ namespace MealStack.Web.Controllers
             }
         }
 
+        // === AJAX: Update Meal Item ===
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateMealItem(MealPlanItemViewModel model)
+        public async Task<IActionResult> UpdateMealItem(
+            [Bind("Id,MealPlanId,RecipeId,PlannedDate,MealType,Servings,Notes")]
+            MealPlanItemViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                var errs = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                var errs = ModelState
+                    .Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
                 _logger.LogWarning("UpdateMealItem validation failed: {Errors}", string.Join(", ", errs));
                 return Json(new { success = false, errors = errs });
             }
@@ -293,10 +346,26 @@ namespace MealStack.Web.Controllers
             try
             {
                 model.UserId = GetUserId();
-                var updated = await _mealPlanService.UpdateMealItemAsync(model);
-                _logger.LogInformation("User {User} updated MealItem {ItemId} in MealPlan {PlanId}",
-                                       model.UserId, updated.Id, model.MealPlanId);
-                return Json(new { success = true, item = updated });
+
+                var recipe = await _context.Recipes
+                    .AsNoTracking()
+                    .Where(r => r.Id == model.RecipeId)
+                    .Select(r => new { r.Title, r.ImagePath })
+                    .FirstOrDefaultAsync();
+
+                if (recipe == null)
+                    return Json(new { success = false, message = "Selected recipe not found." });
+
+                model.RecipeTitle     = recipe.Title;
+                model.RecipeImagePath = recipe.ImagePath;
+
+                await _mealPlanService.UpdateMealItemAsync(model);
+                _logger.LogInformation(
+                    "User {User} updated MealItem {ItemId} in MealPlan {PlanId}",
+                    model.UserId, model.Id, model.MealPlanId
+                );
+
+                return Json(new { success = true });
             }
             catch (Exception ex)
             {
@@ -305,6 +374,7 @@ namespace MealStack.Web.Controllers
             }
         }
 
+        // === AJAX: Remove Meal Item ===
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveMealItem(int itemId, int mealPlanId)
         {
@@ -312,8 +382,10 @@ namespace MealStack.Web.Controllers
             {
                 var userId = GetUserId();
                 await _mealPlanService.RemoveMealItemAsync(itemId, userId);
-                _logger.LogInformation("User {User} removed MealItem {ItemId} from MealPlan {PlanId}",
-                                        userId, itemId, mealPlanId);
+                _logger.LogInformation(
+                    "User {User} removed MealItem {ItemId} from MealPlan {PlanId}",
+                    userId, itemId, mealPlanId
+                );
                 return Json(new { success = true });
             }
             catch (Exception ex)
@@ -323,6 +395,7 @@ namespace MealStack.Web.Controllers
             }
         }
 
+        // === AJAX: Recipe lookup for Select2 ===
         [HttpGet]
         public async Task<IActionResult> GetRecipes(string term)
         {
@@ -332,11 +405,10 @@ namespace MealStack.Web.Controllers
 
             var results = await q
                 .OrderByDescending(r => r.CreatedDate)
-                .Select(r => new {
-                    id         = r.Id,
-                    text       = r.Title,
-                    imagePath  = r.ImagePath,
-                    servings   = r.Servings
+                .Select(r => new
+                {
+                    id   = r.Id,
+                    text = r.Title
                 })
                 .Take(20)
                 .ToListAsync();

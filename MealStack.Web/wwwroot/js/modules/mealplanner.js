@@ -1,5 +1,5 @@
+// Fixed version of MealPlannerModule
 const MealPlannerModule = (function() {
-    // Default selectors & endpoints
     const defaults = {
         // Shopping list
         shoppingItemCheckboxSelector: '.shopping-item-checkbox',
@@ -8,15 +8,17 @@ const MealPlannerModule = (function() {
         checkedItemsCountSelector:    '#checkedItemsCount',
         searchItemsSelector:          '#searchItems',
 
-        // Recipe search
-        recipeSearchSelector: '#RecipeSearch',
+        // Add Meal modal (updated IDs)
+        recipeSearchSelector:    '#addMeal_RecipeId',
+        addMealFormSelector:     '#addMealForm',
+        saveMealBtnSelector:     '#saveAddMealItemBtn',
+        addMealModalSelector:    '#addMealModal',
+        plannedDateInputSelector:'#addMeal_PlannedDate',
 
-        // Meal plan forms
-        addMealFormSelector:    '#addMealForm',
-        editMealFormSelector:   '#editMealForm',
-        saveMealBtnSelector:    '#saveMealBtn',
-        updateMealBtnSelector:  '#updateMealBtn',
-        removeMealBtnSelector:  '.remove-meal-btn',
+        // Edit Meal modal
+        editMealFormSelector:    '#editMealForm',
+        updateMealBtnSelector:   '#updateMealBtn',
+        removeMealBtnSelector:   '.remove-meal-btn',
 
         // API endpoints
         updateShoppingItemUrl: '/MealPlan/UpdateShoppingItem',
@@ -27,71 +29,99 @@ const MealPlannerModule = (function() {
     };
 
     let options = {};
+    let eventHandlersInitialized = false; // Flag to prevent duplicate event handlers
 
-    // 1) Initialize jQuery-UI datepickers in dd/mm/yy format
+    function getRequestVerificationToken() {
+        return $('input[name="__RequestVerificationToken"]').val();
+    }
+
+    function displayModalErrors(formSelector, errors, generalSelector) {
+        // clear previous
+        $(`${formSelector} .text-danger`).text('');
+        $(generalSelector).text('');
+        if (errors && typeof errors === 'object') {
+            $.each(errors, (key, msgs) => {
+                const span = $(`${formSelector} #addMeal_${key}_Error`);
+                if (span.length) {
+                    span.text(msgs.join(', '));
+                } else {
+                    $(generalSelector).append(`<div>${msgs.join(', ')}</div>`);
+                }
+            });
+        } else if (errors) {
+            $(generalSelector).text(errors);
+        }
+    }
+
+    // 1) Datepicker init
     const initDatepickers = function() {
         if ($.fn.datepicker) {
             $('.datepicker').each(function() {
-                $(this).datepicker({
-                    dateFormat:  'dd/mm/yy',   // European format
-                    changeMonth: true,         // month dropdown
-                    changeYear:  true,         // year dropdown
-                    firstDay:    1             // Monday as first day
-                });
+                if (!$(this).hasClass('hasDatepicker')) {
+                    $(this).datepicker({
+                        dateFormat: 'dd/mm/yy',
+                        changeMonth: true,
+                        changeYear: true,
+                        firstDay: 1,
+                        autoclose: true,
+                        todayHighlight: true,
+                        showOtherMonths: true,
+                        selectOtherMonths: true,
+                        beforeShow: function(input, inst) {
+                            // Ensure proper positioning relative to the input
+                            setTimeout(function() {
+                                inst.dpDiv.css({
+                                    top: $(input).offset().top + $(input).outerHeight() + 5,
+                                    left: $(input).offset().left
+                                });
+                            }, 0);
+                        }
+                    });
+                }
             });
         }
     };
 
-    // 2) Initialize Select2 for recipe search
+    // 2) Select2 for Add-Meal recipe selector
     const initRecipeSearch = function() {
-        if ($(options.recipeSearchSelector).length && $.fn.select2) {
-            $(options.recipeSearchSelector).select2({
-                placeholder: 'Search for a recipe...',
-                allowClear: true,
-                dropdownParent: $('#addMealModal'),
+        const $el = $(options.recipeSearchSelector);
+        if ($el.length && $.fn.select2 && !$el.data('select2')) { // Check if not already initialized
+            $el.select2({
+                dropdownParent: $(options.addMealModalSelector),
+                placeholder:    'Search for a recipe...',
+                allowClear:     true,
+                minimumInputLength: 1,
                 ajax: {
                     url: options.getRecipesUrl,
                     dataType: 'json',
                     delay: 250,
-                    data: function (params) {
-                        return { term: params.term || '' };
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: $.map(data, function (item) {
-                                return {
-                                    text: item.text,
-                                    id: item.id,
-                                    servings: item.servings,
-                                    imagePath: item.imagePath
-                                };
-                            })
-                        };
-                    },
+                    data: params => ({ term: params.term || '' }),
+                    processResults: data => ({
+                        results: data.map(item => ({ id: item.id, text: item.text }))
+                    }),
                     cache: true
-                },
-                minimumInputLength: 1
-            }).on('select2:select', function (e) {
-                const data = e.params.data;
-                $('#RecipeId').val(data.id);
-                $('#AddServings').val(data.servings || 2);
+                }
             });
         }
     };
 
-    // 3) Shopping-list functionality
+    // 3) Shopping-list behaviors
     const initShoppingList = function() {
-        const requestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
+        if (!$('.shopping-item').length) {
+            // No shopping list on this page, skip initialization
+            return;
+        }
 
-        // Toggle item checked state
-        $(document).on('change', options.shoppingItemCheckboxSelector, function() {
+        const token = getRequestVerificationToken();
+        // toggle single
+        $(document).off('change', options.shoppingItemCheckboxSelector).on('change', options.shoppingItemCheckboxSelector, function() {
             const checkbox   = $(this);
             const isChecked  = checkbox.prop('checked');
             const itemId     = checkbox.data('item-id');
             const mealPlanId = checkbox.data('meal-plan-id');
             const item       = checkbox.closest(options.shoppingItemSelector);
 
-            // Optimistic UI update
+            // optimistic UI
             if (isChecked) {
                 item.addClass('checked');
                 updateCheckedCount(1);
@@ -100,20 +130,14 @@ const MealPlannerModule = (function() {
                 updateCheckedCount(-1);
             }
 
-            // Persist change
+            // persist
             $.ajax({
-                url:     options.updateShoppingItemUrl,
-                method:  'POST',
-                data:    {
-                    itemId:     itemId,
-                    isChecked:  isChecked,
-                    mealPlanId: mealPlanId
-                },
-                headers: {
-                    'RequestVerificationToken': requestVerificationToken
-                },
+                url:    options.updateShoppingItemUrl,
+                method: 'POST',
+                data:   { itemId, isChecked, mealPlanId },
+                headers:{ 'RequestVerificationToken': token },
                 error: function() {
-                    // Revert on error
+                    // revert
                     checkbox.prop('checked', !isChecked);
                     if (!isChecked) {
                         item.addClass('checked');
@@ -127,16 +151,16 @@ const MealPlannerModule = (function() {
             });
         });
 
-        // Clear all checked
-        $(document).on('click', options.clearCheckedItemsSelector, function(e) {
+        // clear all
+        $(document).off('click', options.clearCheckedItemsSelector).on('click', options.clearCheckedItemsSelector, function(e) {
             e.preventDefault();
             $(`${options.shoppingItemCheckboxSelector}:checked`).each(function() {
                 $(this).prop('checked', false).trigger('change');
             });
         });
 
-        // Search filter
-        $(document).on('input', options.searchItemsSelector, function() {
+        // filter
+        $(document).off('input', options.searchItemsSelector).on('input', options.searchItemsSelector, function() {
             const term = $(this).val().toLowerCase().trim();
             if (!term) {
                 $(options.shoppingItemSelector).show();
@@ -147,7 +171,6 @@ const MealPlannerModule = (function() {
                 const name = $(this).data('item-name').toLowerCase();
                 $(this).toggle(name.indexOf(term) !== -1);
             });
-            // Hide empty categories
             $('.shopping-category').each(function() {
                 const hasVisible = $(this)
                     .find(`${options.shoppingItemSelector}:visible`)
@@ -157,68 +180,150 @@ const MealPlannerModule = (function() {
         });
     };
 
-    // 4) Meal-plan add/edit/remove functionality
+    // 4) Meal-plan add / edit / update / remove
     const setupMealPlanEventListeners = function() {
-        const requestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
+        if (eventHandlersInitialized) {
+            return; // Prevent duplicate event handlers
+        }
 
-        // Add meal
-        $(document).on('click', options.saveMealBtnSelector, function() {
+        const token = getRequestVerificationToken();
+
+        // -- Add Meal via modal form
+        $(document).off('submit', options.addMealFormSelector).on('submit', options.addMealFormSelector, function(e) {
+            e.preventDefault();
+            console.log("Add meal form submitted");
+
+            $('#addMealGeneralError').text('');
+            $(`${options.addMealFormSelector} .text-danger`).text('');
+
             const form = $(options.addMealFormSelector)[0];
             if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
 
-            const formData = {
-                MealPlanId:  $('#AddMealPlanId').val(),
-                RecipeId:    $('#RecipeSearch').val(),
-                PlannedDate: $('#AddPlannedDate').val(),
-                MealType:    $('#AddMealType').val(),
-                Servings:    $('#AddServings').val(),
-                Notes:       $('#AddNotes').val()
+            // Get form values
+            const data = {
+                MealPlanId: $('#addMeal_MealPlanId').val(),
+                RecipeId: $(options.recipeSearchSelector).val(),
+                PlannedDate: $(options.plannedDateInputSelector).val(),
+                MealType: $('#addMeal_MealType').val(),
+                Servings: $('#addMeal_Servings').val(),
+                Notes: $('#addMeal_Notes').val()
             };
 
+            // Validate required fields on client side
+            let hasError = false;
+            if (!data.RecipeId) {
+                $('#addMeal_RecipeId_Error').text('Please select a recipe');
+                hasError = true;
+            }
+
+            if (!data.PlannedDate) {
+                $('#addMeal_PlannedDate_Error').text('Please select a date');
+                hasError = true;
+            }
+
+            if (!data.MealType) {
+                $('#addMeal_MealType_Error').text('Please select a meal type');
+                hasError = true;
+            }
+
+            if (hasError) {
+                return;
+            }
+
+            // Disable submit button to prevent multiple submissions
+            const submitBtn = $(options.saveMealBtnSelector);
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...');
+
+            // Submit form data via AJAX
             $.ajax({
                 url: options.addMealItemUrl,
                 type: 'POST',
-                data: formData,
-                headers: { 'RequestVerificationToken': requestVerificationToken },
-                success: function(response) {
-                    if (response.success) {
+                data: data,
+                headers: { 'RequestVerificationToken': token },
+                success: function(resp) {
+                    if (resp.success) {
                         window.location.reload();
                     } else {
-                        alert('Error: ' + (response.message || (response.errors ? response.errors.join('\n') : 'Failed to add meal. Please try again.')));
+                        submitBtn.prop('disabled', false);
+                        submitBtn.text('Add Meal');
+                        displayModalErrors(
+                            options.addMealFormSelector,
+                            resp.errors || resp.message,
+                            '#addMealGeneralError'
+                        );
                     }
                 },
-                error: function() {
-                    alert('Error: Failed to add meal. Please try again.');
+                error: function(xhr) {
+                    submitBtn.prop('disabled', false);
+                    submitBtn.text('Add Meal');
+                    let msg = 'An unexpected error occurred.';
+                    try {
+                        msg = JSON.parse(xhr.responseText).message || msg;
+                    } catch(e) { /* Ignore parsing error */ }
+                    $('#addMealGeneralError').text(msg);
                 }
             });
         });
 
-        // Edit meal modal setup
-        $('#editMealModal').on('show.bs.modal', function (event) {
-            const button = $(event.relatedTarget);
-            const modal = $(this);
-
-            modal.find('#EditMealId').val(button.data('meal-id'));
-            modal.find('#EditRecipeId').val(button.data('recipe-id'));
-            modal.find('#EditRecipeTitle').val(button.data('recipe-title'));
-            modal.find('#EditPlannedDate').val(button.data('planned-date'));
-            modal.find('#EditMealType').val(button.data('meal-type'));
-            modal.find('#EditServings').val(button.data('servings'));
-            modal.find('#EditNotes').val(button.data('notes'));
+        // Button click handler for saving meal - Use once handler to prevent multiple bindings
+        $(document).off('click', options.saveMealBtnSelector).on('click', options.saveMealBtnSelector, function() {
+            $(options.addMealFormSelector).submit();
         });
 
-        // Update meal
-        $(document).on('click', options.updateMealBtnSelector, function() {
+        // reset form when opening
+        $(options.addMealModalSelector).off('show.bs.modal').on('show.bs.modal', function() {
+            $(`${options.addMealFormSelector} .text-danger`).text('');
+            $('#addMealGeneralError').text('');
+            $(options.recipeSearchSelector).val(null).trigger('change');
+
+            // Set default date to today
+            const today = new Date();
+            const formattedDate = today.getDate()  + '/' + (today.getMonth() + 1) + '/' + today.getFullYear();
+            $(options.plannedDateInputSelector).val(formattedDate);
+
+            // Reset and re-init datepicker
+            setTimeout(function() {
+                initDatepickers();
+            }, 300);
+        });
+
+        // — Edit Meal modal setup
+        $('#editMealModal').off('show.bs.modal').on('show.bs.modal', function(event) {
+            const btn   = $(event.relatedTarget);
+            const modal = $(this);
+            modal.find('#EditMealId').val(btn.data('meal-id'));
+            modal.find('#EditMealPlanId').val(btn.data('meal-plan-id'));
+            modal.find('#EditRecipeId').val(btn.data('recipe-id'));
+            modal.find('#EditRecipeTitle').val(btn.data('recipe-title'));
+            modal.find('#EditPlannedDate').val(btn.data('planned-date'));
+            modal.find('#EditMealType').val(btn.data('meal-type'));
+            modal.find('#EditServings').val(btn.data('servings'));
+            modal.find('#EditNotes').val(btn.data('notes'));
+
+            // Re-init datepicker for edit form
+            setTimeout(function() {
+                initDatepickers();
+            }, 300);
+        });
+
+        // Update Meal
+        $(document).off('click', options.updateMealBtnSelector).on('click', options.updateMealBtnSelector, function() {
             const form = $(options.editMealFormSelector)[0];
             if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
 
-            const formData = {
+            // Disable button to prevent multiple submissions
+            const updateBtn = $(this);
+            updateBtn.prop('disabled', true);
+            updateBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...');
+
+            const data = {
                 Id:          $('#EditMealId').val(),
                 MealPlanId:  $('#EditMealPlanId').val(),
                 RecipeId:    $('#EditRecipeId').val(),
@@ -229,81 +334,96 @@ const MealPlannerModule = (function() {
             };
 
             $.ajax({
-                url: options.updateMealItemUrl,
-                type: 'POST',
-                data: formData,
-                headers: { 'RequestVerificationToken': requestVerificationToken },
-                success: function(response) {
-                    if (response.success) {
+                url:     options.updateMealItemUrl,
+                type:    'POST',
+                data:    data,
+                headers: { 'RequestVerificationToken': token },
+                success: function(resp) {
+                    if (resp.success) {
                         window.location.reload();
                     } else {
-                        alert('Error: ' + (response.message || (response.errors ? response.errors.join('\n') : 'Failed to update meal. Please try again.')));
+                        updateBtn.prop('disabled', false);
+                        updateBtn.text('Save Changes');
+                        alert('Error: ' + (resp.message || (resp.errors ? resp.errors.join('\n') : 'Failed to update meal.')));
                     }
                 },
                 error: function() {
+                    updateBtn.prop('disabled', false);
+                    updateBtn.text('Save Changes');
                     alert('Error: Failed to update meal. Please try again.');
                 }
             });
         });
 
-        // Remove meal
-        $(document).on('click', options.removeMealBtnSelector, function() {
-            const button = $(this);
-            const itemId = button.data('meal-id');
-            const mealPlanId = button.data('meal-plan-id');
-            const recipeTitle = button.data('recipe-title');
+        // Remove Meal
+        $(document).off('click', options.removeMealBtnSelector).on('click', options.removeMealBtnSelector, function() {
+            const btn         = $(this);
+            const itemId      = btn.data('meal-id');
+            const mealPlanId  = btn.data('meal-plan-id');
+            const recipeTitle = btn.data('recipe-title');
 
-            if (confirm(`Are you sure you want to remove "${recipeTitle}" from this meal plan?`)) {
+            if (confirm(`Remove "${recipeTitle}" from this plan?`)) {
+                // Disable button
+                btn.prop('disabled', true);
+
                 $.ajax({
-                    url: options.removeMealItemUrl,
-                    type: 'POST',
-                    data: { itemId: itemId, mealPlanId: mealPlanId },
-                    headers: { 'RequestVerificationToken': requestVerificationToken },
-                    success: function(response) {
-                        if (response.success) {
-                            $(`#meal-item-${itemId}`).fadeOut(300, function() {
-                                $(this).remove();
-                                $('.meal-day').each(function() {
-                                    if ($(this).find('.meal-item').length === 0) {
-                                        $(this).remove();
+                    url:     options.removeMealItemUrl,
+                    type:    'POST',
+                    data:    { itemId, mealPlanId },
+                    headers: { 'RequestVerificationToken': token },
+                    success: function(resp) {
+                        if (resp.success) {
+                            $(`#meal-item-${itemId}`)
+                                .fadeOut(300, function() {
+                                    $(this).remove();
+                                    // clean up empty days
+                                    $('.meal-day').each(function() {
+                                        if (!$(this).find('.meal-item').length) {
+                                            $(this).remove();
+                                        }
+                                    });
+                                    // if none left, reload page
+                                    if (!$('.meal-item').length) {
+                                        window.location.reload();
                                     }
                                 });
-
-                                if ($('.meal-item').length === 0) {
-                                    window.location.reload();
-                                }
-                            });
                         } else {
-                            alert('Error: ' + (response.message || 'Failed to remove meal. Please try again.'));
+                            btn.prop('disabled', false);
+                            alert('Error: ' + (resp.message || 'Failed to remove meal.'));
                         }
                     },
                     error: function() {
+                        btn.prop('disabled', false);
                         alert('Error: Failed to remove meal. Please try again.');
                     }
                 });
             }
         });
+
+        eventHandlersInitialized = true;
     };
 
-    // Helper function to update checked items count
     const updateCheckedCount = function(change) {
         const el = $(options.checkedItemsCountSelector);
         if (!el.length) return;
         el.text(parseInt(el.text() || '0', 10) + change);
     };
 
-    // Public init
+    // public init
     const init = function(config = {}) {
-        options = $.extend({}, defaults, config);
         console.log("Initializing MealPlannerModule...");
+        options = $.extend({}, defaults, config);
 
-        // Initialize components
-        initDatepickers();
-        initRecipeSearch();
-        initShoppingList();
-        setupMealPlanEventListeners();
-
-        console.log("MealPlannerModule initialized successfully");
+        // Initialize only if we're on the meal planner page
+        if ($('#addMealModal').length || $('.meal-day').length || $('.shopping-item').length) {
+            initDatepickers();
+            initRecipeSearch();
+            initShoppingList();
+            setupMealPlanEventListeners();
+            console.log("MealPlannerModule initialized successfully");
+        } else {
+            console.log("MealPlannerModule skipped: not on a meal planner page");
+        }
     };
 
     return { init };
