@@ -1,7 +1,7 @@
 @model MealStack.Infrastructure.Data.RecipeEntity
 
 @{
-ViewData["Title"] = "Create Recipe";
+    ViewData["Title"] = "Create Recipe";
 }
 
 <div class="container py-4">
@@ -32,9 +32,14 @@ ViewData["Title"] = "Create Recipe";
 
     <script>
         $(document).ready(function() {
-            RecipeForm.init({
-                isEdit: false
-            });
+            // Initialize RecipeForm module
+            if (typeof RecipeForm !== 'undefined') {
+                RecipeForm.init({
+                    isEdit: false
+                });
+            } else {
+                console.error('RecipeForm module not loaded');
+            }
         });
     </script>
 }

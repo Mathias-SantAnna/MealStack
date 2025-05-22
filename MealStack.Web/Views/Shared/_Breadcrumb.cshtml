@@ -1,0 +1,13 @@
+@model dynamic
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Index">Meal Plans</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="@Model.Action" asp-route-id="@Model.Id">@Model.Name</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.Current</li>
+    </ol>
+</nav>

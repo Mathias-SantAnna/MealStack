@@ -1,22 +1,29 @@
 @model MealStack.Web.Models.MealPlanViewModel
 @{
-ViewData["Title"] = "Shopping List - " + Model.Name;
+    ViewData["Title"] = "Shopping List - " + Model.Name;
+    var checkedItems = Model.ShoppingItems?.Count(i => i.IsChecked) ?? 0;
+    var totalItems = Model.ShoppingItems?.Count ?? 0;
+    var hasItems = totalItems > 0;
 }
 
 <div class="container py-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-action="Index">Meal Plans</a></li>
-            <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Shopping List</li>
-        </ol>
-    </nav>
+    <partial name="_Breadcrumb" model="@(new { Action = "Details", Id = Model.Id, Name = Model.Name, Current = "Shopping List" })" />
+    <partial name="_MessageAlerts" />
 
     <div class="card shadow-sm mb-4">
-        <partial name="_ShoppingListActions" model="@Model.Id" />
-
+        <partial name="_ShoppingListHeader" model="@Model.Id" />
+        
         <div class="card-body">
-            <partial name="_ShoppingListItems" model="@Model" />
+            @if (!hasItems)
+            {
+                <partial name="_EmptyShoppingList" model="@Model.Id" />
+            }
+            else
+            {
+                <partial name="_ShoppingListControls" model="@(new { CheckedCount = checkedItems, TotalCount = totalItems })" />
+                <partial name="_ShoppingListItems" model="@Model" />
+                <partial name="_ShoppingListProgress" model="@(new { CheckedItems = checkedItems, TotalItems = totalItems })" />
+            }
         </div>
     </div>
 
@@ -27,16 +34,38 @@ ViewData["Title"] = "Shopping List - " + Model.Name;
     </div>
 </div>
 
-<partial name="_AddShoppingItemModal" model="@Model.Id" />
+<partial name="_AddItemModal" model="@Model.Id" />
 
 @section Scripts {
-<script src="~/js/modules/shoppingList.js"></script>
-<script>
-    $(document).ready(function() {
-        ShoppingListModule.init({
-            updateShoppingItemUrl: '@Url.Action("UpdateShoppingItem", "MealPlan")',
-            addShoppingItemUrl: '@Url.Action("AddShoppingItem", "MealPlan")'
+    <script src="~/js/modules/shoppingList.js"></script>
+    <script>
+        $(document).ready(function() {
+            console.log('Initializing Shopping List Module...');
+            
+            // Check if ShoppingListModule is available
+            if (typeof ShoppingListModule === 'undefined') {
+                console.error('ShoppingListModule not found - check if shoppingList.js is loaded');
+                return;
+            }
+
+            // Initialize the module with configuration
+            ShoppingListModule.init({
+                updateShoppingItemUrl: '@Url.Action("UpdateShoppingItem", "MealPlan")',
+                addShoppingItemUrl: '@Url.Action("AddShoppingItem", "MealPlan")'
+            });
+
+            // Force initial progress update after a small delay to ensure DOM is ready
+            setTimeout(function() {
+                console.log('Running initial progress update...');
+                if (ShoppingListModule.updateAllProgress) {
+                    ShoppingListModule.updateAllProgress();
+                }
+            }, 100);
+
+            // Debug: Log current state
+            console.log('Shopping list initialized:');
+            console.log('- Total items:', $('.shopping-item-checkbox').length);
+            console.log('- Checked items:', $('.shopping-item-checkbox:checked').length);
         });
-    });
-</script>
+    </script>
 }

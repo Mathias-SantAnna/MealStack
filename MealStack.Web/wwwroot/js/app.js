@@ -3,7 +3,6 @@ const MealStack = (function() {
         console.log('Starting MealStack application initialization...');
 
         initializeCommon();
-
         initializePageSpecific();
 
         console.log('MealStack application initialized successfully');
@@ -11,7 +10,6 @@ const MealStack = (function() {
 
     const initializeCommon = function() {
         initBootstrapComponents();
-
         initMessageAlerts();
     };
 
@@ -40,38 +38,45 @@ const MealStack = (function() {
 
         if ($('.favorite-btn').length) {
             console.log("Initializing FavoriteModule - found favorite buttons on page.");
-            FavoriteModule.init();
+            if (typeof FavoriteModule !== 'undefined') {
+                FavoriteModule.init();
+            }
         }
 
         // --- Recipe Module ---
         if (path.includes('/recipe')) {
             console.log("Initializing RecipeModule.");
-            RecipeModule.init();
+            if (typeof RecipeModule !== 'undefined') {
+                RecipeModule.init();
+            }
         }
 
         // --- Ingredient Module ---
         if (path.includes('/recipe/create') || path.includes('/recipe/edit')) {
             console.log("Initializing IngredientModule for Recipe Form.");
-            IngredientModule.init({
-                parseExisting: path.includes('/recipe/edit'),
-                containerSelector: '#ingredients-container',
-                dataFieldSelector: '#ingredients-data',
-                searchFieldSelector: '#ingredient-search',
-                addButtonSelector: '#add-ingredient-btn',
-                addNewButtonSelector: '#add-new-ingredient-btn',
-                modalId: '#addIngredientModal',
-                saveModalButtonSelector: '#save-new-ingredient',
-                newIngredientNameSelector: '#new-ingredient-name',
-                newIngredientCategorySelector: '#new-ingredient-category',
-                newIngredientMeasurementSelector: '#new-ingredient-measurement',
-                newIngredientDescriptionSelector: '#new-ingredient-description'
-            });
+            if (typeof IngredientModule !== 'undefined') {
+                IngredientModule.init({
+                    parseExisting: path.includes('/recipe/edit'),
+                    containerSelector: '#ingredients-container',
+                    dataFieldSelector: '#ingredients-data',
+                    searchFieldSelector: '#ingredient-search',
+                    addButtonSelector: '#add-ingredient-btn',
+                    addNewButtonSelector: '#add-new-ingredient-btn',
+                    modalId: '#addIngredientModal',
+                    saveModalButtonSelector: '#save-new-ingredient',
+                    newIngredientNameSelector: '#new-ingredient-name',
+                    newIngredientCategorySelector: '#new-ingredient-category',
+                    newIngredientMeasurementSelector: '#new-ingredient-measurement',
+                    newIngredientDescriptionSelector: '#new-ingredient-description'
+                });
+            }
         }
 
+        // SIMPLIFIED: Recipe details page - rating handled by rating.js directly
         if (path.includes('/recipe/details/')) {
-            console.log("Initializing RatingModule for Recipe Details.");
-            RatingModule.init();
+            console.log("Recipe Details page - ratings handled by rating.js");
 
+            // Initialize ServingsModule if available
             if (typeof ServingsModule !== 'undefined') {
                 console.log("Initializing ServingsModule for Recipe Details.");
                 ServingsModule.init();
@@ -88,7 +93,9 @@ const MealStack = (function() {
 
         if ($('#searchForm').length > 0) {
             console.log("Initializing SearchModule.");
-            SearchModule.init();
+            if (typeof SearchModule !== 'undefined') {
+                SearchModule.init();
+            }
         }
     };
 

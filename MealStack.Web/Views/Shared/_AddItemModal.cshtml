@@ -4,39 +4,44 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addShoppingItemModalLabel">Add Shopping Item</h5>
+                <h5 class="modal-title" id="addShoppingItemModalLabel">Add Item</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            
             <div class="modal-body">
                 <form id="addShoppingItemForm">
                     @Html.AntiForgeryToken()
                     <input type="hidden" id="AddItemMealPlanId" name="MealPlanId" value="@Model" />
+                    
                     <div class="mb-3">
                         <label for="ItemName" class="form-label">Item Name</label>
-                        <input type="text" class="form-control" id="ItemName" name="IngredientName" required>
+                        <input type="text" class="form-control" id="ItemName" name="IngredientName" 
+                               required placeholder="e.g., Milk, Bread, Apples">
                     </div>
+                    
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-6">
                             <label for="ItemQuantity" class="form-label">Quantity</label>
-                            <input type="text" class="form-control" id="ItemQuantity" name="Quantity">
+                            <input type="text" class="form-control" id="ItemQuantity" name="Quantity" 
+                                   placeholder="2">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-6">
                             <label for="ItemUnit" class="form-label">Unit</label>
                             <select class="form-select" id="ItemUnit" name="Unit">
-                                <option value="">None</option>
-                                <option value="pieces">Pieces</option>
-                                <option value="grams">Grams (g)</option>
-                                <option value="kilograms">Kilograms (kg)</option>
-                                <option value="milliliters">Milliliters (ml)</option>
-                                <option value="liters">Liters (L)</option>
-                                <option value="teaspoons">Teaspoons (tsp)</option>
-                                <option value="tablespoons">Tablespoons (tbsp)</option>
-                                <option value="cups">Cups</option>
-                                <option value="ounces">Ounces (oz)</option>
-                                <option value="pounds">Pounds (lb)</option>
+                                <option value="">Choose...</option>
+                                <option value="pieces">pieces</option>
+                                <option value="bottles">bottles</option>
+                                <option value="cans">cans</option>
+                                <option value="packages">packages</option>
+                                <option value="grams">grams</option>
+                                <option value="kilograms">kg</option>
+                                <option value="liters">liters</option>
+                                <option value="cups">cups</option>
+                                <option value="pounds">lbs</option>
                             </select>
                         </div>
                     </div>
+                    
                     <div class="mb-3">
                         <label for="ItemCategory" class="form-label">Category</label>
                         <select class="form-select" id="ItemCategory" name="Category">
@@ -67,6 +72,7 @@
 
                 </form>
             </div>
+            
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="saveShoppingItemBtn">Add Item</button>

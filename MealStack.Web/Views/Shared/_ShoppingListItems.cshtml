@@ -1,56 +1,31 @@
 @model MealStack.Web.Models.MealPlanViewModel
 
-@if (Model.ShoppingItems == null || !Model.ShoppingItems.Any())
-{
-    <div class="alert alert-info" role="alert">
-        <p class="mb-0">There are no items in your shopping list. Click "Regenerate" to create a shopping list from your meal plan.</p>
-    </div>
-}
-else
-{
-    <div class="mb-3">
-        <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" id="searchItems" class="form-control" placeholder="Search items...">
-        </div>
-    </div>
-
-    <div class="d-flex justify-content-between mb-3">
-        <div>
-            <span id="checkedItemsCount">0</span> items checked
-        </div>
-        <button id="clearCheckedItems" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-check-circle me-1"></i> Clear Checked Items
-        </button>
-    </div>
-    
-    <div class="shopping-list">
-        @foreach (var categoryGroup in Model.ShoppingItems.GroupBy(item => item.Category ?? "Other"))
-        {
-            <div class="shopping-category mb-4">
-                <h5 class="shopping-category-header">@categoryGroup.Key</h5>
-                <div class="list-group">
-                    @foreach (var item in categoryGroup.OrderBy(s => s.IngredientName))
-                    {
-                        <div class="shopping-item @(item.IsChecked ? "checked" : "")"
-                             data-item-id="@item.Id"
-                             data-item-name="@item.IngredientName">
-                            <div class="form-check">
-                                <input class="form-check-input shopping-item-checkbox"
-                                       type="checkbox"
-                                       id="item-@item.Id"
-                                       data-item-id="@item.Id"
-                                       data-meal-plan-id="@Model.Id"
-                                       checked="@item.IsChecked">
-                                <label class="form-check-label shopping-item-label" for="item-@item.Id">
-                                    <span class="shopping-item-quantity">@item.DisplayAmount</span>
-                                    @item.IngredientName
-                                </label>
-                            </div>
+<div class="shopping-list">
+    @foreach (var categoryGroup in Model.ShoppingItems.GroupBy(item => item.Category ?? "Other").OrderBy(g => g.Key == "Other" ? "zzz" : g.Key))
+    {
+        <div class="shopping-category mb-4">
+            <h5 class="shopping-category-header">@categoryGroup.Key</h5>
+            <div class="list-group">
+                @foreach (var item in categoryGroup.OrderBy(s => s.IngredientName))
+                {
+                    <div class="shopping-item @(item.IsChecked ? "checked" : "")"
+                         data-item-id="@item.Id"
+                         data-item-name="@item.IngredientName">
+                        <div class="form-check">
+                            <input class="form-check-input shopping-item-checkbox"
+                                   type="checkbox"
+                                   id="item-@item.Id"
+                                   data-item-id="@item.Id"
+                                   data-meal-plan-id="@Model.Id"
+                                   checked="@item.IsChecked">
+                            <label class="form-check-label shopping-item-label" for="item-@item.Id">
+                                <span class="shopping-item-quantity">@item.DisplayAmount</span>
+                                @item.IngredientName
+                            </label>
                         </div>
-                    }
-                </div>
+                    </div>
+                }
             </div>
-        }
-    </div>
-}
+        </div>
+    }
+</div>

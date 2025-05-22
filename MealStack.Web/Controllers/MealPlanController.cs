@@ -268,6 +268,12 @@ namespace MealStack.Web.Controllers
             ModelState.Remove("UserId");
             ModelState.Remove("RecipeTitle");
             ModelState.Remove("RecipeImagePath");
+            
+            // FIXED: Make Notes optional by providing default value
+            if (string.IsNullOrEmpty(model.Notes))
+            {
+                model.Notes = string.Empty;
+            }
 
             if (!ModelState.IsValid)
             {
@@ -393,6 +399,203 @@ namespace MealStack.Web.Controllers
                 _logger.LogError(ex, "Error in RemoveMealItem {ItemId}", itemId);
                 return Json(new { success = false, message = ex.Message });
             }
+        }
+        
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkUpdateShoppingItems(int mealPlanId, string action, int[] itemIds = null)
+        {
+            try
+            {
+                var userId = GetUserId();
+                
+                // Verify user has access to this meal plan
+                if (!await _mealPlanService.UserHasAccessToMealPlanAsync(mealPlanId, userId))
+                {
+                    return Json(new { success = false, message = "Access denied" });
+                }
+
+                switch (action.ToLower())
+                {
+                    case "clearall":
+                        await ClearAllShoppingItems(mealPlanId, userId);
+                        break;
+                    case "checkall":
+                        await CheckAllShoppingItems(mealPlanId, userId);
+                        break;
+                    case "uncheckall":
+                        await UncheckAllShoppingItems(mealPlanId, userId);
+                        break;
+                    case "deleteselected":
+                        if (itemIds != null && itemIds.Length > 0)
+                            await DeleteSelectedShoppingItems(itemIds, userId);
+                        break;
+                    default:
+                        return Json(new { success = false, message = "Invalid action" });
+                }
+
+                _logger.LogInformation("User {User} performed bulk action '{Action}' on MealPlan {PlanId}", 
+                                       userId, action, mealPlanId);
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in bulk shopping operation for MealPlan {PlanId}", mealPlanId);
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMultipleShoppingItems(int mealPlanId, string itemsText)
+        {
+            try
+            {
+                var userId = GetUserId();
+                
+                if (!await _mealPlanService.UserHasAccessToMealPlanAsync(mealPlanId, userId))
+                {
+                    return Json(new { success = false, message = "Access denied" });
+                }
+
+                var items = ParseMultipleItems(itemsText);
+                var addedItems = new List<ShoppingListItemViewModel>();
+
+                foreach (var item in items)
+                {
+                    item.MealPlanId = mealPlanId;
+                    var addedItem = await _mealPlanService.AddShoppingItemAsync(item, userId);
+                    addedItems.Add(addedItem);
+                }
+
+                _logger.LogInformation("User {User} added {Count} items to MealPlan {PlanId}", 
+                                       userId, addedItems.Count, mealPlanId);
+
+                return Json(new { success = true, addedCount = addedItems.Count });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding multiple shopping items to MealPlan {PlanId}", mealPlanId);
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        private async Task ClearAllShoppingItems(int mealPlanId, string userId)
+        {
+            var checkedItems = await _context.ShoppingListItems
+                .Include(s => s.MealPlan)
+                .Where(s => s.MealPlanId == mealPlanId && s.MealPlan.UserId == userId && s.IsChecked)
+                .ToListAsync();
+
+            _context.ShoppingListItems.RemoveRange(checkedItems);
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task CheckAllShoppingItems(int mealPlanId, string userId)
+        {
+            var uncheckedItems = await _context.ShoppingListItems
+                .Include(s => s.MealPlan)
+                .Where(s => s.MealPlanId == mealPlanId && s.MealPlan.UserId == userId && !s.IsChecked)
+                .ToListAsync();
+
+            foreach (var item in uncheckedItems)
+            {
+                item.IsChecked = true;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task UncheckAllShoppingItems(int mealPlanId, string userId)
+        {
+            var checkedItems = await _context.ShoppingListItems
+                .Include(s => s.MealPlan)
+                .Where(s => s.MealPlanId == mealPlanId && s.MealPlan.UserId == userId && s.IsChecked)
+                .ToListAsync();
+
+            foreach (var item in checkedItems)
+            {
+                item.IsChecked = false;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task DeleteSelectedShoppingItems(int[] itemIds, string userId)
+        {
+            var items = await _context.ShoppingListItems
+                .Include(s => s.MealPlan)
+                .Where(s => itemIds.Contains(s.Id) && s.MealPlan.UserId == userId)
+                .ToListAsync();
+
+            _context.ShoppingListItems.RemoveRange(items);
+            await _context.SaveChangesAsync();
+        }
+
+        private List<ShoppingListItemViewModel> ParseMultipleItems(string itemsText)
+        {
+            var items = new List<ShoppingListItemViewModel>();
+            
+            if (string.IsNullOrWhiteSpace(itemsText))
+                return items;
+
+            var lines = itemsText.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            
+            foreach (var line in lines)
+            {
+                var trimmedLine = line.Trim();
+                if (string.IsNullOrEmpty(trimmedLine))
+                    continue;
+
+                var parts = trimmedLine.Split(' ', 3);
+                var item = new ShoppingListItemViewModel();
+
+                if (parts.Length >= 2 && decimal.TryParse(parts[0], out _))
+                {
+                    // Format: "2 cups flour" or "1 kg chicken"
+                    item.Quantity = parts[0];
+                    if (parts.Length == 3)
+                    {
+                        item.Unit = parts[1];
+                        item.IngredientName = parts[2];
+                    }
+                    else
+                    {
+                        item.IngredientName = parts[1];
+                    }
+                }
+                else
+                {
+                    // Format: "milk" or "olive oil"
+                    item.IngredientName = trimmedLine;
+                }
+
+                item.Category = DetermineItemCategory(item.IngredientName);
+                items.Add(item);
+            }
+
+            return items;
+        }
+
+        private string DetermineItemCategory(string itemName)
+        {
+            var name = itemName.ToLowerInvariant();
+            
+            if (new[] { "flour", "sugar", "rice", "pasta", "oats", "cereal", "bread" }.Any(x => name.Contains(x)))
+                return "Pantry";
+            if (new[] { "chicken", "beef", "pork", "fish", "meat", "seafood", "bacon" }.Any(x => name.Contains(x)))
+                return "Meat & Seafood";
+            if (new[] { "milk", "cheese", "yogurt", "cream", "butter", "egg" }.Any(x => name.Contains(x)))
+                return "Dairy & Eggs";
+            if (new[] { "apple", "banana", "orange", "berry", "fruit", "lemon", "lime" }.Any(x => name.Contains(x)))
+                return "Fruits";
+            if (new[] { "carrot", "potato", "onion", "garlic", "vegetable", "tomato", "lettuce", "pepper", "spinach" }.Any(x => name.Contains(x)))
+                return "Vegetables";
+            if (new[] { "salt", "pepper", "spice", "herb", "basil", "oregano", "thyme", "cilantro" }.Any(x => name.Contains(x)))
+                return "Spices & Herbs";
+            if (new[] { "oil", "vinegar", "sauce", "ketchup", "mustard", "mayonnaise" }.Any(x => name.Contains(x)))
+                return "Condiments & Oils";
+            
+            return "Other";
         }
 
         // === AJAX: Recipe lookup for Select2 ===

@@ -259,6 +259,27 @@ namespace MealStack.Web.Controllers
             return Forbid();
         }
 
+        // API endpoint - Get ingredient categories for dropdown
+        [HttpGet]
+        public async Task<IActionResult> GetIngredientCategories()
+        {
+            try
+            {
+                var categories = await _context.Ingredients
+                    .Where(i => !string.IsNullOrEmpty(i.Category))
+                    .Select(i => i.Category)
+                    .Distinct()
+                    .OrderBy(c => c)
+                    .ToListAsync();
+            
+                return Json(new { success = true, categories = categories });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error loading categories: " + ex.Message });
+            }
+        }
+
         // GET: Ingredient/Delete/5
         [Authorize]
         public async Task<IActionResult> Delete(int id)

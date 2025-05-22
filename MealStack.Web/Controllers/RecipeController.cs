@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
 using MealStack.Web.Models;
-
+using System.Diagnostics;
 
 namespace MealStack.Web.Controllers
 {
@@ -14,16 +14,19 @@ namespace MealStack.Web.Controllers
         private readonly MealStackDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly ILogger<RecipeController> _logger;
 
         public RecipeController(
             MealStackDbContext context, 
             UserManager<ApplicationUser> userManager,
-            IWebHostEnvironment webHostEnvironment) 
+            IWebHostEnvironment webHostEnvironment,
+            ILogger<RecipeController> logger) 
             : base(userManager)
         {
             _context = context;
             _userManager = userManager;
             _webHostEnvironment = webHostEnvironment;
+            _logger = logger;
         }
         
         // GET: Recipe
@@ -181,7 +184,7 @@ namespace MealStack.Web.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in ToggleFavorite: {ex.Message}");
+                _logger.LogError(ex, "Error in ToggleFavorite for recipe {RecipeId}", recipeId);
                 return Json(new { success = false, message = "An error occurred: " + ex.Message });
             }
         }
@@ -242,39 +245,8 @@ namespace MealStack.Web.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error rating recipe {RecipeId}", recipeId);
                 return Json(new { success = false, message = "An error occurred while rating recipe: " + ex.Message });
-            }
-        }
-
-        // POST: Recipe/SaveNotes
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveNotes(int recipeId, string notes)
-        {
-            try
-            {
-                var recipe = await _context.Recipes.FindAsync(recipeId);
-                if (recipe == null)
-                {
-                    return Json(new { success = false, message = "Recipe not found" });
-                }
-
-                var userId = _userManager.GetUserId(User);
-                if (recipe.CreatedById != userId && !User.IsInRole("Admin"))
-                {
-                    return Json(new { success = false, message = "Not authorized to add notes to this recipe" });
-                }
-
-                recipe.Notes = notes;
-                recipe.UpdatedDate = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-
-                return Json(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "An error occurred: " + ex.Message });
             }
         }
 
@@ -318,7 +290,7 @@ namespace MealStack.Web.Controllers
             }, "Error loading recipe form. Please try again later.");
         }
 
-        // POST: Recipe/Create
+        // CRITICAL FIX: POST: Recipe/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -326,54 +298,111 @@ namespace MealStack.Web.Controllers
         {
             return await TryExecuteAsync(async () =>
             {
+                _logger.LogInformation("Starting recipe creation for user {UserId}", _userManager.GetUserId(User));
+
                 if (recipe == null)
                 {
+                    _logger.LogWarning("Recipe object is null in Create action");
                     ModelState.AddModelError("", "Invalid recipe data");
                     ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
                     return View(new RecipeEntity());
                 }
 
+                // CRITICAL FIX: Set user and creation date
                 recipe.CreatedById = _userManager.GetUserId(User) ?? string.Empty;
                 recipe.CreatedDate = DateTime.UtcNow;
                 
+                // Remove validation for auto-set fields
                 ModelState.Remove("CreatedById");
+                ModelState.Remove("CreatedDate");
+                ModelState.Remove("CreatedBy");
                 
+                // CRITICAL FIX: Ensure required fields have defaults
                 recipe.Ingredients = recipe.Ingredients ?? string.Empty;
                 recipe.Description = recipe.Description ?? string.Empty;
+                recipe.Notes = recipe.Notes ?? string.Empty;
+
+                // Log the ingredients being saved
+                _logger.LogInformation("Recipe ingredients data: {Ingredients}", recipe.Ingredients);
                 
                 // Handle image upload if present
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
-                    recipe.ImagePath = await SaveRecipeImage(ImageFile);
+                    try
+                    {
+                        recipe.ImagePath = await SaveRecipeImage(ImageFile);
+                        _logger.LogInformation("Image saved to: {ImagePath}", recipe.ImagePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error saving recipe image");
+                        ModelState.AddModelError("ImageFile", "Error uploading image. Please try again.");
+                    }
                 }
                 
-                if (ModelState.IsValid)
+                // CRITICAL FIX: Validate model state and log any errors
+                if (!ModelState.IsValid)
                 {
-                    // No duplicate titles per user
-                    bool duplicateExists = await _context.Recipes
-                        .AnyAsync(r => r.Title.ToLower() == recipe.Title.ToLower() && 
-                                       r.CreatedById == recipe.CreatedById);
-                        
-                    if (duplicateExists)
+                    _logger.LogWarning("ModelState is invalid for recipe creation");
+                    foreach (var modelError in ModelState)
                     {
-                        ModelState.AddModelError("Title", "You already have a recipe with this title. Please use a different title.");
-                        ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-                        return View(recipe);
+                        foreach (var error in modelError.Value.Errors)
+                        {
+                            _logger.LogWarning("ModelState error - {Field}: {Error}", modelError.Key, error.ErrorMessage);
+                        }
                     }
                     
-                    // Add and save the recipe to get an ID
+                    ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                    return View(recipe);
+                }
+
+                // Check for duplicate titles per user
+                bool duplicateExists = await _context.Recipes
+                    .AnyAsync(r => r.Title.ToLower() == recipe.Title.ToLower() && 
+                                   r.CreatedById == recipe.CreatedById);
+                    
+                if (duplicateExists)
+                {
+                    _logger.LogWarning("Duplicate recipe title '{Title}' for user {UserId}", recipe.Title, recipe.CreatedById);
+                    ModelState.AddModelError("Title", "You already have a recipe with this title. Please use a different title.");
+                    ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                    return View(recipe);
+                }
+
+                // CRITICAL FIX: Use transaction for data integrity
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                
+                try
+                {
+                    // Add recipe to context and save to get ID
                     _context.Recipes.Add(recipe);
                     await _context.SaveChangesAsync();
                     
-                    await AddCategoriesToRecipe(recipe.Id, selectedCategories);
+                    _logger.LogInformation("Recipe saved with ID: {RecipeId}", recipe.Id);
+                    
+                    // Add categories if any were selected
+                    if (selectedCategories != null && selectedCategories.Length > 0)
+                    {
+                        await AddCategoriesToRecipe(recipe.Id, selectedCategories);
+                        _logger.LogInformation("Added {CategoryCount} categories to recipe {RecipeId}", 
+                            selectedCategories.Length, recipe.Id);
+                    }
+                    
+                    // Commit transaction
+                    await transaction.CommitAsync();
+                    
+                    _logger.LogInformation("Recipe {RecipeId} created successfully by user {UserId}", 
+                        recipe.Id, recipe.CreatedById);
                     
                     TempData["Message"] = "Recipe created successfully!";
                     return RedirectToAction("Details", new { id = recipe.Id });
                 }
-                
-                // failure, redisplay form
-                ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-                return View(recipe);
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Error saving recipe to database");
+                    throw;
+                }
             }, "Error creating recipe. Please check your input and try again.");
         }
 
@@ -411,37 +440,108 @@ namespace MealStack.Web.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(int id, RecipeEntity recipe, IFormFile ImageFile, int[] selectedCategories)
         {
-            return await TryExecuteAsync(async () =>
+            try
             {
+                _logger.LogInformation("Starting Edit for recipe ID: {RecipeId}", id);
+                
                 if (id != recipe.Id)
                 {
+                    _logger.LogWarning("ID mismatch: URL ID {UrlId} vs Model ID {ModelId}", id, recipe.Id);
                     return NotFound();
                 }
                 
+                // CRITICAL: Load existing recipe with all related data
                 var existingRecipe = await _context.Recipes
-                    .AsNoTracking()
+                    .Include(r => r.RecipeCategories)
                     .FirstOrDefaultAsync(r => r.Id == id);
                     
                 if (existingRecipe == null)
                 {
+                    _logger.LogWarning("Recipe not found: {RecipeId}", id);
                     return NotFound();
                 }
                 
                 var userId = _userManager.GetUserId(User);
                 if (existingRecipe.CreatedById != userId && !User.IsInRole("Admin"))
                 {
+                    _logger.LogWarning("Unauthorized edit attempt by user {UserId} for recipe {RecipeId}", userId, id);
                     return Forbid();
                 }
                 
-                recipe.CreatedById = existingRecipe.CreatedById;
-                recipe.CreatedDate = existingRecipe.CreatedDate;
-                recipe.UpdatedDate = DateTime.UtcNow;
-                recipe.ImagePath = existingRecipe.ImagePath;
+                // CRITICAL: Clean up ingredients data - remove blank lines
+                if (!string.IsNullOrEmpty(recipe.Ingredients))
+                {
+                    var cleanIngredients = recipe.Ingredients
+                        .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(line => line.Trim())
+                        .Where(line => !string.IsNullOrEmpty(line))
+                        .ToList();
+                    
+                    recipe.Ingredients = string.Join("\n", cleanIngredients);
+                    _logger.LogInformation("Cleaned ingredients: {IngredientsCount} lines", cleanIngredients.Count);
+                }
                 
-                // Handle image upload if a new image is provided
+                // CRITICAL: Clean up instructions - remove blank lines  
+                if (!string.IsNullOrEmpty(recipe.Instructions))
+                {
+                    var cleanInstructions = recipe.Instructions
+                        .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(line => line.Trim())
+                        .Where(line => !string.IsNullOrEmpty(line))
+                        .ToList();
+                    
+                    recipe.Instructions = string.Join("\n", cleanInstructions);
+                    _logger.LogInformation("Cleaned instructions: {InstructionsCount} lines", cleanInstructions.Count);
+                }
+                
+                // Remove validation for fields we manage
+                ModelState.Remove("CreatedById");
+                ModelState.Remove("CreatedDate");
+                ModelState.Remove("CreatedBy");
+                
+                // Set safe defaults
+                recipe.Ingredients = recipe.Ingredients ?? string.Empty;
+                recipe.Description = recipe.Description ?? string.Empty;
+                recipe.Notes = recipe.Notes ?? string.Empty;
+                
+                if (ImageFile == null || ImageFile.Length == 0)
+                {
+                    ModelState.Remove("ImageFile");
+                }
+                
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("ModelState invalid for recipe {RecipeId}", id);
+                    foreach (var error in ModelState)
+                    {
+                        foreach (var errorMsg in error.Value.Errors)
+                        {
+                            _logger.LogWarning("Validation error - {Field}: {Error}", error.Key, errorMsg.ErrorMessage);
+                        }
+                    }
+                    
+                    await PrepareViewBagForEdit(id);
+                    return View(recipe);
+                }
+                
+                // Check for duplicate titles (excluding current recipe)
+                bool duplicateExists = await _context.Recipes
+                    .Where(r => r.Id != id && r.CreatedById == existingRecipe.CreatedById)
+                    .AnyAsync(r => r.Title.ToLower() == recipe.Title.ToLower());
+                    
+                if (duplicateExists)
+                {
+                    ModelState.AddModelError("Title", "You already have another recipe with this title.");
+                    await PrepareViewBagForEdit(id);
+                    return View(recipe);
+                }
+                
+                // Handle image upload if new image provided
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
-                    // Delete the old image if it exists
+                    _logger.LogInformation("Processing new image for recipe {RecipeId}", id);
+                    
+                    // Delete old image if exists
                     if (!string.IsNullOrEmpty(existingRecipe.ImagePath))
                     {
                         DeleteRecipeImage(existingRecipe.ImagePath);
@@ -449,52 +549,88 @@ namespace MealStack.Web.Controllers
                     
                     recipe.ImagePath = await SaveRecipeImage(ImageFile);
                 }
-                
-                // Skip validation for these properties
-                ModelState.Remove("CreatedById");
-                ModelState.Remove("CreatedDate");
-                
-                recipe.Ingredients = recipe.Ingredients ?? string.Empty;
-                recipe.Description = recipe.Description ?? string.Empty;
-                
-                if (ModelState.IsValid)
+                else
                 {
-                    bool duplicateExists = await _context.Recipes
-                        .Where(r => r.Id != id && r.CreatedById == recipe.CreatedById)
-                        .AnyAsync(r => r.Title.ToLower() == recipe.Title.ToLower());
-                        
-                    if (duplicateExists)
-                    {
-                        ModelState.AddModelError("Title", "You already have another recipe with this title. Please use a different title.");
-                        await PrepareViewBagForEdit(id);
-                        return View(recipe);
-                    }
-                
-                    using var transaction = await _context.Database.BeginTransactionAsync();
-                    
-                    try
-                    {
-                        // Use EntityState.Modified instead of tracking and property updates
-                        _context.Entry(recipe).State = EntityState.Modified;
-                        await _context.SaveChangesAsync();
-                        
-                        await UpdateRecipeCategories(id, selectedCategories);
-                        
-                        await transaction.CommitAsync();
-                        TempData["Message"] = "Recipe updated successfully!";
-                        return RedirectToAction("Details", new { id });
-                    }
-                    catch
-                    {
-                        await transaction.RollbackAsync();
-                        throw; 
-                    }
+                    // Keep existing image
+                    recipe.ImagePath = existingRecipe.ImagePath;
                 }
                 
-                // Failure - redisplay form
+                // CRITICAL: Use transaction for atomic operation
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                
+                try
+                {
+                    // CRITICAL: Update existing entity properties (don't replace entity)
+                    existingRecipe.Title = recipe.Title;
+                    existingRecipe.Description = recipe.Description;
+                    existingRecipe.Ingredients = recipe.Ingredients;
+                    existingRecipe.Instructions = recipe.Instructions;
+                    existingRecipe.ImagePath = recipe.ImagePath;
+                    existingRecipe.PrepTimeMinutes = recipe.PrepTimeMinutes;
+                    existingRecipe.CookTimeMinutes = recipe.CookTimeMinutes;
+                    existingRecipe.Servings = recipe.Servings;
+                    existingRecipe.Difficulty = recipe.Difficulty;
+                    existingRecipe.Notes = recipe.Notes;
+                    
+                    // After SetValues, restore critical fields:
+                    if (string.IsNullOrEmpty(existingRecipe.CreatedById)) {
+                        // Should never happen, but extra safe
+                        throw new Exception("existingRecipe.CreatedById was lost during update!");
+                    }
+                    existingRecipe.UpdatedDate = DateTime.UtcNow;
+                    
+                    _logger.LogInformation("Updated recipe properties for {RecipeId}", id);
+                    
+                    // CRITICAL: Handle categories properly
+                    // Remove all existing categories
+                    var existingCategories = existingRecipe.RecipeCategories.ToList();
+                    foreach (var category in existingCategories)
+                    {
+                        _context.RecipeCategories.Remove(category);
+                    }
+                    
+                    _logger.LogInformation("Removed {CategoryCount} existing categories", existingCategories.Count);
+                    
+                    // Add new categories if any
+                    if (selectedCategories != null && selectedCategories.Length > 0)
+                    {
+                        foreach (var categoryId in selectedCategories)
+                        {
+                            var newRecipeCategory = new RecipeCategoryEntity
+                            {
+                                RecipeId = id,
+                                CategoryId = categoryId
+                            };
+                            _context.RecipeCategories.Add(newRecipeCategory);
+                        }
+                        _logger.LogInformation("Added {CategoryCount} new categories", selectedCategories.Length);
+                    }
+                    
+                    // CRITICAL: Save all changes
+                    var changeCount = await _context.SaveChangesAsync();
+                    _logger.LogInformation("Saved {ChangeCount} changes to database", changeCount);
+                    
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("Transaction committed successfully for recipe {RecipeId}", id);
+                    
+                    TempData["Message"] = "Recipe updated successfully!";
+                    return RedirectToAction("Details", new { id });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Error updating recipe {RecipeId}", id);
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Critical error in Edit action for recipe {RecipeId}", id);
+                TempData["Error"] = "Error updating recipe. Please check your input and try again.";
+                
                 await PrepareViewBagForEdit(id);
                 return View(recipe);
-            }, "Error updating recipe. Please check your input and try again.");
+            }
         }
 
         // POST: Recipe/Delete/5
@@ -687,7 +823,7 @@ namespace MealStack.Web.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting recipe image: {ex.Message}");
+                _logger.LogError(ex, "Error deleting recipe image: {ImagePath}", imagePath);
             }
         }
 
@@ -712,6 +848,7 @@ namespace MealStack.Web.Controllers
 
         private async Task UpdateRecipeCategories(int recipeId, int[] selectedCategories)
         {
+            // Remove existing categories
             var existingCategories = await _context.RecipeCategories
                 .Where(rc => rc.RecipeId == recipeId)
                 .ToListAsync();
@@ -720,7 +857,10 @@ namespace MealStack.Web.Controllers
             await _context.SaveChangesAsync();
             
             // Add new categories if any were selected
-            await AddCategoriesToRecipe(recipeId, selectedCategories);
+            if (selectedCategories.Length > 0)
+            {
+                await AddCategoriesToRecipe(recipeId, selectedCategories);
+            }
         }
 
         private async Task PrepareViewBagForEdit(int recipeId)
@@ -732,6 +872,7 @@ namespace MealStack.Web.Controllers
                 .ToListAsync();
         }
 
+        // Search filter methods remain the same...
         private IQueryable<RecipeEntity> ApplySearchFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
         {
             if (!string.IsNullOrEmpty(searchModel.SearchTerm))

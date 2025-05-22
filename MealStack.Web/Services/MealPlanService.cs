@@ -367,5 +367,331 @@ namespace MealStack.Web.Services
                 return "Condiments & Oils";
             return "Other";
         }
+        
+        public async Task BulkUpdateShoppingItemsAsync(int mealPlanId, string action, string userId, int[] itemIds = null)
+        {
+            var plan = await _context.MealPlans
+                .FirstOrDefaultAsync(mp => mp.Id == mealPlanId && mp.UserId == userId);
+            
+            if (plan == null)
+                throw new InvalidOperationException("Meal plan not found or access denied.");
+
+            switch (action.ToLower())
+            {
+                case "clearall":
+                    await ClearAllCheckedItemsAsync(mealPlanId, userId);
+                    break;
+                case "checkall":
+                    await CheckAllItemsAsync(mealPlanId, userId);
+                    break;
+                case "uncheckall":
+                    await UncheckAllItemsAsync(mealPlanId, userId);
+                    break;
+                case "checkselected":
+                    await CheckSelectedItemsAsync(itemIds, userId);
+                    break;
+                case "uncheckselected":
+                    await UncheckSelectedItemsAsync(itemIds, userId);
+                    break;
+                case "deleteselected":
+                    await DeleteSelectedItemsAsync(itemIds, userId);
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown action: {action}");
+            }
+        }
+
+        public async Task<List<ShoppingListItemViewModel>> AddMultipleShoppingItemsAsync(
+            int mealPlanId, string itemsText, string userId)
+        {
+            var plan = await _context.MealPlans
+                .FirstOrDefaultAsync(mp => mp.Id == mealPlanId && mp.UserId == userId);
+            
+            if (plan == null)
+                throw new InvalidOperationException("Meal plan not found or access denied.");
+
+            var items = ParseMultipleItemsText(itemsText);
+            var addedItems = new List<ShoppingListItemViewModel>();
+
+            foreach (var item in items)
+            {
+                item.MealPlanId = mealPlanId;
+                
+                var entity = new ShoppingListItemEntity
+                {
+                    MealPlanId = mealPlanId,
+                    IngredientName = item.IngredientName,
+                    Quantity = item.Quantity,
+                    Unit = item.Unit,
+                    Category = item.Category,
+                    IsChecked = false
+                };
+
+                _context.ShoppingListItems.Add(entity);
+                await _context.SaveChangesAsync();
+
+                item.Id = entity.Id;
+                addedItems.Add(item);
+            }
+
+            return addedItems;
+        }
+
+        private async Task ClearAllCheckedItemsAsync(int mealPlanId, string userId)
+        {
+            var checkedItems = await _context.ShoppingListItems
+                .Include(s => s.MealPlan)
+                .Where(s => s.MealPlanId == mealPlanId && 
+                           s.MealPlan.UserId == userId && 
+                           s.IsChecked)
+                .ToListAsync();
+
+            _context.ShoppingListItems.RemoveRange(checkedItems);
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task CheckAllItemsAsync(int mealPlanId, string userId)
+        {
+            var items = await _context.ShoppingListItems
+                .Include(s => s.MealPlan)
+                .Where(s => s.MealPlanId == mealPlanId && 
+                           s.MealPlan.UserId == userId && 
+                           !s.IsChecked)
+                .ToListAsync();
+
+            foreach (var item in items)
+            {
+                item.IsChecked = true;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task UncheckAllItemsAsync(int mealPlanId, string userId)
+        {
+            var items = await _context.ShoppingListItems
+                .Include(s => s.MealPlan)
+                .Where(s => s.MealPlanId == mealPlanId && 
+                           s.MealPlan.UserId == userId && 
+                           s.IsChecked)
+                .ToListAsync();
+
+            foreach (var item in items)
+            {
+                item.IsChecked = false;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task CheckSelectedItemsAsync(int[] itemIds, string userId)
+        {
+            if (itemIds == null || itemIds.Length == 0) return;
+
+            var items = await _context.ShoppingListItems
+                .Include(s => s.MealPlan)
+                .Where(s => itemIds.Contains(s.Id) && 
+                           s.MealPlan.UserId == userId)
+                .ToListAsync();
+
+            foreach (var item in items)
+            {
+                item.IsChecked = true;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task UncheckSelectedItemsAsync(int[] itemIds, string userId)
+        {
+            if (itemIds == null || itemIds.Length == 0) return;
+
+            var items = await _context.ShoppingListItems
+                .Include(s => s.MealPlan)
+                .Where(s => itemIds.Contains(s.Id) && 
+                           s.MealPlan.UserId == userId)
+                .ToListAsync();
+
+            foreach (var item in items)
+            {
+                item.IsChecked = false;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task DeleteSelectedItemsAsync(int[] itemIds, string userId)
+        {
+            if (itemIds == null || itemIds.Length == 0) return;
+
+            var items = await _context.ShoppingListItems
+                .Include(s => s.MealPlan)
+                .Where(s => itemIds.Contains(s.Id) && 
+                           s.MealPlan.UserId == userId)
+                .ToListAsync();
+
+            _context.ShoppingListItems.RemoveRange(items);
+            await _context.SaveChangesAsync();
+        }
+
+        private List<ShoppingListItemViewModel> ParseMultipleItemsText(string itemsText)
+        {
+            var items = new List<ShoppingListItemViewModel>();
+            
+            if (string.IsNullOrWhiteSpace(itemsText))
+                return items;
+
+            var lines = itemsText.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            
+            foreach (var line in lines)
+            {
+                var trimmedLine = line.Trim();
+                if (string.IsNullOrEmpty(trimmedLine))
+                    continue;
+
+                var item = ParseSingleItemLine(trimmedLine);
+                if (item != null)
+                {
+                    items.Add(item);
+                }
+            }
+
+            return items;
+        }
+
+        private ShoppingListItemViewModel ParseSingleItemLine(string line)
+        {
+            var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0) return null;
+
+            var item = new ShoppingListItemViewModel();
+
+            // Try to parse quantity and unit
+            if (parts.Length >= 2 && IsNumeric(parts[0]))
+            {
+                item.Quantity = parts[0];
+                
+                // Check if second part is a unit
+                if (parts.Length >= 3 && IsUnit(parts[1]))
+                {
+                    item.Unit = parts[1];
+                    item.IngredientName = string.Join(" ", parts.Skip(2));
+                }
+                else
+                {
+                    item.IngredientName = string.Join(" ", parts.Skip(1));
+                }
+            }
+            else
+            {
+                // No quantity, just ingredient name
+                item.IngredientName = line;
+            }
+
+            item.Category = DetermineItemCategory(item.IngredientName);
+            return item;
+        }
+
+        private string DetermineItemCategory(string ingredientName)
+        {
+            if (string.IsNullOrEmpty(ingredientName))
+                return "Other";
+
+            ingredientName = ingredientName.ToLower();
+
+            if (ingredientName.Contains("milk") || 
+                ingredientName.Contains("cheese") || 
+                ingredientName.Contains("yogurt") ||
+                ingredientName.Contains("butter") ||
+                ingredientName.Contains("cream"))
+                return "Dairy";
+
+            if (ingredientName.Contains("beef") || 
+                ingredientName.Contains("chicken") || 
+                ingredientName.Contains("pork") ||
+                ingredientName.Contains("fish") ||
+                ingredientName.Contains("meat") ||
+                ingredientName.Contains("turkey"))
+                return "Meat";
+
+            if (ingredientName.Contains("apple") || 
+                ingredientName.Contains("banana") || 
+                ingredientName.Contains("orange") ||
+                ingredientName.Contains("berry") ||
+                ingredientName.Contains("fruit"))
+                return "Fruits";
+
+            if (ingredientName.Contains("carrot") || 
+                ingredientName.Contains("onion") || 
+                ingredientName.Contains("potato") ||
+                ingredientName.Contains("tomato") ||
+                ingredientName.Contains("vegetable"))
+                return "Vegetables";
+
+            if (ingredientName.Contains("bread") || 
+                ingredientName.Contains("pasta") || 
+                ingredientName.Contains("flour") ||
+                ingredientName.Contains("rice") ||
+                ingredientName.Contains("cereal"))
+                return "Grains";
+
+            if (ingredientName.Contains("sugar") || 
+                ingredientName.Contains("salt") || 
+                ingredientName.Contains("pepper") ||
+                ingredientName.Contains("spice") ||
+                ingredientName.Contains("herb"))
+                return "Spices";
+
+            return "Other";
+        }
+
+        private bool IsNumeric(string value)
+        {
+            return decimal.TryParse(value, out _) || 
+                   value.Contains('/') || // fractions like "1/2"
+                   value.Contains('.'); // decimals
+        }
+
+        private bool IsUnit(string value)
+        {
+            var commonUnits = new[]
+            {
+                "cup", "cups", "tsp", "tbsp", "tablespoon", "tablespoons", "teaspoon", "teaspoons",
+                "oz", "ounce", "ounces", "lb", "lbs", "pound", "pounds", "kg", "kilogram", "kilograms",
+                "g", "gram", "grams", "ml", "milliliter", "milliliters", "l", "liter", "liters",
+                "piece", "pieces", "slice", "slices", "can", "cans", "bottle", "bottles",
+                "package", "packages", "box", "boxes", "bag", "bags", "large", "medium", "small"
+            };
+
+            return commonUnits.Contains(value.ToLowerInvariant());
+        }
+
+        public async Task<ShoppingListStatistics> GetShoppingListStatisticsAsync(int mealPlanId, string userId)
+        {
+            var items = await _context.ShoppingListItems
+                .Include(s => s.MealPlan)
+                .Where(s => s.MealPlanId == mealPlanId && s.MealPlan.UserId == userId)
+                .ToListAsync();
+
+            return new ShoppingListStatistics
+            {
+                TotalItems = items.Count,
+                CheckedItems = items.Count(i => i.IsChecked),
+                UncheckedItems = items.Count(i => !i.IsChecked),
+                CategoriesCount = items.GroupBy(i => i.Category ?? "Other").Count(),
+                CompletionPercentage = items.Count > 0 ? 
+                    Math.Round((double)items.Count(i => i.IsChecked) / items.Count * 100, 1) : 0
+            };
+        }
+
+        // Helper class for statistics
+        public class ShoppingListStatistics
+        {
+            public int TotalItems { get; set; }
+            public int CheckedItems { get; set; }
+            public int UncheckedItems { get; set; }
+            public int CategoriesCount { get; set; }
+            public double CompletionPercentage { get; set; }
+        }
     }
 }

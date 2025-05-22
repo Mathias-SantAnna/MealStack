@@ -1,7 +1,7 @@
 @model MealStack.Infrastructure.Data.RecipeEntity
 
 @{
-    ViewData["Title"] = Model.Title;
+ViewData["Title"] = Model.Title;
 }
 
 <div class="container py-4">
@@ -11,38 +11,38 @@
             <div class="col-lg-8">
                 <h1 class="mb-3">@Model.Title</h1>
                 <p class="lead">@Model.Description</p>
-                
+
                 <!-- Favorite Button -->
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <div class="favorite-container mb-3" data-recipe-id="@Model.Id">
-                        <button class="favorite-btn @(ViewBag.IsFavorited ? "favorited" : "")" 
-                                data-recipe-id="@Model.Id" 
-                                data-is-favorite="@(ViewBag.IsFavorited ? "true" : "false")"
-                                aria-label="@(ViewBag.IsFavorited ? "Remove from favorites" : "Add to favorites")">
-                            <i class="bi @(ViewBag.IsFavorited ? "bi-heart-fill text-danger" : "bi-heart") fs-5"></i>
-                        </button>
-                    </div>
+                <div class="favorite-container mb-3" data-recipe-id="@Model.Id">
+                    <button class="favorite-btn @(ViewBag.IsFavorited ? "favorited" : "")"
+                            data-recipe-id="@Model.Id"
+                            data-is-favorite="@(ViewBag.IsFavorited ? "true" : "false")"
+                            aria-label="@(ViewBag.IsFavorited ? "Remove from favorites" : "Add to favorites")">
+                        <i class="bi @(ViewBag.IsFavorited ? "bi-heart-fill text-danger" : "bi-heart") fs-5"></i>
+                    </button>
+                </div>
                 }
-                
+
                 <!-- Rating System -->
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <div class="rating-widget mb-3" data-recipe-id="@Model.Id" data-user-rating="@ViewBag.UserRating">
-                        <h6>Rate this recipe:</h6>
-                        <div class="rating-stars">
-                            @for (int i = 1; i <= 5; i++)
-                            {
-                                <i class="bi bi-@(ViewBag.UserRating != null && ViewBag.UserRating >= i ? "star-fill" : "star") star-rating" data-rating="@i"></i>
-                            }
-                        </div>
-                        <div class="current-rating mt-2">
-                            Average: <span id="average-rating" class="average-rating">@Model.AverageRating.ToString("0.0")</span> stars
-                            (<span id="total-ratings" class="total-ratings">@Model.TotalRatings</span> ratings)
-                        </div>
+                <div class="rating-widget mb-3" data-recipe-id="@Model.Id" data-user-rating="@ViewBag.UserRating">
+                    <h6>Rate this recipe:</h6>
+                    <div class="rating-stars">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                        <i class="bi bi-@(ViewBag.UserRating != null && ViewBag.UserRating >= i ? "star-fill" : "star") star-rating" data-rating="@i"></i>
+                        }
                     </div>
+                    <div class="current-rating mt-2">
+                        Average: <span id="average-rating" class="average-rating">@Model.AverageRating.ToString("0.0")</span> stars
+                        (<span id="total-ratings" class="total-ratings">@Model.TotalRatings</span> ratings)
+                    </div>
+                </div>
                 }
-                
+
                 <!-- Recipe Meta Information -->
                 <div class="recipe-meta">
                     <div class="recipe-meta-item">
@@ -57,13 +57,13 @@
                         <i class="bi bi-clock-history text-primary"></i>
                         <span>Total: @(Model.PrepTimeMinutes + Model.CookTimeMinutes) min</span>
                     </div>
-                    
+
                     <!-- Original Serving Size Display (no controls) -->
                     <div class="recipe-meta-item">
                         <i class="bi bi-people text-primary"></i>
                         <span>Serves: @Model.Servings</span>
                     </div>
-                    
+
                     <div class="recipe-meta-item">
                         <i class="bi bi-bar-chart text-primary"></i>
                         <span class="badge bg-@(Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Easy ? "success" : Model.Difficulty == MealStack.Infrastructure.Data.DifficultyLevel.Medium ? "warning" : "danger")">
@@ -73,17 +73,17 @@
 
                     @if (Model.RecipeCategories != null && Model.RecipeCategories.Any())
                     {
-                        <div class="recipe-meta-item">
-                            <i class="bi bi-tags text-primary"></i>
-                            <div>
-                                @foreach (var recipeCategory in Model.RecipeCategories)
-                                {
-                                    <span class="badge bg-@(string.IsNullOrEmpty(recipeCategory.Category.ColorClass) ? "secondary" : recipeCategory.Category.ColorClass) me-1">
+                    <div class="recipe-meta-item">
+                        <i class="bi bi-tags text-primary"></i>
+                        <div>
+                            @foreach (var recipeCategory in Model.RecipeCategories)
+                            {
+                            <span class="badge bg-@(string.IsNullOrEmpty(recipeCategory.Category.ColorClass) ? "secondary" : recipeCategory.Category.ColorClass) me-1">
                                         @recipeCategory.Category.Name
                                     </span>
-                                }
-                            </div>
+                            }
                         </div>
+                    </div>
                     }
                 </div>
             </div>
@@ -101,27 +101,27 @@
                         </div>
                         @if (Model.UpdatedDate.HasValue)
                         {
-                            <div>
-                                <small class="text-muted">Updated on: @Model.UpdatedDate.Value.ToShortDateString()</small>
-                            </div>
+                        <div>
+                            <small class="text-muted">Updated on: @Model.UpdatedDate.Value.ToShortDateString()</small>
+                        </div>
                         }
 
                         <div class="mt-3">
                             @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || Model.CreatedById == Context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
                             {
-                                <div class="d-grid gap-2">
-                                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-pencil me-1"></i> Edit Recipe
-                                    </a>
-                                    <a href="#" onclick="return RecipeModule.confirmDelete(@Model.Id, '@Model.Title')" class="btn btn-outline-danger btn-sm">
-                                        <i class="bi bi-trash me-1"></i> Delete Recipe
-                                    </a>
-                                </div>
+                            <div class="d-grid gap-2">
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-pencil me-1"></i> Edit Recipe
+                                </a>
+                                <a href="#" onclick="return RecipeModule.confirmDelete(@Model.Id, '@Model.Title')" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash me-1"></i> Delete Recipe
+                                </a>
+                            </div>
 
-                                <!-- Hidden form for delete submission -->
-                                <form id="delete-form-@Model.Id" asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: none;">
-                                    @Html.AntiForgeryToken()
-                                </form>
+                            <!-- Hidden form for delete submission -->
+                            <form id="delete-form-@Model.Id" asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: none;">
+                                @Html.AntiForgeryToken()
+                            </form>
                             }
                         </div>
                     </div>
@@ -140,23 +140,23 @@
 
                 @if (string.IsNullOrEmpty(Model.Ingredients))
                 {
-                    <p class="text-muted">No ingredients listed.</p>
+                <p class="text-muted">No ingredients listed.</p>
                 }
                 else
                 {
-                    <ul class="ingredients-list">
-                        @foreach (var ingredient in Model.Ingredients.Split('\n', StringSplitOptions.RemoveEmptyEntries))
-                        {
-                            <li>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="ingredient-@(Model.Ingredients.Split('\n').ToList().IndexOf(ingredient))">
-                                    <label class="form-check-label" for="ingredient-@(Model.Ingredients.Split('\n').ToList().IndexOf(ingredient))">
-                                        @ingredient.Trim()
-                                    </label>
-                                </div>
-                            </li>
-                        }
-                    </ul>
+                <ul class="ingredients-list">
+                    @foreach (var ingredient in Model.Ingredients.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                    <li>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="ingredient-@(Model.Ingredients.Split('\n').ToList().IndexOf(ingredient))">
+                            <label class="form-check-label" for="ingredient-@(Model.Ingredients.Split('\n').ToList().IndexOf(ingredient))">
+                                @ingredient.Trim()
+                            </label>
+                        </div>
+                    </li>
+                    }
+                </ul>
                 }
             </div>
         </div>
@@ -170,25 +170,25 @@
 
                 @if (string.IsNullOrEmpty(Model.Instructions))
                 {
-                    <p class="text-muted">No instructions provided.</p>
+                <p class="text-muted">No instructions provided.</p>
                 }
                 else
                 {
-                    var instructionsParagraphs = Model.Instructions.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                var instructionsParagraphs = Model.Instructions.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-                    @if (instructionsParagraphs.Length == 1)
+                @if (instructionsParagraphs.Length == 1)
+                {
+                <p>@Model.Instructions</p>
+                }
+                else
+                {
+                <ol class="instructions-list">
+                    @foreach (var instruction in instructionsParagraphs)
                     {
-                        <p>@Model.Instructions</p>
+                    <li>@instruction.Trim()</li>
                     }
-                    else
-                    {
-                        <ol class="instructions-list">
-                            @foreach (var instruction in instructionsParagraphs)
-                            {
-                                <li>@instruction.Trim()</li>
-                            }
-                        </ol>
-                    }
+                </ol>
+                }
                 }
             </div>
         </div>
@@ -202,8 +202,8 @@
                     <h5 class="card-title">
                         <i class="bi bi-tools me-2 text-primary"></i>Cooking Tools
                     </h5>
-                    
-                    <!-- New Servings Adjustment Card -->
+
+                    <!-- Servings Adjustment Card -->
                     <div class="card mb-3">
                         <div class="card-header bg-light">
                             <h6 class="mb-0">Adjust Serving</h6>
@@ -213,8 +213,8 @@
                                 <div class="col-md-6">
                                     <div class="input-group">
                                         <span class="input-group-text">Servings:</span>
-                                        <input type="number" id="servings-input" class="form-control" 
-                                               min="1" max="100" value="@Model.Servings" 
+                                        <input type="number" id="servings-input" class="form-control"
+                                               min="1" max="100" value="@Model.Servings"
                                                data-original-servings="@Model.Servings">
                                     </div>
                                 </div>
@@ -231,7 +231,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row mt-3">
                         <div class="col-md-6 mb-3 mb-md-0">
                             <div class="d-grid">
@@ -256,20 +256,20 @@
     <!-- Notes Section -->
     @if (!string.IsNullOrEmpty(Model.Notes))
     {
-        <div class="row mb-5">
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">
-                            <i class="bi bi-journal-text me-2 text-primary"></i>Recipe Notes
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <p>@Model.Notes</p>
-                    </div>
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-journal-text me-2 text-primary"></i>Recipe Notes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>@Model.Notes</p>
                 </div>
             </div>
         </div>
+    </div>
     }
 
     <!-- Back Button -->
@@ -281,45 +281,47 @@
 </div>
 
 @section Scripts {
-    <!-- AJAX token -->
-    <partial name="_AjaxAntiForgeryToken" />
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<!-- Essential Scripts -->
+<partial name="_AjaxAntiForgeryToken" />
+<partial name="_ValidationScriptsPartial" />
 
-    <!-- Load the servings module -->
-    <script src="~/js/modules/servings.js"></script>
+<!-- Servings Module -->
+<script src="~/js/modules/servings.js"></script>
 
-    <script>
-        $(document).ready(function() {
-            if (typeof ServingsModule !== 'undefined') {
-                ServingsModule.init();
-            }
-            
-            function confirmDelete(id, name) {
-                if (confirm(`Are you sure you want to delete the recipe "${name}"?`)) {
-                    document.getElementById(`delete-form-${id}`).submit();
-                }
-                return false;
-            }
+<!-- Recipe Rating and Tools -->
+<script src="~/js/modules/rating.js"></script>
 
-            // Handle print button
-            $('#print-recipe').on('click', function() {
-                window.print();
-            });
+<script>
+    $(document).ready(function() {
+        // Initialize ServingsModule
+        if (typeof ServingsModule !== 'undefined') {
+            ServingsModule.init();
+        }
 
-            // Handle share button
-            $('#share-recipe').on('click', function() {
-                if (navigator.share) {
-                    navigator.share({
-                        title: '@Model.Title',
-                        text: '@Model.Description',
-                        url: window.location.href,
-                    }).then(() => {
-                        console.log('Thanks for sharing!');
-                    }).catch(console.error);
-                } else {
-                    prompt('Share this recipe by copying the link below:', window.location.href);
-                }
-            });
+        // Print Recipe
+        $('#print-recipe').on('click', function() {
+            window.print();
         });
-    </script>
+
+        // Share Recipe
+        $('#share-recipe').on('click', function() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '@Model.Title',
+                    text: '@Model.Description',
+                    url: window.location.href,
+                }).then(() => {
+                    console.log('Recipe shared successfully');
+                }).catch(console.error);
+            } else {
+                // Fallback for browsers without Web Share API
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('Recipe link copied to clipboard!');
+                }).catch(() => {
+                    prompt('Share this recipe by copying the link below:', window.location.href);
+                });
+            }
+        });
+    });
+</script>
 }

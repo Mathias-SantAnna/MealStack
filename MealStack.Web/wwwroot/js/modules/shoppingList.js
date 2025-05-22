@@ -9,6 +9,7 @@ const ShoppingListModule = (function() {
         copyButtonSelector: '#copyToClipboard',
         saveButtonSelector: '#saveShoppingItemBtn',
         formSelector: '#addShoppingItemForm',
+        progressBarSelector: '.progress-bar',
         updateShoppingItemUrl: '',
         addShoppingItemUrl: ''
     };
@@ -23,9 +24,10 @@ const ShoppingListModule = (function() {
         setupCopyToClipboardHandler();
         setupAddItemHandler();
 
-        updateCheckedCount();
+        // Initial progress update on page load
+        updateAllProgress();
 
-        console.log("Shopping List Module initialized");
+        console.log("Shopping List Module initialized with real-time updates");
     };
 
     const setupCheckboxHandlers = function() {
@@ -42,7 +44,9 @@ const ShoppingListModule = (function() {
             } else {
                 item.removeClass('checked');
             }
-            updateCheckedCount();
+
+            // Update progress immediately for real-time feedback
+            updateAllProgress();
 
             // Update on server
             $.ajax({
@@ -64,7 +68,8 @@ const ShoppingListModule = (function() {
                     } else {
                         item.removeClass('checked');
                     }
-                    updateCheckedCount();
+                    // Update progress again after reverting
+                    updateAllProgress();
                     alert('Error updating item. Please try again.');
                 }
             });
@@ -77,6 +82,7 @@ const ShoppingListModule = (function() {
             $(`${options.checkboxSelector}:checked`).each(function() {
                 $(this).prop('checked', false).trigger('change');
             });
+            // Progress will be updated by each checkbox change event
         });
     };
 
@@ -182,19 +188,119 @@ const ShoppingListModule = (function() {
         });
     };
 
+    // Master function to update all progress elements
+    const updateAllProgress = function() {
+        console.log("Updating all progress elements...");
+        updateCheckedCount();
+        updateOverallProgress();
+        updateProgressMessage();
+    };
+
+    // Update the checked count badges and clear button state
     const updateCheckedCount = function() {
         const checkedCount = $(`${options.checkboxSelector}:checked`).length;
+        const totalCount = $(options.checkboxSelector).length;
+        const remaining = totalCount - checkedCount;
+
+        console.log(`Progress: ${checkedCount}/${totalCount} checked`);
+
+        // Update the specific checked items counter
         $(options.checkedItemsCountSelector).text(checkedCount);
 
+        // Update badges using more specific selectors
+        $('.badge:contains("done")').each(function() {
+            $(this).html(`<span id="checkedItemsCount">${checkedCount}</span> done`);
+        });
+
+        // Update remaining items badge
+        $('.badge.bg-secondary').text(`${remaining} left`);
+
+        // Enable/disable clear button
+        const clearButton = $(options.clearCheckedButtonSelector);
         if (checkedCount > 0) {
-            $(options.clearCheckedButtonSelector).prop('disabled', false);
+            clearButton.prop('disabled', false);
+            clearButton.removeClass('disabled');
         } else {
-            $(options.clearCheckedButtonSelector).prop('disabled', true);
+            clearButton.prop('disabled', true);
+            clearButton.addClass('disabled');
         }
     };
 
+    // Update the main progress bar
+    const updateOverallProgress = function() {
+        const totalItems = $(options.checkboxSelector).length;
+        const checkedItems = $(`${options.checkboxSelector}:checked`).length;
+        const progress = totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
+
+        console.log(`Progress bar: ${progress.toFixed(1)}%`);
+
+        // Update main progress bar
+        const progressBar = $(options.progressBarSelector);
+        if (progressBar.length) {
+            progressBar.css('width', `${progress}%`);
+            progressBar.attr('aria-valuenow', progress);
+
+            // Update progress bar animation
+            if (progress < 100) {
+                progressBar.addClass('progress-bar-animated');
+            } else {
+                progressBar.removeClass('progress-bar-animated');
+            }
+        }
+
+        // Update progress text in the progress card
+        $('.card.bg-light .text-muted').each(function() {
+            const text = $(this).text();
+            if (text.includes('of') && text.includes('collected')) {
+                $(this).text(`${checkedItems} of ${totalItems} collected`);
+            }
+        });
+    };
+
+    // Update the progress message with appropriate icon and text
+    const updateProgressMessage = function() {
+        const totalItems = $(options.checkboxSelector).length;
+        const checkedItems = $(`${options.checkboxSelector}:checked`).length;
+        const progress = totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
+        const remaining = totalItems - checkedItems;
+
+        let icon, message, textClass;
+
+        if (progress >= 100) {
+            icon = 'bi-check-circle-fill';
+            message = 'All done! Ready to shop.';
+            textClass = 'text-success';
+        } else if (progress >= 75) {
+            icon = 'bi-clock';
+            message = `Almost finished - ${remaining} items left.`;
+            textClass = 'text-primary';
+        } else if (progress >= 25) {
+            icon = 'bi-arrow-right';
+            message = `Making progress - ${remaining} items to go.`;
+            textClass = 'text-warning';
+        } else {
+            icon = 'bi-cart';
+            message = `Let's get shopping! ${remaining} items to collect.`;
+            textClass = 'text-muted';
+        }
+
+        // Update the progress message in the progress card
+        $('.card.bg-light small').each(function() {
+            if ($(this).find('i').length > 0 || $(this).text().includes('shop')) {
+                $(this).html(`<i class="${icon} ${textClass} me-1"></i><span>${message}</span>`);
+            }
+        });
+
+        console.log(`Progress message: ${message}`);
+    };
+
+    // Public API
     return {
-        init: init
+        init: init,
+        updateAllProgress: updateAllProgress,
+        updateCheckedCount: updateCheckedCount,
+        updateOverallProgress: updateOverallProgress,
+        updateProgressMessage: updateProgressMessage
     };
 })();
 

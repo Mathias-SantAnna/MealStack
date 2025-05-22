@@ -535,8 +535,9 @@ ol, ul {
 .star-rating {
   cursor: pointer;
   font-size: 1.5rem;
-  color: #ffc107;
-  transition: transform 0.1s;
+  transition: all 0.2s ease;
+  margin-right: 0.2rem;
+  color: #6c757d;
 }
 
 .star-rating:hover {
@@ -552,11 +553,181 @@ ol, ul {
   padding: 1rem;
   border-radius: var(--border-radius);
   background-color: var(--light-color);
+  margin-bottom: 1rem;
 }
 
 .rating-widget h6 {
   content: "Rate this recipe:";
+  margin-bottom: 0.5rem;
+  color: #495057;
+
 }
+.star-rating.bi-star-fill {
+  color: #ffc107 !important;
+}
+
+.rating-stars {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.current-rating {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+/* Animation for rating feedback */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.animate-pulse {
+  animation: pulse 0.6s ease-in-out;
+}
+
+/* INGREDIENT CHIP ENHANCEMENTS */
+.ingredient-chip {
+  border: 1px solid #e9ecef !important;
+  transition: all 0.2s ease;
+}
+
+.ingredient-chip:hover {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-color: #007bff !important;
+}
+
+.ingredient-chip .btn-close {
+  transition: all 0.2s ease;
+}
+
+.ingredient-chip .btn-close:hover {
+  transform: scale(1.1);
+  background-color: #dc3545;
+  color: white;
+}
+
+/* FORM ENHANCEMENTS */
+.form-control:focus,
+.form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Instructions and Ingredients textarea styling */
+textarea.form-control {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Loading states */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Error and success states */
+.is-invalid {
+  border-color: #dc3545;
+}
+
+.is-valid {
+  border-color: #28a745;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+  font-size: 0.875rem;
+}
+
+.text-success {
+  color: #28a745 !important;
+  font-size: 0.875rem;
+}
+
+/* Modal enhancements */
+.modal-content {
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  border-bottom: 1px solid #e9ecef;
+  background-color: #f8f9fa;
+}
+
+.modal-footer {
+  border-top: 1px solid #e9ecef;
+  background-color: #f8f9fa;
+}
+
+/* Recipe form specific styles */
+#ingredients-section {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 0.375rem;
+  padding: 1rem;
+}
+
+#ingredients-container {
+  min-height: 60px;
+  border: 1px dashed #dee2e6;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  background-color: white;
+}
+
+#ingredients-container:empty::before {
+  content: "No ingredients added yet. Search and add ingredients above.";
+  color: #6c757d;
+  font-style: italic;
+  display: block;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Success/Error message styling */
+.alert {
+  border: none;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.alert-success {
+  background-color: #d1edff;
+  color: #0c5460;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .ingredient-chip {
+    margin-bottom: 0.5rem;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .rating-widget {
+    text-align: center;
+  }
+
+  .star-rating {
+    font-size: 1.8rem;
+    margin: 0 0.1rem;
+  }
+}
+
 
 /* SEARCH COMPONENTS */
 .search-container {

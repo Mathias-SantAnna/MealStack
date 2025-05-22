@@ -25,16 +25,21 @@
     <!-- jQuery UI -->
     <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-    
+
     <!-- Reusable JS modules -->
     <script src="~/js/modules/ingredientManager.js"></script>
     <script src="~/js/modules/recipeForm.js"></script>
-    
+
     <script>
         $(document).ready(function() {
-            RecipeForm.init({
-                isEdit: true
-            });
+            // Initialize RecipeForm module
+            if (typeof RecipeForm !== 'undefined') {
+                RecipeForm.init({
+                    isEdit: true
+                });
+            } else {
+                console.error('RecipeForm module not loaded');
+            }
         });
     </script>
 }

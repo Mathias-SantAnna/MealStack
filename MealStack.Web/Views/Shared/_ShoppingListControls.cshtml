@@ -1,0 +1,29 @@
+@model dynamic
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="input-group">
+            <span class="input-group-text">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" id="searchItems" class="form-control" 
+                   placeholder="Search items..." 
+                   aria-label="Search shopping list items">
+        </div>
+    </div>
+    <div class="col-md-4 mt-2 mt-md-0">
+        <div class="d-flex justify-content-md-end align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary">
+                    <span id="checkedItemsCount">@Model.CheckedCount</span> done
+                </span>
+                <span class="badge bg-secondary">
+                    @(Model.TotalCount - Model.CheckedCount) left
+                </span>
+            </div>
+            <button id="clearCheckedItems" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-check-circle me-1"></i> Clear Done
+            </button>
+        </div>
+    </div>
+</div>

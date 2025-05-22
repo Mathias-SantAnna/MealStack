@@ -1,0 +1,22 @@
+@model int
+
+<div class="text-center py-5">
+    <div class="mb-3">
+        <i class="bi bi-cart-x display-1 text-muted"></i>
+    </div>
+    <h5>No Items Yet</h5>
+    <p class="text-muted mb-4">
+        Your shopping list is empty. Generate items from your meal plan or add items manually.
+    </p>
+    <div class="d-flex justify-content-center gap-3">
+        <form asp-action="GenerateShoppingList" asp-route-id="@Model" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-arrow-repeat me-1"></i> Generate from Meals
+            </button>
+        </form>
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addShoppingItemModal">
+            <i class="bi bi-plus-circle me-1"></i> Add Item
+        </button>
+    </div>
+</div>

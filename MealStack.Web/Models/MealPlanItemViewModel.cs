@@ -33,9 +33,9 @@ namespace MealStack.Web.Models
         [Display(Name = "Servings")]
         public int Servings { get; set; }
         
-        [Required(AllowEmptyStrings = true)]
+        // FIXED: Made Notes optional by removing Required attribute
         [Display(Name = "Notes")]
-        public string Notes { get; set; }
+        public string Notes { get; set; } = string.Empty;
         
         public string MealTypeDisplay => MealType.ToString();
         public string DateDisplay => PlannedDate.ToString("dd/MM/yyyy");
