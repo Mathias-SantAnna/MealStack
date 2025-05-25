@@ -24,7 +24,6 @@ const ShoppingListModule = (function() {
         setupCopyToClipboardHandler();
         setupAddItemHandler();
 
-        // Initial progress update on page load
         updateAllProgress();
 
         console.log("Shopping List Module initialized with real-time updates");
@@ -204,18 +203,14 @@ const ShoppingListModule = (function() {
 
         console.log(`Progress: ${checkedCount}/${totalCount} checked`);
 
-        // Update the specific checked items counter
         $(options.checkedItemsCountSelector).text(checkedCount);
 
-        // Update badges using more specific selectors
         $('.badge:contains("done")').each(function() {
             $(this).html(`<span id="checkedItemsCount">${checkedCount}</span> done`);
         });
 
-        // Update remaining items badge
         $('.badge.bg-secondary').text(`${remaining} left`);
 
-        // Enable/disable clear button
         const clearButton = $(options.clearCheckedButtonSelector);
         if (checkedCount > 0) {
             clearButton.prop('disabled', false);
@@ -234,13 +229,11 @@ const ShoppingListModule = (function() {
 
         console.log(`Progress bar: ${progress.toFixed(1)}%`);
 
-        // Update main progress bar
         const progressBar = $(options.progressBarSelector);
         if (progressBar.length) {
             progressBar.css('width', `${progress}%`);
             progressBar.attr('aria-valuenow', progress);
 
-            // Update progress bar animation
             if (progress < 100) {
                 progressBar.addClass('progress-bar-animated');
             } else {
@@ -248,7 +241,7 @@ const ShoppingListModule = (function() {
             }
         }
 
-        // Update progress text in the progress card
+        // Update progress text
         $('.card.bg-light .text-muted').each(function() {
             const text = $(this).text();
             if (text.includes('of') && text.includes('collected')) {
@@ -257,7 +250,6 @@ const ShoppingListModule = (function() {
         });
     };
 
-    // Update the progress message with appropriate icon and text
     const updateProgressMessage = function() {
         const totalItems = $(options.checkboxSelector).length;
         const checkedItems = $(`${options.checkboxSelector}:checked`).length;
@@ -284,7 +276,7 @@ const ShoppingListModule = (function() {
             textClass = 'text-muted';
         }
 
-        // Update the progress message in the progress card
+        // Update the progress message
         $('.card.bg-light small').each(function() {
             if ($(this).find('i').length > 0 || $(this).text().includes('shop')) {
                 $(this).html(`<i class="${icon} ${textClass} me-1"></i><span>${message}</span>`);

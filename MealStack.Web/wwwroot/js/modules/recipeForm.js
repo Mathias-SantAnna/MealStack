@@ -1,6 +1,5 @@
 const RecipeForm = (function() {
     let options = {
-        // Form selectors
         formSelector: '#recipeForm',
         titleSelector: '#Title',
         descriptionSelector: '#Description',
@@ -11,14 +10,11 @@ const RecipeForm = (function() {
         difficultySelector: '#Difficulty',
         notesSelector: '#Notes',
 
-        // Image upload
         imageFileSelector: 'input[name="ImageFile"]',
         currentImageSelector: '.img-thumbnail',
 
-        // Categories
         categoryCheckboxSelector: 'input[name="selectedCategories"]',
 
-        // Configuration
         isEdit: false
     };
 
@@ -44,7 +40,6 @@ const RecipeForm = (function() {
 
     // Setup form validation
     const setupFormValidation = function() {
-        // Title validation
         $(options.titleSelector).on('blur', function() {
             const value = $(this).val().trim();
             if (!value) {
@@ -58,7 +53,6 @@ const RecipeForm = (function() {
             }
         });
 
-        // Instructions validation
         $(options.instructionsSelector).on('blur', function() {
             const value = $(this).val().trim();
             if (!value) {
@@ -107,9 +101,9 @@ const RecipeForm = (function() {
                     return;
                 }
 
-                // Validate file size (max 5MB)
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('Image file size must be less than 5MB');
+                // Validate file size
+                if (file.size > 1 * 1024 * 1024) {
+                    alert('Image file size must be less than 1MB');
                     $(this).val('');
                     return;
                 }
@@ -117,10 +111,8 @@ const RecipeForm = (function() {
                 // Create preview
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Remove existing preview
                     $('#image-preview').remove();
 
-                    // Create new preview
                     const preview = $(`
                         <div id="image-preview" class="mt-2">
                             <img src="${e.target.result}" alt="Recipe Image Preview" class="img-thumbnail" style="max-height: 200px;" />
@@ -140,14 +132,12 @@ const RecipeForm = (function() {
     // Setup form submission handling
     const setupFormSubmission = function() {
         $(options.formSelector).on('submit', function(e) {
-            // Validate form before submission
             if (!validateForm()) {
                 e.preventDefault();
                 showFormError('Please correct the errors below before submitting');
                 return false;
             }
 
-            // Show loading state
             const submitBtn = $(this).find('button[type="submit"]');
             const originalText = submitBtn.text();
             submitBtn.prop('disabled', true)
@@ -162,12 +152,9 @@ const RecipeForm = (function() {
         console.log("Form submission handling setup complete");
     };
 
-    // Setup character counters for text fields
     const setupCharacterCounters = function() {
-        // Title counter
         setupFieldCounter(options.titleSelector, 100);
 
-        // Description counter  
         setupFieldCounter(options.descriptionSelector, 500);
 
         console.log("Character counters setup complete");
@@ -196,7 +183,7 @@ const RecipeForm = (function() {
         };
 
         $field.on('input', updateCounter);
-        updateCounter(); // Initialize
+        updateCounter(); 
     };
 
     // Validate entire form
@@ -207,7 +194,6 @@ const RecipeForm = (function() {
         $('.is-invalid').removeClass('is-invalid');
         $('.invalid-feedback').remove();
 
-        // Validate title
         const title = $(options.titleSelector).val().trim();
         if (!title) {
             showFieldError(options.titleSelector, 'Recipe title is required');
@@ -217,7 +203,6 @@ const RecipeForm = (function() {
             isValid = false;
         }
 
-        // Validate instructions
         const instructions = $(options.instructionsSelector).val().trim();
         if (!instructions) {
             showFieldError(options.instructionsSelector, 'Instructions are required');
@@ -227,14 +212,12 @@ const RecipeForm = (function() {
             isValid = false;
         }
 
-        // Validate prep time
         const prepTime = parseInt($(options.prepTimeSelector).val());
         if (isNaN(prepTime) || prepTime < 1) {
             showFieldError(options.prepTimeSelector, 'Prep time must be at least 1 minute');
             isValid = false;
         }
 
-        // Validate servings
         const servings = parseInt($(options.servingsSelector).val());
         if (isNaN(servings) || servings < 1) {
             showFieldError(options.servingsSelector, 'Servings must be at least 1');
@@ -244,7 +227,6 @@ const RecipeForm = (function() {
         return isValid;
     };
 
-    // Show field error
     const showFieldError = function(field, message) {
         const $field = $(field);
         $field.addClass('is-invalid');
@@ -257,19 +239,15 @@ const RecipeForm = (function() {
         $feedback.text(message);
     };
 
-    // Clear field error
     const clearFieldError = function(field) {
         const $field = $(field);
         $field.removeClass('is-invalid');
         $field.next('.invalid-feedback').remove();
     };
 
-    // Show form-level error
     const showFormError = function(message) {
-        // Remove existing form errors
         $('.form-error').remove();
 
-        // Add new error message
         const errorAlert = $(`
             <div class="alert alert-danger alert-dismissible fade show form-error" role="alert">
                 <i class="bi bi-exclamation-triangle me-2"></i>${message}
@@ -279,16 +257,15 @@ const RecipeForm = (function() {
 
         $(options.formSelector).prepend(errorAlert);
 
-        // Scroll to top of form
         $(options.formSelector)[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    // Auto-save functionality (optional)
+    // Auto-save functionality 
     const setupAutoSave = function() {
-        if (!options.isEdit) return; // Only for edit mode
+        if (!options.isEdit) return; 
 
         let autoSaveTimer;
-        const autoSaveDelay = 30000; // 30 seconds
+        const autoSaveDelay = 30000; 
 
         const triggerAutoSave = function() {
             clearTimeout(autoSaveTimer);
@@ -303,7 +280,6 @@ const RecipeForm = (function() {
         console.log("Auto-save setup complete");
     };
 
-    // Save form data to localStorage
     const saveFormData = function() {
         if (!options.isEdit) return;
 
@@ -327,7 +303,6 @@ const RecipeForm = (function() {
         }
     };
 
-    // Restore form data from localStorage
     const restoreFormData = function() {
         if (!options.isEdit) return;
 
@@ -339,13 +314,11 @@ const RecipeForm = (function() {
             const savedTime = new Date(formData.timestamp);
             const now = new Date();
 
-            // Only restore if saved within last hour
             if ((now - savedTime) > 3600000) {
                 localStorage.removeItem('recipeForm_autoSave');
                 return;
             }
 
-            // Ask user if they want to restore
             if (confirm('Found auto-saved changes. Do you want to restore them?')) {
                 $(options.titleSelector).val(formData.title || '');
                 $(options.descriptionSelector).val(formData.description || '');

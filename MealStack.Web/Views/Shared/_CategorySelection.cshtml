@@ -1,0 +1,30 @@
+@model string
+
+<div class="mb-3">
+    <label for="Category" class="form-label">Category</label>
+    <select name="Category" class="form-select category-select" id="categorySelect" data-current-value="@Model">
+        <option value="">Loading categories...</option>
+    </select>
+
+    <!-- Custom category input -->
+    <input type="text" id="customCategoryInput" class="form-control mt-2 custom-category-input"
+           placeholder="Enter custom category name..." style="display: none;">
+
+    <!-- Admin-only category management -->
+    @if (User.IsInRole("Admin"))
+    {
+    <div class="mt-2 admin-category-controls">
+        <button type="button" class="btn btn-sm btn-outline-primary"
+                data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+            <i class="bi bi-plus-circle"></i> Create New Category
+        </button>
+        <small class="text-muted d-block">Admin: Create new ingredient categories</small>
+    </div>
+    }
+    else
+    {
+    <small class="text-muted">Choose from existing categories or create a custom one</small>
+    }
+
+    <span class="text-danger category-validation"></span>
+</div>

@@ -112,7 +112,6 @@ namespace MealStack.Web.Controllers
                 
                 var userId = _userManager.GetUserId(User);
                 
-                // Get user's favorite recipes
                 var favoriteRecipesQuery = _context.UserFavorites
                     .Where(uf => uf.UserId == userId)
                     .Include(uf => uf.Recipe)
@@ -136,7 +135,6 @@ namespace MealStack.Web.Controllers
                 await SetupPaginationAndCategories(page, totalRecipes, pageSize, searchModel.CategoryId);
                 ViewData["SearchAction"] = "MyFavorites";
                 
-                // Pass the favorite IDs
                 await AddFavoriteStatusToViewBag();
                 
                 return View(recipes);
@@ -308,7 +306,6 @@ namespace MealStack.Web.Controllers
                     return View(new RecipeEntity());
                 }
 
-                // CRITICAL FIX: Set user and creation date
                 recipe.CreatedById = _userManager.GetUserId(User) ?? string.Empty;
                 recipe.CreatedDate = DateTime.UtcNow;
                 
@@ -317,15 +314,13 @@ namespace MealStack.Web.Controllers
                 ModelState.Remove("CreatedDate");
                 ModelState.Remove("CreatedBy");
                 
-                // CRITICAL FIX: Ensure required fields have defaults
+                // Ensure required fields have defaults
                 recipe.Ingredients = recipe.Ingredients ?? string.Empty;
                 recipe.Description = recipe.Description ?? string.Empty;
                 recipe.Notes = recipe.Notes ?? string.Empty;
 
-                // Log the ingredients being saved
                 _logger.LogInformation("Recipe ingredients data: {Ingredients}", recipe.Ingredients);
                 
-                // Handle image upload if present
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
                     try
@@ -340,7 +335,7 @@ namespace MealStack.Web.Controllers
                     }
                 }
                 
-                // CRITICAL FIX: Validate model state and log any errors
+                // Validate model state and log any errors
                 if (!ModelState.IsValid)
                 {
                     _logger.LogWarning("ModelState is invalid for recipe creation");
@@ -356,7 +351,6 @@ namespace MealStack.Web.Controllers
                     return View(recipe);
                 }
 
-                // Check for duplicate titles per user
                 bool duplicateExists = await _context.Recipes
                     .AnyAsync(r => r.Title.ToLower() == recipe.Title.ToLower() && 
                                    r.CreatedById == recipe.CreatedById);
@@ -369,12 +363,11 @@ namespace MealStack.Web.Controllers
                     return View(recipe);
                 }
 
-                // CRITICAL FIX: Use transaction for data integrity
+                // Use transaction for data integrity
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 
                 try
                 {
-                    // Add recipe to context and save to get ID
                     _context.Recipes.Add(recipe);
                     await _context.SaveChangesAsync();
                     
@@ -388,7 +381,6 @@ namespace MealStack.Web.Controllers
                             selectedCategories.Length, recipe.Id);
                     }
                     
-                    // Commit transaction
                     await transaction.CommitAsync();
                     
                     _logger.LogInformation("Recipe {RecipeId} created successfully by user {UserId}", 
@@ -450,7 +442,7 @@ namespace MealStack.Web.Controllers
                     return NotFound();
                 }
                 
-                // CRITICAL: Load existing recipe with all related data
+                // Load an existing recipe with all related data
                 var existingRecipe = await _context.Recipes
                     .Include(r => r.RecipeCategories)
                     .FirstOrDefaultAsync(r => r.Id == id);
@@ -468,7 +460,7 @@ namespace MealStack.Web.Controllers
                     return Forbid();
                 }
                 
-                // CRITICAL: Clean up ingredients data - remove blank lines
+                // Clean up ingredients data - remove blank lines
                 if (!string.IsNullOrEmpty(recipe.Ingredients))
                 {
                     var cleanIngredients = recipe.Ingredients
@@ -481,7 +473,7 @@ namespace MealStack.Web.Controllers
                     _logger.LogInformation("Cleaned ingredients: {IngredientsCount} lines", cleanIngredients.Count);
                 }
                 
-                // CRITICAL: Clean up instructions - remove blank lines  
+                // Clean up instructions - remove blank lines  
                 if (!string.IsNullOrEmpty(recipe.Instructions))
                 {
                     var cleanInstructions = recipe.Instructions
@@ -494,7 +486,6 @@ namespace MealStack.Web.Controllers
                     _logger.LogInformation("Cleaned instructions: {InstructionsCount} lines", cleanInstructions.Count);
                 }
                 
-                // Remove validation for fields we manage
                 ModelState.Remove("CreatedById");
                 ModelState.Remove("CreatedDate");
                 ModelState.Remove("CreatedBy");
@@ -524,7 +515,6 @@ namespace MealStack.Web.Controllers
                     return View(recipe);
                 }
                 
-                // Check for duplicate titles (excluding current recipe)
                 bool duplicateExists = await _context.Recipes
                     .Where(r => r.Id != id && r.CreatedById == existingRecipe.CreatedById)
                     .AnyAsync(r => r.Title.ToLower() == recipe.Title.ToLower());
@@ -536,12 +526,10 @@ namespace MealStack.Web.Controllers
                     return View(recipe);
                 }
                 
-                // Handle image upload if new image provided
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
                     _logger.LogInformation("Processing new image for recipe {RecipeId}", id);
                     
-                    // Delete old image if exists
                     if (!string.IsNullOrEmpty(existingRecipe.ImagePath))
                     {
                         DeleteRecipeImage(existingRecipe.ImagePath);
@@ -551,16 +539,15 @@ namespace MealStack.Web.Controllers
                 }
                 else
                 {
-                    // Keep existing image
                     recipe.ImagePath = existingRecipe.ImagePath;
                 }
                 
-                // CRITICAL: Use transaction for atomic operation
+                // Use transaction for atomic operation
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 
                 try
                 {
-                    // CRITICAL: Update existing entity properties (don't replace entity)
+                    // Update existing entity properties (don't replace entity)
                     existingRecipe.Title = recipe.Title;
                     existingRecipe.Description = recipe.Description;
                     existingRecipe.Ingredients = recipe.Ingredients;
@@ -574,14 +561,12 @@ namespace MealStack.Web.Controllers
                     
                     // After SetValues, restore critical fields:
                     if (string.IsNullOrEmpty(existingRecipe.CreatedById)) {
-                        // Should never happen, but extra safe
                         throw new Exception("existingRecipe.CreatedById was lost during update!");
                     }
                     existingRecipe.UpdatedDate = DateTime.UtcNow;
                     
                     _logger.LogInformation("Updated recipe properties for {RecipeId}", id);
                     
-                    // CRITICAL: Handle categories properly
                     // Remove all existing categories
                     var existingCategories = existingRecipe.RecipeCategories.ToList();
                     foreach (var category in existingCategories)
@@ -606,7 +591,7 @@ namespace MealStack.Web.Controllers
                         _logger.LogInformation("Added {CategoryCount} new categories", selectedCategories.Length);
                     }
                     
-                    // CRITICAL: Save all changes
+                    // Save all changes
                     var changeCount = await _context.SaveChangesAsync();
                     _logger.LogInformation("Saved {ChangeCount} changes to database", changeCount);
                     
@@ -694,7 +679,7 @@ namespace MealStack.Web.Controllers
             }
         }
         
-        // API endpoint for search suggestions (both recipes and ingredients)
+        // API endpoint for search suggestions (recipes and ingredients)
         [HttpGet]
         public async Task<IActionResult> GetSearchSuggestions(string term)
         {
@@ -721,7 +706,7 @@ namespace MealStack.Web.Controllers
                     .Take(5)
                     .ToListAsync();
                 
-                // Combine and return suggestions
+                // Combine and return 
                 var allSuggestions = recipeSuggestions
                     .Union(ingredientSuggestions)
                     .OrderBy(s => s)
@@ -856,7 +841,7 @@ namespace MealStack.Web.Controllers
             _context.RecipeCategories.RemoveRange(existingCategories);
             await _context.SaveChangesAsync();
             
-            // Add new categories if any were selected
+            // Add new categories if selected
             if (selectedCategories.Length > 0)
             {
                 await AddCategoriesToRecipe(recipeId, selectedCategories);
@@ -872,7 +857,7 @@ namespace MealStack.Web.Controllers
                 .ToListAsync();
         }
 
-        // Search filter methods remain the same...
+        // Search filter methods remain the same
         private IQueryable<RecipeEntity> ApplySearchFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
         {
             if (!string.IsNullOrEmpty(searchModel.SearchTerm))
@@ -1017,7 +1002,7 @@ namespace MealStack.Web.Controllers
                 "highestRated" => query.OrderByDescending(r => r.Ratings.Any() 
                     ? r.Ratings.Average(ur => ur.Rating) 
                     : 0),
-                _ => query.OrderByDescending(r => r.CreatedDate) // Default is newest first
+                _ => query.OrderByDescending(r => r.CreatedDate)
             };
         }
 

@@ -36,7 +36,6 @@ const RecipeModule = (function() {
             }
         });
 
-        // Print recipe
         $(document).on('click', options.printButtonSelector, function() {
             window.print();
         });

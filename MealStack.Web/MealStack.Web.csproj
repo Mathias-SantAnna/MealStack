@@ -41,6 +41,13 @@
       <_ContentIncludedByDefault Remove="wwwroot\js\old\recipeForm.js" />
       <_ContentIncludedByDefault Remove="wwwroot\js\old\search.js" />
       <_ContentIncludedByDefault Remove="wwwroot\js\old\servings2.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\buttons.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\card.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\forms.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\modal.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\features\meal-planning.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\features\recipes.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\features\shopping.css" />
     </ItemGroup>
 
 </Project>

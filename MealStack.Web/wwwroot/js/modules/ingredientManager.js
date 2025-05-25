@@ -1,7 +1,5 @@
 const IngredientModule = (function() {
-    // Default config
     let options = {
-        // DOM selectors
         containerSelector: '#ingredients-container',
         dataFieldSelector: '#ingredients-data',
         searchFieldSelector: '#ingredient-search',
@@ -16,16 +14,13 @@ const IngredientModule = (function() {
         newIngredientMeasurementSelector: '#new-ingredient-measurement',
         newIngredientDescriptionSelector: '#new-ingredient-description',
 
-        // CSS classes
         ingredientChipClass: 'ingredient-chip',
         quantityInputClass: 'quantity-input',
         unitSelectClass: 'unit-select',
         removeIngredientBtnClass: 'remove-ingredient',
 
-        // Configuration
         parseExisting: false,
 
-        // Data
         measurementUnits: [
             { value: 'grams', label: 'Grams (g)' },
             { value: 'kilograms', label: 'Kilograms (kg)' },
@@ -83,7 +78,6 @@ const IngredientModule = (function() {
         selectedIngredients.push(ingredientWithQuantity);
         addedIngredientIds.add(ingredient.id);
 
-        // Generate the measurement options HTML
         let measurementOptionsHtml = '<option value="">Select unit</option>';
         options.measurementUnits.forEach(unit => {
             const selected = unit.value === (ingredientWithQuantity.unit || ingredient.measurement) ? 'selected' : '';
@@ -169,12 +163,10 @@ const IngredientModule = (function() {
             let nameParts = [];
 
             if (parts.length > 0) {
-                // Check if the first part is a number (quantity)
                 if (!isNaN(parseFloat(parts[0])) && parts.length > 1) {
                     quantity = parts[0];
                     const potentialUnit = parts[1].toLowerCase();
 
-                    // Check if second part is a unit
                     const isUnit = options.measurementUnits.some(u =>
                         u.value === potentialUnit || potentialUnit.startsWith(u.value));
 
@@ -271,7 +263,6 @@ const IngredientModule = (function() {
                     ingredientsList = data;
                     console.log("Loaded ingredients:", ingredientsList.length);
 
-                    // Load categories after ingredients
                     loadIngredientCategories();
 
                     if (options.parseExisting) {
@@ -290,13 +281,11 @@ const IngredientModule = (function() {
         }
     }
 
-    // Clears the new ingredient modal fields
     function clearModalFields() {
         $(options.newIngredientNameSelector).val("");
         $(options.newIngredientMeasurementSelector).val("");
         $(options.newIngredientDescriptionSelector).val("");
 
-        // Clear category fields
         const $categorySelect = $(options.newIngredientCategorySelectSelector);
         const $categoryInput = $(options.newIngredientCategorySelector);
 
@@ -310,7 +299,6 @@ const IngredientModule = (function() {
         }
     }
 
-    // Save new ingredient via modal
     function saveNewIngredientViaModal() {
         const name = $(options.newIngredientNameSelector).val().trim();
         if (!name) {
@@ -318,7 +306,6 @@ const IngredientModule = (function() {
             return;
         }
 
-        // Get category value from appropriate field
         let category = '';
         const $categorySelect = $(options.newIngredientCategorySelectSelector);
         const $categoryInput = $(options.newIngredientCategorySelector);
@@ -355,7 +342,6 @@ const IngredientModule = (function() {
                     $(options.modalId).modal('hide');
                     clearModalFields();
 
-                    // Reload categories if a new one was added
                     if (newIngredientData.category && !ingredientCategories.includes(newIngredientData.category)) {
                         loadIngredientCategories();
                     }
@@ -377,7 +363,6 @@ const IngredientModule = (function() {
         });
     }
 
-    // Sets up all event handlers
     function setupEventHandlers() {
         if (typeof $ === 'undefined') {
             showError("Required dependency jQuery is not available");
@@ -420,7 +405,6 @@ const IngredientModule = (function() {
 
             console.log("Adding ingredient:", searchTerm);
 
-            // Check if ingredient already exists in our list
             const existing = ingredientsList.find(i =>
                 i.name.toLowerCase() === searchTerm.toLowerCase());
 
@@ -428,12 +412,10 @@ const IngredientModule = (function() {
                 addIngredientChip(existing);
                 searchField.val("");
             } else {
-                // Search for similar ingredients
                 AjaxService.get(options.searchIngredientsUrl, { term: searchTerm }, function(data) {
                     if (data && data.length > 0) {
                         addIngredientChip(data[0]);
                     } else {
-                        // Create a temporary ingredient
                         addIngredientChip({
                             id: 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                             name: searchTerm,
@@ -498,14 +480,12 @@ const IngredientModule = (function() {
                 updateIngredientUnit(chipId, $(this).val().trim());
             });
 
-        // ENHANCED: Modal save handler
         $(document).off('click', options.saveModalButtonSelector)
             .on('click', options.saveModalButtonSelector, function() {
                 console.log("Save new ingredient modal button clicked");
                 saveNewIngredientViaModal();
             });
 
-        // Form submission handler
         $('form').has(options.containerSelector).off("submit").on("submit", function() {
             console.log("Form submitting, updating hidden data...");
             updateHiddenIngredientsData();

@@ -1,4 +1,3 @@
-// Fixed version of MealPlannerModule
 const MealPlannerModule = (function() {
     const defaults = {
         // Shopping list
@@ -29,7 +28,7 @@ const MealPlannerModule = (function() {
     };
 
     let options = {};
-    let eventHandlersInitialized = false; // Flag to prevent duplicate event handlers
+    let eventHandlersInitialized = false; // Flag to prevent duplicate
 
     function getRequestVerificationToken() {
         return $('input[name="__RequestVerificationToken"]').val();
@@ -85,7 +84,7 @@ const MealPlannerModule = (function() {
     // 2) Select2 for Add-Meal recipe selector
     const initRecipeSearch = function() {
         const $el = $(options.recipeSearchSelector);
-        if ($el.length && $.fn.select2 && !$el.data('select2')) { // Check if not already initialized
+        if ($el.length && $.fn.select2 && !$el.data('select2')) { 
             $el.select2({
                 dropdownParent: $(options.addMealModalSelector),
                 placeholder:    'Search for a recipe...',
@@ -108,7 +107,6 @@ const MealPlannerModule = (function() {
     // 3) Shopping-list behaviors
     const initShoppingList = function() {
         if (!$('.shopping-item').length) {
-            // No shopping list on this page, skip initialization
             return;
         }
 
@@ -183,12 +181,12 @@ const MealPlannerModule = (function() {
     // 4) Meal-plan add / edit / update / remove
     const setupMealPlanEventListeners = function() {
         if (eventHandlersInitialized) {
-            return; // Prevent duplicate event handlers
+            return; 
         }
 
         const token = getRequestVerificationToken();
 
-        // -- Add Meal via modal form
+        // Add Meal via modal form
         $(document).off('submit', options.addMealFormSelector).on('submit', options.addMealFormSelector, function(e) {
             e.preventDefault();
             console.log("Add meal form submitted");
@@ -202,7 +200,6 @@ const MealPlannerModule = (function() {
                 return;
             }
 
-            // Get form values
             const data = {
                 MealPlanId: $('#addMeal_MealPlanId').val(),
                 RecipeId: $(options.recipeSearchSelector).val(),
@@ -280,18 +277,16 @@ const MealPlannerModule = (function() {
             $('#addMealGeneralError').text('');
             $(options.recipeSearchSelector).val(null).trigger('change');
 
-            // Set default date to today
             const today = new Date();
             const formattedDate = today.getDate()  + '/' + (today.getMonth() + 1) + '/' + today.getFullYear();
             $(options.plannedDateInputSelector).val(formattedDate);
 
-            // Reset and re-init datepicker
             setTimeout(function() {
                 initDatepickers();
             }, 300);
         });
 
-        // — Edit Meal modal setup
+        // Edit Meal modal setup
         $('#editMealModal').off('show.bs.modal').on('show.bs.modal', function(event) {
             const btn   = $(event.relatedTarget);
             const modal = $(this);
@@ -304,7 +299,6 @@ const MealPlannerModule = (function() {
             modal.find('#EditServings').val(btn.data('servings'));
             modal.find('#EditNotes').val(btn.data('notes'));
 
-            // Re-init datepicker for edit form
             setTimeout(function() {
                 initDatepickers();
             }, 300);
@@ -363,7 +357,6 @@ const MealPlannerModule = (function() {
             const recipeTitle = btn.data('recipe-title');
 
             if (confirm(`Remove "${recipeTitle}" from this plan?`)) {
-                // Disable button
                 btn.prop('disabled', true);
 
                 $.ajax({
@@ -409,12 +402,10 @@ const MealPlannerModule = (function() {
         el.text(parseInt(el.text() || '0', 10) + change);
     };
 
-    // public init
     const init = function(config = {}) {
         console.log("Initializing MealPlannerModule...");
         options = $.extend({}, defaults, config);
 
-        // Initialize only if we're on the meal planner page
         if ($('#addMealModal').length || $('.meal-day').length || $('.shopping-item').length) {
             initDatepickers();
             initRecipeSearch();

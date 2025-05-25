@@ -264,12 +264,10 @@ namespace MealStack.Web.Controllers
             [Bind("MealPlanId,RecipeId,PlannedDate,MealType,Servings,Notes")]
             MealPlanItemViewModel model)
         {
-            // Remove validation for fields that will be set programmatically
             ModelState.Remove("UserId");
             ModelState.Remove("RecipeTitle");
             ModelState.Remove("RecipeImagePath");
             
-            // FIXED: Make Notes optional by providing default value
             if (string.IsNullOrEmpty(model.Notes))
             {
                 model.Notes = string.Empty;
@@ -289,7 +287,7 @@ namespace MealStack.Web.Controllers
             {
                 model.UserId = GetUserId();
 
-                // Check if same meal already exists to prevent duplicates
+                // Check if same meal already exists
                 var existingMeal = await _context.MealPlanItems
                     .FirstOrDefaultAsync(mp => 
                         mp.MealPlanId == model.MealPlanId && 
@@ -408,7 +406,6 @@ namespace MealStack.Web.Controllers
             {
                 var userId = GetUserId();
                 
-                // Verify user has access to this meal plan
                 if (!await _mealPlanService.UserHasAccessToMealPlanAsync(mealPlanId, userId))
                 {
                     return Json(new { success = false, message = "Access denied" });
@@ -551,7 +548,6 @@ namespace MealStack.Web.Controllers
 
                 if (parts.Length >= 2 && decimal.TryParse(parts[0], out _))
                 {
-                    // Format: "2 cups flour" or "1 kg chicken"
                     item.Quantity = parts[0];
                     if (parts.Length == 3)
                     {
@@ -565,7 +561,6 @@ namespace MealStack.Web.Controllers
                 }
                 else
                 {
-                    // Format: "milk" or "olive oil"
                     item.IngredientName = trimmedLine;
                 }
 

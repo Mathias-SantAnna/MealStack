@@ -33,7 +33,6 @@ namespace MealStack.Web.Models
         [Display(Name = "Servings")]
         public int Servings { get; set; }
         
-        // FIXED: Made Notes optional by removing Required attribute
         [Display(Name = "Notes")]
         public string Notes { get; set; } = string.Empty;
         

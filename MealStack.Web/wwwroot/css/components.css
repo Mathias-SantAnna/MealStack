@@ -1,0 +1,644 @@
+/* HOMEPAGE  */
+
+/*      Title styling      */
+.navbar-brand {
+    color: #d73502 !important; 
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(44, 24, 16, 0.5);
+    transition: all 0.3s ease;
+}
+
+.navbar-brand:hover {
+    color: #ff6b35 !important;
+    transform: scale(1.05);
+}
+
+/* My Recipes button styling */
+.btn-my-recipes,
+.btn[href*="MyRecipes"] {
+    background-color: #8d5524 !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-my-recipes:hover,
+.btn[href*="MyRecipes"]:hover {
+    background-color: #6b4423 !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(107, 68, 35, 0.3);
+}
+
+/*      CUSTOM LANDING PAGE BUTTONS      */
+
+/* Custom Login Button - Only for Landing Page */
+.btn-custom-login {
+    color: white !important;
+    border: 2px solid #008b20 !important;
+    background-color: #6FB34A !important;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-custom-login:hover {
+    color: white !important;
+    background-color: #5a9a3d !important;
+    border-color: #006b18 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(111, 179, 74, 0.3);
+}
+
+/* Enhanced CTA Buttons - Bigger Size */
+.btn-cta {
+    padding: 1rem 2.5rem !important;    /* Bigger padding */
+    font-size: 1.2rem !important;       /* Larger text */
+    font-weight: 700 !important;        /* Bolder text */
+    min-width: 180px !important;        /* Consistent width */
+    border-radius: 50px !important;     /* More rounded */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.btn-cta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Icons in CTA buttons */
+.btn-cta i {
+    font-size: 1.3rem;
+}
+
+/*      CATEGORY NAVIGATION STYLES - GLOBAL      */
+
+/* Glass-style category navigation with colored borders */
+.category-nav-container {
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    padding: 1rem 0;
+    background-color: #FFDEAC;
+}
+
+.category-nav-container::-webkit-scrollbar {
+    display: none;
+}
+
+.category-pill {
+    /* Glass effect with white background */
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: #2c1810 !important; 
+    border: 2px solid transparent;
+    border-radius: 2rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0.25rem 0.5rem 0.25rem 0;
+    text-decoration: none;
+    display: inline-block;
+    white-space: nowrap;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    min-width: 150px;           /* Minimum width for all buttons */
+    text-align: center;         
+    box-sizing: border-box;
+}
+
+.category-pill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.category-pill:hover::before {
+    left: 100%;
+}
+
+.category-pill:hover,
+.category-pill.active {
+    background: rgba(255, 255, 255, 1) !important;
+    color: #2c1810 !important;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+}
+
+.category-pill:focus {
+    outline: 3px solid rgba(255, 107, 53, 0.25);
+    outline-offset: 2px;
+}
+
+/* Category-specific border colors */
+.category-pill[data-category="all"] {
+    border-color: #ff6b35 !important;
+}
+
+.category-pill[data-category="breakfast"] {
+    border-color: #ffc107 !important;
+}
+
+.category-pill[data-category="lunch"] {
+    border-color: #17a2b8 !important;
+}
+
+.category-pill[data-category="dinner"] {
+    border-color: #6f42c1 !important;
+}
+
+.category-pill[data-category="dessert"],
+.category-pill[data-category="desserts"] {
+    border-color: #e83e8c !important;
+}
+
+.category-pill[data-category="appetizer"],
+.category-pill[data-category="appetizers"] {
+    border-color: #fd7e14 !important;
+}
+
+.category-pill[data-category="snack"],
+.category-pill[data-category="snacks"] {
+    border-color: #28a745 !important;
+}
+
+
+/* Fallback for categories without specific colors */
+.category-pill:not([data-category="all"]):not([data-category*="breakfast"]):not([data-category*="lunch"]):not([data-category*="dinner"]):not([data-category*="dessert"]):not([data-category*="appetizer"]):not([data-category*="snack"]) {
+    border-color: #ff6b35 !important; /* Default orange border */
+}
+
+/* Enhanced active state for better visibility */
+.category-pill.active {
+    border-width: 3px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark theme compatibility - ensures white background always */
+[data-theme="dark"] .category-pill {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #2c1810 !important;
+}
+
+[data-theme="dark"] .category-pill:hover,
+[data-theme="dark"] .category-pill.active {
+    background: rgba(255, 255, 255, 1) !important;
+    color: #2c1810 !important;
+}
+
+/* 
+   ENHANCED FORM COMPONENTS - Category Selection
+   == */
+
+/* Enhanced category selection styling */
+#categorySelect {
+    border-left: 3px solid var(--primary-color, #ff6b35);
+    transition: all 0.3s ease;
+}
+
+#categorySelect:focus {
+    border-left-color: var(--primary-hover, #e55a2b);
+    box-shadow: 0 0 0 0.25rem rgba(255, 107, 53, 0.25);
+}
+
+#customCategoryInput {
+    border-left: 3px solid var(--success-color, #28a745);
+    animation: slideDown 0.3s ease-out;
+    transition: all 0.3s ease;
+}
+
+#customCategoryInput:focus {
+    border-left-color: #1e7e34;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced dropdown options */
+.form-select option[value="custom"] {
+    background-color: #e3f2fd;
+    font-weight: 600;
+    color: #1976d2;
+}
+
+/* Category selection container */
+.category-selection-container {
+    position: relative;
+}
+
+.category-selection-container .form-text {
+    color: var(--text-muted, #6c757d);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Theme compatibility for dark mode */
+[data-theme="dark"] .form-select option[value="custom"] {
+    background-color: #1a237e;
+    color: #e3f2fd;
+}
+
+[data-theme="dark"] #categorySelect,
+[data-theme="dark"] #customCategoryInput {
+    background-color: #ffffff;
+    color: #2c1810;
+    border-color: var(--border-light, #dee2e6);
+}
+
+
+/*      RECIPE CARD     */
+
+/* Recipe card button styling - WHITE BACKGROUND */
+.recipe-card .btn,
+.recipe-card-wrapper .btn,
+.card .btn-group .btn {
+    background-color: white !important;
+    color: #2c1810 !important;
+    border: 2px solid #dee2e6 !important;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.recipe-card .btn:hover,
+.recipe-card-wrapper .btn:hover,
+.card .btn-group .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: white !important;
+}
+
+/* Delete button with red border */
+.recipe-card .btn-outline-danger,
+.recipe-card-wrapper .btn-outline-danger,
+.card .btn-outline-danger {
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+    background-color: white !important;
+}
+
+.recipe-card .btn-outline-danger:hover,
+.recipe-card-wrapper .btn-outline-danger:hover,
+.card .btn-outline-danger:hover {
+    background-color: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+    box-shadow: 0 4px 16px rgba(220, 53, 69, 0.3);
+}
+
+/* View button */
+.recipe-card .btn-outline-primary,
+.recipe-card-wrapper .btn-outline-primary {
+    border-color: #007bff !important;
+    color: #007bff !important;
+    background-color: white !important;
+}
+
+.recipe-card .btn-outline-primary:hover,
+.recipe-card-wrapper .btn-outline-primary:hover {
+    background-color: #007bff !important;
+    color: white !important;
+    border-color: #007bff !important;
+}
+
+/* Edit button */
+.recipe-card .btn-outline-secondary,
+.recipe-card-wrapper .btn-outline-secondary {
+    border-color: #6c757d !important;
+    color: #6c757d !important;
+    background-color: white !important;
+}
+
+.recipe-card .btn-outline-secondary:hover,
+.recipe-card-wrapper .btn-outline-secondary:hover {
+    background-color: #6c757d !important;
+    color: white !important;
+    border-color: #6c757d !important;
+}
+
+/*      MEAL PLAN CARD       */
+
+/* Meal plan card buttons - WHITE BACKGROUND */
+.meal-plan-card .btn,
+.card .meal-plan-card .btn,
+.card-footer .btn {
+    background-color: white !important;
+    color: #2c1810 !important;
+    border: 2px solid currentColor !important;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.meal-plan-card .btn:hover,
+.card .meal-plan-card .btn:hover,
+.card-footer .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* View button in meal plans */
+.meal-plan-card .btn-outline-primary,
+.card-footer .btn-outline-primary {
+    border-color: #007bff !important;
+    color: #007bff !important;
+    background-color: white !important;
+}
+
+.meal-plan-card .btn-outline-primary:hover,
+.card-footer .btn-outline-primary:hover {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+/* Shopping List button in meal plans */
+.meal-plan-card .btn-outline-success,
+.card-footer .btn-outline-success {
+    border-color: #28a745 !important;
+    color: #28a745 !important;
+    background-color: white !important;
+}
+
+.meal-plan-card .btn-outline-success:hover,
+.card-footer .btn-outline-success:hover {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+/*      ADMIN DASHBOARD      */
+
+/* Admin dashboard card buttons with category-matched borders */
+.admin-card .btn,
+.admin-dashboard .card .btn,
+.admin-panel .btn {
+    background-color: white !important;
+    color: #2c1810 !important;
+    border: 3px solid !important;
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+}
+
+.admin-card .btn:hover,
+.admin-dashboard .card .btn:hover,
+.admin-panel .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Admin button categories with proper borders */
+.admin-card .btn-primary,
+.admin-card .btn[href*="Users"],
+.admin-dashboard .btn-danger {
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+
+.admin-card .btn-primary:hover,
+.admin-card .btn[href*="Users"]:hover,
+.admin-dashboard .btn-danger:hover {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.admin-card .btn[href*="ManageRecipes"],
+.admin-dashboard .btn-primary {
+    border-color: #007bff !important;
+    color: #007bff !important;
+}
+
+.admin-card .btn[href*="ManageRecipes"]:hover,
+.admin-dashboard .btn-primary:hover {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+.admin-card .btn[href*="Ingredient"],
+.admin-dashboard .btn-success {
+    border-color: #28a745 !important;
+    color: #28a745 !important;
+}
+
+.admin-card .btn[href*="Ingredient"]:hover,
+.admin-dashboard .btn-success:hover {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.admin-card .btn[href*="Category"],
+.admin-dashboard .btn-warning {
+    border-color: #ffc107 !important;
+    color: #856404 !important; /* Darker text for better contrast on yellow */
+}
+
+.admin-card .btn[href*="Category"]:hover,
+.admin-dashboard .btn-warning:hover {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.admin-card .btn[href*="MealPlan"],
+.admin-dashboard .btn-info {
+    border-color: #17a2b8 !important;
+    color: #17a2b8 !important;
+}
+
+.admin-card .btn[href*="MealPlan"]:hover,
+.admin-dashboard .btn-info:hover {
+    background-color: #17a2b8 !important;
+    color: white !important;
+}
+
+/*      GENERAL BUTTON OVERRIDES     */
+
+/* Ensure all action buttons have white backgrounds */
+.card-footer .btn,
+.card-body .btn-group .btn,
+.recipe-actions .btn,
+.meal-actions .btn {
+    background-color: white !important;
+    border: 2px solid !important;
+    color: #2c1810 !important;
+    font-weight: 600;
+}
+
+/* Keep primary buttons orange for main actions */
+.btn-primary:not(.admin-card .btn):not(.admin-dashboard .btn) {
+    background: linear-gradient(135deg, #ff6b35 0%, #d73502 100%) !important;
+    border-color: #ff6b35 !important;
+    color: white !important;
+}
+
+.btn-primary:not(.admin-card .btn):not(.admin-dashboard .btn):hover {
+    background: linear-gradient(135deg, #e55a2b 0%, #b82d02 100%) !important;
+    border-color: #e55a2b !important;
+    color: white !important;
+}
+
+/*      DARK THEME COMPATIBILITY     */
+
+/* Ensure white backgrounds work in dark theme */
+[data-theme="dark"] .recipe-card .btn,
+[data-theme="dark"] .meal-plan-card .btn,
+[data-theme="dark"] .admin-card .btn,
+[data-theme="dark"] .card-footer .btn {
+    background-color: white !important;
+    color: #2c1810 !important;
+}
+
+[data-theme="dark"] .btn-my-recipes {
+    background-color: #8d5524 !important;
+    color: white !important;
+}
+
+[data-theme="dark"] .btn-my-recipes:hover {
+    background-color: #6b4423 !important;
+    color: white !important;
+}
+
+/*      CATEGORY NAV GLOBAL APPLICATION      */
+
+/* Ensure category nav appears on all pages */
+.categories-section,
+.category-nav-wrapper,
+.categories-showcase {
+    margin-bottom: 2rem;
+}
+
+.categories-section,
+.categories-showcase,
+.category-nav-container {
+    background-color: #FFDEAD !important;
+}
+
+/* Apply glass-style to all category navigation instances */
+.category-nav-container .category-pill,
+.categories-nav .category-pill,
+.category-buttons .category-pill {
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: #2c1810 !important;
+    border: 2px solid transparent;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/*      RESPONSIVE       */
+
+/* Responsive adjustments for category navigation */
+@media (max-width: 768px) {
+    .category-pill {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+        margin: 0.2rem 0.3rem 0.2rem 0;
+    }
+
+    .category-nav-container {
+        padding: 0.5rem 0;
+    }
+    
+    #categorySelect,
+    #customCategoryInput {
+        border-left-width: 2px;
+    }
+
+    .admin-card .btn,
+    .recipe-card .btn,
+    .meal-plan-card .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        margin: 0.25rem;
+    }
+
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin: 0.125rem 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-pill {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        margin: 0.15rem 0.25rem 0.15rem 0;
+    }
+}
+
+
+/*          ACCESSIBILITY IMPROVEMENTS    */
+
+/* Better focus states */
+.btn:focus-visible {
+    outline: 3px solid rgba(255, 107, 53, 0.5);
+    outline-offset: 2px;
+}
+
+.recipe-card .btn:focus-visible,
+.meal-plan-card .btn:focus-visible,
+.admin-card .btn:focus-visible {
+    outline: 3px solid rgba(0, 0, 0, 0.3);
+    outline-offset: 2px;
+}
+
+/* Category navigation accessibility */
+.category-pill:focus-visible {
+    outline: 3px solid rgba(255, 107, 53, 0.5);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+    .recipe-card .btn,
+    .meal-plan-card .btn,
+    .admin-card .btn,
+    .category-pill {
+        border-width: 3px !important;
+        font-weight: 700 !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .btn,
+    .category-pill {
+        transition: none !important;
+        transform: none !important;
+    }
+
+    .btn:hover,
+    .category-pill:hover {
+        transform: none !important;
+    }
+
+    .category-pill::before {
+        display: none;
+    }
+}

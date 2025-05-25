@@ -21,7 +21,7 @@
     }
 
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Account Information</h5>
@@ -49,7 +49,62 @@
             </div>
         </div>
 
-        <div class="col-md-8">
+        <div class="col-md-6">
+            <!-- NEW: Theme Preference Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-palette me-2"></i>Appearance Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="UpdateThemePreference" method="post">
+                        <div class="mb-3">
+                            <label asp-for="ThemePreference" class="form-label fw-bold">Theme Preference</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="ThemePreference" value="light" 
+                                       id="themeLight" checked="@(Model.ThemePreference == "light")">
+                                <label class="form-check-label" for="themeLight">
+                                    <i class="bi bi-sun me-2 text-warning"></i>Light Mode
+                                </label>
+                                <div class="form-text">Clean, bright interface (default)</div>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="radio" name="ThemePreference" value="dark" 
+                                       id="themeDark" checked="@(Model.ThemePreference == "dark")">
+                                <label class="form-check-label" for="themeDark">
+                                    <i class="bi bi-moon me-2 text-info"></i>Dark Mode
+                                </label>
+                                <div class="form-text">Easier on the eyes in low-light conditions</div>
+                            </div>
+                            <span asp-validation-for="ThemePreference" class="text-danger"></span>
+                        </div>
+                        
+                        <!-- Theme Preview -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Preview</label>
+                            <div id="theme-preview" class="border rounded p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Sample Recipe Card</h6>
+                                    <span class="badge bg-primary">Easy</span>
+                                </div>
+                                <p class="mb-2 text-muted">This is how your recipe cards will look with the selected theme.</p>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted"><i class="bi bi-clock me-1"></i>30 mins</small>
+                                    <small class="text-muted"><i class="bi bi-people me-1"></i>4 servings</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-info w-100">
+                            <i class="bi bi-check-circle me-1"></i>Save Theme Preference
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
             <div class="card mb-4">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">Your Activity</h5>
@@ -96,4 +151,28 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Theme preview functionality
+        $(document).ready(function() {
+            function updateThemePreview() {
+                const selectedTheme = $('input[name="ThemePreference"]:checked').val();
+                const preview = $('#theme-preview');
+                
+                if (selectedTheme === 'dark') {
+                    preview.addClass('bg-dark text-light border-secondary');
+                    preview.find('.text-muted').removeClass('text-muted').addClass('text-light');
+                } else {
+                    preview.removeClass('bg-dark text-light border-secondary');
+                    preview.find('.text-light').removeClass('text-light').addClass('text-muted');
+                }
+            }
+            
+            // Update preview when radio buttons change
+            $('input[name="ThemePreference"]').on('change', updateThemePreview);
+            
+            // Initial preview update
+            updateThemePreview();
+        });
+    </script>
 }

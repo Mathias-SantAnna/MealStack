@@ -12,7 +12,6 @@ $(document).ready(function() {
         return;
     }
 
-    // Initialize star display based on current user rating
     ratingWidgets.each(function() {
         const $widget = $(this);
         const currentUserRating = parseInt($widget.data('user-rating')) || 0;
@@ -39,7 +38,7 @@ $(document).ready(function() {
             return;
         }
 
-        // IMMEDIATE visual feedback - update stars right away
+        // Update stars Real Time
         console.log(`🎨 Immediate visual update: showing ${rating} stars`);
         updateStarDisplay($widget, rating);
         $widget.data('user-rating', rating);
@@ -47,7 +46,6 @@ $(document).ready(function() {
         // Show loading state
         $widget.find('.star-rating').css('opacity', '0.7');
 
-        // Submit to server
         submitRating(recipeId, rating, $widget);
     });
 

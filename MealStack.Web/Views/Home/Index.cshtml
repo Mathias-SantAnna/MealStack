@@ -39,38 +39,40 @@
                                 <i class="bi bi-collection me-1"></i> My Recipes
                             </a>
                         }
-                        else
+                        <!--else
                         {
-                            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary">Join Now</a>
-                            <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-light">Browse Recipes</a>
-                        }
+                            <div class="container text-center">
+                                <h3 class="display-5 mb-3">Ready to start your recipe collection?</h3>
+                                <div class="d-flex justify-content-center gap-3">
+                                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-cta">
+                                        <i class="bi bi-person-plus me-2"></i> Sign Up Now</a>
+                                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-custom-login btn-cta">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i> Log In</a>
+                                </div>
+                            </div>
+                        }-->
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-
-<!-- Categories Bar -->
-<section class="categories-section py-3 bg-light">
-    <div class="container">
-        <div class="categories-scroll d-flex overflow-auto pb-2">
-            <a href="@Url.Action("Index", "Recipe")" 
-               class="category-pill @(ViewBag.SelectedCategoryId == null ? "active" : "")">All</a>
-            @if (ViewBag.Categories != null)
-            {
-                foreach (var category in ViewBag.Categories)
-                {
-                    <a href="@Url.Action("Index", "Recipe", new { categoryId = category.Id })"
-                       class="category-pill @(ViewBag.SelectedCategoryId != null && ViewBag.SelectedCategoryId == category.Id ? "active" : "") me-2"
-                       style="@(string.IsNullOrEmpty(category.ColorClass) ? "" : $"background-color: var(--bs-{category.ColorClass}); border-color: var(--bs-{category.ColorClass}); color: #fff;")">
-                        @category.Name
-                    </a>
-                }
-            }
+<!-- CTA Section -->
+@if (!User.Identity.IsAuthenticated)
+{
+    <section class="cta-section text-white py-5" style="background-color: #FFC670;">
+        <div class="container text-center">
+            <h2 class="display-5 mb-3">Ready to start your recipe collection?</h2>
+            <p class="lead mb-4 text-dark">Join MealStack today and start organizing your favorite recipes.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-cta">
+                    <i class="bi bi-person-plus me-2"></i> Sign Up Now</a>
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-custom-login btn-cta">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Log In</a>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+}
 
 <!-- Featured Recipes -->
 <section class="featured-recipes py-5">
@@ -164,20 +166,7 @@
     </div>
 </section>
 
-<!-- CTA Section -->
-@if (!User.Identity.IsAuthenticated)
-{
-    <section class="cta-section bg-primary text-white py-5">
-        <div class="container text-center">
-            <h2 class="display-5 mb-3">Ready to start your recipe collection?</h2>
-            <p class="lead mb-4">Join MealStack today and start organizing your favorite recipes.</p>
-            <div class="d-flex justify-content-center gap-3">
-                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-light btn-lg">Sign Up Now</a>
-                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-light btn-lg">Log In</a>
-            </div>
-        </div>
-    </section>
-}
+
 
 @section Scripts {
     <script src="~/js/modules/search.js"></script>

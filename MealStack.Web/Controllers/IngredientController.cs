@@ -105,6 +105,71 @@ namespace MealStack.Web.Controllers
             return Json(ingredients);
         }
 
+        // API endpoint - Get ingredient categories for dropdown (FIXED - removed duplicate)
+        [HttpGet]
+        public async Task<IActionResult> GetIngredientCategories()
+        {
+            try
+            {
+                // Get categories from existing ingredients
+                var categories = await _context.Ingredients
+                    .Where(i => !string.IsNullOrEmpty(i.Category))
+                    .Select(i => i.Category)
+                    .Distinct()
+                    .OrderBy(c => c)
+                    .ToListAsync();
+
+                var standardCategories = new List<string>
+                {
+                    "Dairy & Eggs", "Meat & Seafood", "Vegetables", "Fruits",
+                    "Grains & Cereals", "Spices & Herbs", "Condiments & Oils",
+                    "Pantry Staples", "Beverages", "Baking", "Frozen", "Other"
+                };
+
+                var allCategories = categories.Union(standardCategories)
+                    .OrderBy(c => c)
+                    .ToList();
+
+                return Json(new { success = true, categories = allCategories });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error loading categories: " + ex.Message });
+            }
+        }
+
+        // Admin-only method to create new category
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateCategory([FromBody] CategoryCreateRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Name))
+                {
+                    return Json(new { success = false, message = "Category name is required" });
+                }
+
+                var existingCategory = await _context.Ingredients
+                    .AnyAsync(i => i.Category.ToLower() == request.Name.ToLower());
+
+                if (existingCategory)
+                {
+                    return Json(new { success = false, message = "Category already exists" });
+                }
+                
+                return Json(new { 
+                    success = true, 
+                    message = "Category will be available once an ingredient uses it",
+                    category = new { name = request.Name.Trim() }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error creating category: {ex.Message}" });
+            }
+        }
+
         // API endpoint - New ingredient via AJAX
         [HttpPost]
         [Authorize]
@@ -166,7 +231,7 @@ namespace MealStack.Web.Controllers
         [Authorize]
         public IActionResult Create()
         {
-            return View();
+            return View(new IngredientEntity());
         }
 
         // POST: Ingredient/Create
@@ -251,33 +316,13 @@ namespace MealStack.Web.Controllers
                     existingIngredient.Measurement = ingredient.Measurement;
                     
                     await _context.SaveChangesAsync();
+                    TempData["Message"] = "Ingredient updated successfully!";
                     return RedirectToAction(nameof(Index));
                 }
                 return View(ingredient);
             }
             
             return Forbid();
-        }
-
-        // API endpoint - Get ingredient categories for dropdown
-        [HttpGet]
-        public async Task<IActionResult> GetIngredientCategories()
-        {
-            try
-            {
-                var categories = await _context.Ingredients
-                    .Where(i => !string.IsNullOrEmpty(i.Category))
-                    .Select(i => i.Category)
-                    .Distinct()
-                    .OrderBy(c => c)
-                    .ToListAsync();
-            
-                return Json(new { success = true, categories = categories });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Error loading categories: " + ex.Message });
-            }
         }
 
         // GET: Ingredient/Delete/5
@@ -316,10 +361,17 @@ namespace MealStack.Web.Controllers
             {
                 _context.Ingredients.Remove(ingredient);
                 await _context.SaveChangesAsync();
+                TempData["Message"] = "Ingredient deleted successfully!";
                 return RedirectToAction(nameof(Index));
             }
             
             return Forbid();
         }
+    }
+
+    public class CategoryCreateRequest
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
     }
 }
