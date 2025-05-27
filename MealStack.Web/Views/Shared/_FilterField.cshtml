@@ -1,0 +1,314 @@
+@{
+var name = ViewData["Name"] as string ?? "";
+var options = ViewData["Options"];
+var label = ViewData["Label"] as string ?? name.Replace("_", " ").Replace("-", " ");
+var fieldType = ViewData["FieldType"] as string ?? "select";
+var placeholder = ViewData["Placeholder"] as string ?? $"Select {label.ToLower()}...";
+var currentValue = ViewData["CurrentValue"] as string ?? "";
+var isMultiple = ViewData["IsMultiple"] as bool? ?? false;
+var cssClass = ViewData["CssClass"] as string ?? "";
+var helpText = ViewData["HelpText"] as string ?? "";
+
+// Format label for display
+var displayLabel = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(label.ToLower());
+}
+
+<div class="filter-field @cssClass">
+    <label for="filter_@name" class="form-label">
+        @displayLabel
+    </label>
+
+    @switch (fieldType.ToLower())
+    {
+    case "select":
+    @if (options is IEnumerable<string> stringOptions)
+    {
+    <select class="form-select form-select-sm"
+            id="filter_@name"
+            name="@name"
+            @(isMultiple ? "multiple" : "")>
+        <option value="">@placeholder</option>
+        @foreach (var option in stringOptions)
+        {
+        <option value="@option" selected="@(currentValue == option)">
+            @option
+        </option>
+        }
+    </select>
+    }
+    else if (options is Dictionary<string, string> dictOptions)
+    {
+    <select class="form-select form-select-sm"
+            id="filter_@name"
+            name="@name"
+            @(isMultiple ? "multiple" : "")>
+        <option value="">@placeholder</option>
+        @foreach (var option in dictOptions)
+        {
+        <option value="@option.Key" selected="@(currentValue == option.Key)">
+            @option.Value
+        </option>
+        }
+    </select>
+    }
+    else if (options is IEnumerable<object> objectOptions)
+    {
+    <select class="form-select form-select-sm"
+            id="filter_@name"
+            name="@name"
+            @(isMultiple ? "multiple" : "")>
+        <option value="">@placeholder</option>
+        @foreach (var option in objectOptions)
+        {
+        var value = option.GetType().GetProperty("Value")?.GetValue(option)?.ToString() ?? option.ToString();
+        var text = option.GetType().GetProperty("Text")?.GetValue(option)?.ToString() ??
+        option.GetType().GetProperty("Name")?.GetValue(option)?.ToString() ??
+        value;
+        <option value="@value" selected="@(currentValue == value)">
+            @text
+        </option>
+        }
+    </select>
+    }
+    break;
+
+    case "text":
+    <input type="text"
+           class="form-control form-control-sm"
+           id="filter_@name"
+           name="@name"
+           value="@currentValue"
+           placeholder="@placeholder">
+    break;
+
+    case "number":
+    <input type="number"
+           class="form-control form-control-sm"
+           id="filter_@name"
+           name="@name"
+           value="@currentValue"
+           placeholder="@placeholder">
+    break;
+
+    case "date":
+    <input type="date"
+           class="form-control form-control-sm"
+           id="filter_@name"
+           name="@name"
+           value="@currentValue">
+    break;
+
+    case "daterange":
+    <div class="row g-2">
+        <div class="col-6">
+            <input type="date"
+                   class="form-control form-control-sm"
+                   id="filter_@(name)_start"
+                   name="@(name)Start"
+                   placeholder="From">
+        </div>
+        <div class="col-6">
+            <input type="date"
+                   class="form-control form-control-sm"
+                   id="filter_@(name)_end"
+                   name="@(name)End"
+                   placeholder="To">
+        </div>
+    </div>
+    break;
+
+    case "numberrange":
+    <div class="row g-2">
+        <div class="col-6">
+            <input type="number"
+                   class="form-control form-control-sm"
+                   id="filter_@(name)_min"
+                   name="@(name)Min"
+                   placeholder="Min">
+        </div>
+        <div class="col-6">
+            <input type="number"
+                   class="form-control form-control-sm"
+                   id="filter_@(name)_max"
+                   name="@(name)Max"
+                   placeholder="Max">
+        </div>
+    </div>
+    break;
+
+    case "checkbox":
+    @if (options is IEnumerable<string> checkboxOptions)
+    {
+    <div class="filter-checkboxes">
+        @foreach (var option in checkboxOptions.Take(5)) // Limit to 5 for space
+        {
+        <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="checkbox"
+                   id="filter_@(name)_@option.Replace(" ", "_")"
+                   name="@name"
+                   value="@option">
+            <label class="form-check-label" for="filter_@(name)_@option.Replace(" ", "_")">
+                @option
+            </label>
+        </div>
+        }
+        @if (checkboxOptions.Count() > 5)
+        {
+        <small class="text-muted d-block">
+            And @(checkboxOptions.Count() - 5) more...
+        </small>
+        }
+    </div>
+    }
+    break;
+
+    case "radio":
+    @if (options is IEnumerable<string> radioOptions)
+    {
+    <div class="filter-radios">
+        @foreach (var option in radioOptions)
+        {
+        <div class="form-check">
+            <input class="form-check-input"
+                   type="radio"
+                   id="filter_@(name)_@option.Replace(" ", "_")"
+                   name="@name"
+                   value="@option"
+                   checked="@(currentValue == option)">
+            <label class="form-check-label" for="filter_@(name)_@option.Replace(" ", "_")">
+                @option
+            </label>
+        </div>
+        }
+    </div>
+    }
+    break;
+
+    case "search":
+    <div class="input-group input-group-sm">
+                <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                </span>
+        <input type="text"
+               class="form-control"
+               id="filter_@name"
+               name="@name"
+               value="@currentValue"
+               placeholder="@placeholder">
+        @if (!string.IsNullOrEmpty(currentValue))
+        {
+        <button type="button"
+                class="btn btn-outline-secondary clear-filter"
+                data-target="filter_@name">
+            <i class="bi bi-x"></i>
+        </button>
+        }
+    </div>
+    break;
+
+    default:
+    <input type="text"
+           class="form-control form-control-sm"
+           id="filter_@name"
+           name="@name"
+           value="@currentValue"
+           placeholder="@placeholder">
+    break;
+    }
+
+    @if (!string.IsNullOrEmpty(helpText))
+    {
+    <small class="form-text text-muted">@helpText</small>
+    }
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        // Clear filter functionality
+        $('.clear-filter').on('click', function() {
+            const targetId = $(this).data('target');
+            $('#' + targetId).val('').trigger('change');
+        });
+
+        // Multi-select with search for large option lists
+        $('select[multiple]').each(function() {
+            const $select = $(this);
+            if ($select.find('option').length > 10) {
+                // Add search functionality for multi-selects with many options
+                const selectId = $select.attr('id');
+                const searchInput = $(`
+                        <input type="text" 
+                               class="form-control form-control-sm mb-2 multi-select-search" 
+                               placeholder="Search options..." 
+                               data-target="${selectId}">
+                    `);
+
+                $select.before(searchInput);
+
+                searchInput.on('input', function() {
+                    const searchTerm = $(this).val().toLowerCase();
+                    $select.find('option').each(function() {
+                        const optionText = $(this).text().toLowerCase();
+                        $(this).toggle(optionText.includes(searchTerm));
+                    });
+                });
+            }
+        });
+
+        // Smart number range validation
+        $('input[name$="Min"], input[name$="Start"]').on('change', function() {
+            const baseName = $(this).attr('name').replace(/(Min|Start)$/, '');
+            const maxInput = $(`input[name="${baseName}Max"], input[name="${baseName}End"]`);
+
+            if (maxInput.length && $(this).val() && maxInput.val()) {
+                const minVal = parseFloat($(this).val());
+                const maxVal = parseFloat(maxInput.val());
+
+                if (minVal > maxVal) {
+                    maxInput.val($(this).val());
+                }
+            }
+        });
+
+        $('input[name$="Max"], input[name$="End"]').on('change', function() {
+            const baseName = $(this).attr('name').replace(/(Max|End)$/, '');
+            const minInput = $(`input[name="${baseName}Min"], input[name="${baseName}Start"]`);
+
+            if (minInput.length && $(this).val() && minInput.val()) {
+                const minVal = parseFloat(minInput.val());
+                const maxVal = parseFloat($(this).val());
+
+                if (maxVal < minVal) {
+                    minInput.val($(this).val());
+                }
+            }
+        });
+
+        // Add clear button for text inputs with values
+        $('input[type="text"], input[type="number"]').each(function() {
+            if ($(this).val() && !$(this).next('.clear-filter').length) {
+                const clearBtn = $(`
+                        <button type="button" 
+                                class="btn btn-outline-secondary btn-sm clear-input-filter ms-1" 
+                                data-target="${$(this).attr('id')}"
+                                style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); z-index: 5;">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    `);
+
+                $(this).parent().css('position', 'relative');
+                $(this).after(clearBtn);
+            }
+        });
+
+        // Clear individual input filters
+        $(document).on('click', '.clear-input-filter', function() {
+            const targetId = $(this).data('target');
+            $('#' + targetId).val('').trigger('change');
+            $(this).remove();
+        });
+    });
+</script>
+}

@@ -1,18 +1,18 @@
 @model IEnumerable<MealStack.Infrastructure.Data.Entities.IngredientEntity>
-
 @{
-ViewData["Title"] = "Manage Ingredients";
+ViewData["Title"] = "Ingredients";
 var totalIngredients = ViewBag.TotalIngredients ?? 0;
-var isAdminView = User.IsInRole("Admin");
+Layout = "_Layout";
 }
 
 <!-- Page Header -->
 @{
-ViewData["PageTitle"] = "Ingredient Management";
-ViewData["PageDescription"] = "Advanced admin tools for managing all ingredients with bulk operations.";
-ViewData["ActionButtonText"] = "Create New Ingredient";
+ViewData["PageTitle"] = "Ingredients";
+ViewData["PageDescription"] = "Browse and manage all ingredients in the system with advanced search and filtering.";
+ViewData["ActionButtonText"] = User.Identity.IsAuthenticated ? "Create New Ingredient" : null;
 ViewData["ActionButtonAction"] = "Create";
 ViewData["ActionButtonController"] = "Ingredient";
+ViewData["ShowButtonForAnonymous"] = "false";
 }
 <partial name="_PageHeader" />
 
@@ -35,7 +35,7 @@ ViewData["ActionButtonController"] = "Ingredient";
             </div>
         </div>
         <div class="card-body">
-            <form id="searchFilterForm" method="get" asp-action="ManageIngredients">
+            <form id="searchFilterForm" method="get" asp-action="Index">
                 <!-- Basic Search Row -->
                 <div class="row g-3 align-items-end mb-3">
                     <!-- Search Input with Autocomplete -->
@@ -85,13 +85,13 @@ ViewData["ActionButtonController"] = "Ingredient";
                     <div class="col-12">
                         <label class="form-label">Categories</label>
                         <div class="d-flex flex-wrap gap-2">
-                            <a href="@Url.Action("ManageIngredients")"
+                            <a href="@Url.Action("Index")"
                                class="btn @(ViewData["Category"] == null ? "btn-primary" : "btn-outline-primary") btn-sm">
                                 All
                             </a>
                             @foreach (var category in ViewBag.Categories)
                             {
-                            <a href="@Url.Action("ManageIngredients", new { category = category, searchTerm = ViewData["SearchTerm"], sortBy = ViewData["SortBy"] })"
+                            <a href="@Url.Action("Index", new { category = category, searchTerm = ViewData["SearchTerm"], sortBy = ViewData["SortBy"] })"
                                class="btn @(ViewData["Category"]?.ToString() == category ? "btn-primary" : "btn-outline-primary") btn-sm">
                                 @category
                             </a>
@@ -171,93 +171,26 @@ ViewData["ActionButtonController"] = "Ingredient";
         </div>
     </div>
 
-    <!-- Admin Bulk Actions Panel -->
-    @if (isAdminView)
-    {
-    <div class="card shadow-sm mb-4 d-none" id="bulkActionsPanel">
-        <div class="card-header bg-warning text-dark">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-check2-square me-2"></i>Bulk Actions
-                    <span class="badge bg-primary ms-2" id="selectedCount">0</span> selected
-                </h5>
-                <button type="button" class="btn btn-sm btn-outline-dark" id="clearBulkSelection">
-                    <i class="bi bi-x me-1"></i>Clear Selection
-                </button>
-            </div>
-        </div>
-        <div class="card-body">
-            <form id="bulkActionForm" method="post" asp-action="BulkAction">
-                @Html.AntiForgeryToken()
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label for="bulkAction" class="form-label">Choose Action</label>
-                        <select class="form-select" id="bulkAction" name="action" required>
-                            <option value="">Select an action...</option>
-                            <option value="assignCategory">Assign Category</option>
-                            <option value="changeCategory">Change Category</option>
-                            <option value="clearCategory">Clear Category</option>
-                            <option value="setMeasurement">Set Default Measurement</option>
-                            <option value="clearMeasurement">Clear Measurement</option>
-                            <option value="export">Export Selected</option>
-                            <option value="delete">Delete Selected</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4" id="bulkActionOptions">
-                        <!-- Dynamic options based on selected action -->
-                    </div>
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button type="submit" class="btn btn-warning w-100" id="executeBulkAction">
-                            <i class="bi bi-lightning-charge me-1"></i>Execute Action
-                        </button>
-                    </div>
-                </div>
-                <!-- Hidden field for selected IDs -->
-                <input type="hidden" id="selectedIds" name="ingredientIds" />
-            </form>
-        </div>
-    </div>
-    }
-
-    <!-- Main Content Card -->
+    <!-- Main Content -->
     <div class="card shadow-sm">
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                @if (isAdminView)
-                {
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="selectAllItems">
-                    <label class="form-check-label" for="selectAllItems">
-                        Select All
-                    </label>
-                </div>
-                }
-                <h5 class="mb-0">@(isAdminView ? "Advanced " : "")Ingredient Management</h5>
+            <h5 class="mb-0">Ingredients</h5>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-primary rounded-pill" id="total-items-count">@(ViewBag.TotalItems ?? 0) total</span>
             </div>
-            <span class="badge bg-success rounded-pill">@totalIngredients total</span>
         </div>
 
-        <!-- Content Body -->
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover table-striped mb-0" id="managementTable">
+                <table class="table table-hover table-striped mb-0" id="management-table">
                     <thead class="table-light">
                     <tr>
-                        @if (isAdminView)
-                        {
-                        <th scope="col" style="width: 40px;">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="selectAllHeader">
-                            </div>
-                        </th>
-                        }
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Measurement</th>
-                        <th>Description</th>
-                        <th>Author</th>
-                        <th>Created</th>
-                        <th style="width: 200px;">Actions</th>
+                        <th scope="col">Ingredient</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Measurement</th>
+                        <th scope="col">Author</th>
+                        <th scope="col">Created</th>
+                        <th scope="col" style="width: 200px;">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -265,19 +198,18 @@ ViewData["ActionButtonController"] = "Ingredient";
                     {
                     @foreach (var ingredient in Model)
                     {
-                    <tr data-item-id="@ingredient.Id" data-category="@ingredient.Category"
-                        data-measurement="@ingredient.Measurement" class="management-table-row">
-                        @if (isAdminView)
-                        {
+                    <tr data-item-id="@ingredient.Id" class="management-table-row">
                         <td>
-                            <div class="form-check">
-                                <input class="form-check-input item-checkbox" type="checkbox"
-                                       value="@ingredient.Id" id="item_@ingredient.Id">
+                            <a href="@Url.Action("Details", new { id = ingredient.Id })"
+                               class="text-decoration-none fw-semibold">
+                                @ingredient.Name
+                            </a>
+                            @if (!string.IsNullOrEmpty(ingredient.Description))
+                            {
+                            <div class="text-muted small">
+                                @(ingredient.Description.Length > 60 ? ingredient.Description.Substring(0, 60) + "..." : ingredient.Description)
                             </div>
-                        </td>
-                        }
-                        <td>
-                            <span class="fw-semibold">@ingredient.Name</span>
+                            }
                         </td>
                         <td>
                             @if (!string.IsNullOrEmpty(ingredient.Category))
@@ -286,25 +218,13 @@ ViewData["ActionButtonController"] = "Ingredient";
                             }
                             else
                             {
-                            <span class="text-muted">-</span>
+                            <span class="text-muted">No category</span>
                             }
                         </td>
                         <td>
                             @if (!string.IsNullOrEmpty(ingredient.Measurement))
                             {
                             <span class="badge bg-secondary">@ingredient.Measurement</span>
-                            }
-                            else
-                            {
-                            <span class="text-muted">-</span>
-                            }
-                        </td>
-                        <td>
-                            @if (!string.IsNullOrEmpty(ingredient.Description))
-                            {
-                            <span title="@ingredient.Description">
-                                            @(ingredient.Description.Length > 60 ? ingredient.Description.Substring(0, 60) + "..." : ingredient.Description)
-                                        </span>
                             }
                             else
                             {
@@ -328,7 +248,9 @@ ViewData["ActionButtonController"] = "Ingredient";
                             }
                         </td>
                         <td class="text-nowrap">
-                            <span title="@ingredient.CreatedDate.ToString("F")">@ingredient.CreatedDate.ToString("MMM d, yyyy")</span>
+                                        <span title="@ingredient.CreatedDate.ToString("F")">
+                                            @ingredient.CreatedDate.ToString("MMM d, yyyy")
+                                        </span>
                         </td>
                         <td>
                             <div class="btn-group" role="group">
@@ -337,7 +259,10 @@ ViewData["ActionButtonController"] = "Ingredient";
                                     <i class="bi bi-eye"></i>
                                     <span class="d-none d-lg-inline ms-1">View</span>
                                 </a>
-                                @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || ingredient.CreatedById == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                var currentUserId = ViewContext.HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                                if (User.IsInRole("Admin") || ingredient.CreatedById == currentUserId)
                                 {
                                 <a asp-action="Edit" asp-route-id="@ingredient.Id"
                                    class="btn btn-sm btn-outline-primary" title="Edit ingredient">
@@ -351,13 +276,21 @@ ViewData["ActionButtonController"] = "Ingredient";
                                     <span class="d-none d-lg-inline ms-1">Delete</span>
                                 </button>
                                 }
+                                }
                             </div>
 
                             <!-- Hidden delete form -->
-                            <form id="delete-form-@ingredient.Id" asp-action="Delete" asp-route-id="@ingredient.Id"
-                                  method="post" style="display: none;">
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                            var currentUserId = ViewContext.HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                            if (User.IsInRole("Admin") || ingredient.CreatedById == currentUserId)
+                            {
+                            <form id="delete-form-@ingredient.Id" asp-action="Delete"
+                                  asp-route-id="@ingredient.Id" method="post" style="display: none;">
                                 @Html.AntiForgeryToken()
                             </form>
+                            }
+                            }
                         </td>
                     </tr>
                     }
@@ -365,14 +298,17 @@ ViewData["ActionButtonController"] = "Ingredient";
                     else
                     {
                     <tr>
-                        <td colspan="@(isAdminView ? "8" : "7")" class="text-center py-5">
+                        <td colspan="6" class="text-center py-5">
                             <div class="text-muted">
                                 <i class="bi bi-inbox display-1 d-block mb-3"></i>
                                 <h5>No ingredients found</h5>
                                 <p>There are no ingredients matching your search criteria.</p>
+                                @if (User.Identity.IsAuthenticated)
+                                {
                                 <a asp-action="Create" class="btn btn-primary">
                                     <i class="bi bi-plus-circle me-1"></i>Create First Ingredient
                                 </a>
+                                }
                             </div>
                         </td>
                     </tr>
@@ -391,7 +327,7 @@ ViewData["ActionButtonController"] = "Ingredient";
                     @if (ViewBag.CurrentPage > 1)
                     {
                     <li class="page-item">
-                        <a class="page-link" asp-action="ManageIngredients" asp-route-page="@(ViewBag.CurrentPage - 1)"
+                        <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)"
                            asp-route-searchTerm="@ViewData["SearchTerm"]" asp-route-sortBy="@ViewData["SortBy"]"
                            asp-route-category="@ViewData["Category"]" asp-route-measurement="@ViewData["Measurement"]"
                            asp-route-createdBy="@ViewData["CreatedBy"]" asp-route-hasDescription="@ViewData["HasDescription"]">Previous</a>
@@ -401,7 +337,7 @@ ViewData["ActionButtonController"] = "Ingredient";
                     @for (int i = 1; i <= ViewBag.TotalPages; i++)
                     {
                     <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                        <a class="page-link" asp-action="ManageIngredients" asp-route-page="@i"
+                        <a class="page-link" asp-action="Index" asp-route-page="@i"
                            asp-route-searchTerm="@ViewData["SearchTerm"]" asp-route-sortBy="@ViewData["SortBy"]"
                            asp-route-category="@ViewData["Category"]" asp-route-measurement="@ViewData["Measurement"]"
                            asp-route-createdBy="@ViewData["CreatedBy"]" asp-route-hasDescription="@ViewData["HasDescription"]">@i</a>
@@ -411,7 +347,7 @@ ViewData["ActionButtonController"] = "Ingredient";
                     @if (ViewBag.CurrentPage < ViewBag.TotalPages)
                     {
                     <li class="page-item">
-                        <a class="page-link" asp-action="ManageIngredients" asp-route-page="@(ViewBag.CurrentPage + 1)"
+                        <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)"
                            asp-route-searchTerm="@ViewData["SearchTerm"]" asp-route-sortBy="@ViewData["SortBy"]"
                            asp-route-category="@ViewData["Category"]" asp-route-measurement="@ViewData["Measurement"]"
                            asp-route-createdBy="@ViewData["CreatedBy"]" asp-route-hasDescription="@ViewData["HasDescription"]">Next</a>
@@ -425,8 +361,8 @@ ViewData["ActionButtonController"] = "Ingredient";
 
     <!-- Back Button -->
     <div class="text-center mt-4">
-        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Back to Admin Dashboard
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Home
         </a>
     </div>
 </div>
@@ -436,25 +372,76 @@ ViewData["ActionButtonController"] = "Ingredient";
 <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
-<!-- Use existing adminIngredientsManagement.js -->
-<script src="~/js/modules/adminIngredientsManagement.js"></script>
-
 <script>
     $(document).ready(function() {
-        // Initialize admin ingredients management with config
-        if (typeof AdminIngredientsManagement !== 'undefined') {
-            AdminIngredientsManagement.init({
-                manageUrl: '@Url.Action("ManageIngredients")',
-                bulkActionUrl: '@Url.Action("BulkAction")',
-                searchIngredientsUrl: '@Url.Action("SearchIngredients")'
-            });
+        const IngredientsPage = {
+            init: function() {
+                this.setupSearch();
+                this.setupDeleteButtons();
+                this.setupAutocomplete();
+            },
 
-            // Set categories and measurements for bulk actions
-            AdminIngredientsManagement.setCategories(@Html.Raw(Json.Serialize(ViewBag.Categories ?? new List<string>())));
-            AdminIngredientsManagement.setMeasurements(@Html.Raw(Json.Serialize(ViewBag.Measurements ?? new List<string>())));
-        } else {
-            console.error('AdminIngredientsManagement not found');
-        }
+            setupAutocomplete: function() {
+                $('#searchTerm').autocomplete({
+                    source: function(request, response) {
+                        $.ajax({
+                            url: '@Url.Action("SearchIngredients")',
+                            type: 'GET',
+                            data: { term: request.term },
+                            success: function(data) {
+                                response($.map(data, function(item) {
+                                    return {
+                                        label: item.name,
+                                        value: item.name
+                                    };
+                                }));
+                            },
+                            error: function() {
+                                response([]);
+                            }
+                        });
+                    },
+                    minLength: 2,
+                    select: function(event, ui) {
+                        $(this).val(ui.item.value);
+                        $('#searchFilterForm').submit();
+                        return false;
+                    }
+                });
+            },
+
+            setupSearch: function() {
+                const searchInput = $('#searchTerm');
+                const clearBtn = $('#clearSearch');
+
+                clearBtn.on('click', function() {
+                    searchInput.val('').focus();
+                    $('#searchFilterForm').submit();
+                });
+
+                $('#resetFilters').on('click', function() {
+                    $('#searchFilterForm')[0].reset();
+                    window.location.href = '@Url.Action("Index")';
+                });
+
+                $('#sortBy, #categoryFilter, #measurementFilter, #authorFilter, #hasDescriptionFilter').on('change', function() {
+                    $('#searchFilterForm').submit();
+                });
+            },
+
+            setupDeleteButtons: function() {
+                $('.delete-item-btn').on('click', function() {
+                    const itemId = $(this).data('item-id');
+                    const itemName = $(this).data('item-name');
+
+                    if (confirm(`Are you sure you want to delete "${itemName}"? This action cannot be undone.`)) {
+                        $(`#delete-form-${itemId}`).submit();
+                    }
+                });
+            }
+        };
+
+        IngredientsPage.init();
     });
 </script>
 }

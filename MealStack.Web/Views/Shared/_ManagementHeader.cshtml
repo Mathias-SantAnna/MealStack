@@ -1,0 +1,175 @@
+@{
+var title = ViewData["PageTitle"] as string ?? "Management";
+var description = ViewData["PageDescription"] as string ?? "Manage system resources";
+var totalCount = ViewData["TotalCount"] as int? ?? 0;
+var itemType = ViewData["ItemType"] as string ?? "Items";
+var createAction = ViewData["CreateAction"] as string;
+var createController = ViewData["CreateController"] as string;
+var createButtonText = ViewData["CreateButtonText"] as string;
+var createButtonIcon = ViewData["CreateButtonIcon"] as string ?? "bi-plus-circle";
+var backAction = ViewData["BackAction"] as string;
+var backController = ViewData["BackController"] as string ?? "Admin";
+var showBackButton = ViewData["ShowBackButton"] as bool? ?? true;
+var headerClass = ViewData["HeaderClass"] as string ?? "bg-primary";
+var headerTextClass = ViewData["HeaderTextClass"] as string ?? "text-white";
+}
+
+<!-- Management Page Header -->
+<div class="container-fluid bg-light py-4 mb-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center mb-2">
+                    @if (showBackButton)
+                    {
+                    <a asp-controller="@backController" asp-action="@(backAction ?? "Index")"
+                       class="btn btn-outline-secondary btn-sm me-3">
+                        <i class="bi bi-arrow-left me-1"></i> Back
+                    </a>
+                    }
+                    <div>
+                        <h1 class="mb-1">@title</h1>
+                        <p class="text-muted mb-0">@description</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="d-flex align-items-center justify-content-md-end">
+                    @if (totalCount > 0)
+                    {
+                    <span class="badge bg-@headerClass.Replace("bg-", "") rounded-pill me-3 fs-6">
+                            @totalCount @itemType
+                        </span>
+                    }
+                    @if (!string.IsNullOrEmpty(createAction))
+                    {
+                    <a asp-controller="@createController" asp-action="@createAction"
+                       class="btn btn-@headerClass.Replace("bg-", "")">
+                        <i class="bi @createButtonIcon me-1"></i>
+                        @(createButtonText ?? $"Create {itemType.TrimEnd('s')}")
+                    </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Management Card Container -->
+<div class="container">
+    <div class="card shadow-sm">
+        <div class="card-header @headerClass @headerTextClass d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-gear me-2"></i>@title Dashboard
+            </h5>
+            @if (totalCount > 0)
+            {
+            <span class="badge bg-light text-dark rounded-pill">
+                    Total: @totalCount
+                </span>
+            }
+        </div>
+
+        <!-- Search and Filters Section -->
+        @if (ViewData["ShowSearch"] as bool? ?? true)
+        {
+        <div class="card-body border-bottom">
+            @await Html.PartialAsync("_SearchAndFilters")
+        </div>
+        }
+
+        <!-- Content will be rendered here -->
+        <div class="card-body p-0">
+            @RenderBody()
+        </div>
+
+        <!-- Pagination will be rendered here if needed -->
+        @if (ViewData["ShowPagination"] as bool? ?? false)
+        {
+        <div class="card-footer">
+            @await Html.PartialAsync("_PaginationEnhanced")
+        </div>
+        }
+    </div>
+
+    <!-- Action Buttons Footer -->
+    @if (ViewData["ShowActionFooter"] as bool? ?? true)
+    {
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            @if (showBackButton)
+            {
+            <a asp-controller="@backController" asp-action="@(backAction ?? "Index")"
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to @(ViewData["BackButtonText"] ?? "Dashboard")
+            </a>
+            }
+            @if (!string.IsNullOrEmpty(createAction))
+            {
+            <a asp-controller="@createController" asp-action="@createAction"
+               class="btn btn-@headerClass.Replace("bg-", "") ms-2">
+                <i class="bi @createButtonIcon me-1"></i>
+                Add New @(itemType.TrimEnd('s'))
+            </a>
+            }
+        </div>
+    </div>
+    }
+</div>
+
+<!-- Loading Overlay for AJAX Operations -->
+<div id="managementLoadingOverlay" class="d-none position-fixed w-100 h-100"
+     style="top: 0; left: 0; background: rgba(0,0,0,0.5); z-index: 9999;">
+    <div class="d-flex align-items-center justify-content-center h-100">
+        <div class="card text-center p-4">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h5>Processing...</h5>
+            <p class="text-muted mb-0">Please wait while we update the system.</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Management header utility functions
+    const MealStackManagement = {
+        showLoading: function() {
+            document.getElementById('managementLoadingOverlay').classList.remove('d-none');
+        },
+        hideLoading: function() {
+            document.getElementById('managementLoadingOverlay').classList.add('d-none');
+        },
+        showSuccess: function(message) {
+            this.showAlert(message, 'success');
+        },
+        showError: function(message) {
+            this.showAlert(message, 'danger');
+        },
+        showAlert: function(message, type) {
+            const alertHtml = `
+                    <div class="alert alert-${type} alert-dismissible fade show management-alert" 
+                         role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 10000; min-width: 300px;">
+                        <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+            document.body.insertAdjacentHTML('beforeend', alertHtml);
+
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = document.querySelector('.management-alert');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+    };
+
+    // Make available globally
+    window.MealStackManagement = MealStackManagement;
+</script>
+}

@@ -1,5 +1,4 @@
 const ShoppingListModule = (function() {
-    // Private variables
     let options = {
         checkboxSelector: '.shopping-item-checkbox',
         itemSelector: '.shopping-item',
@@ -15,7 +14,6 @@ const ShoppingListModule = (function() {
     };
 
     const init = function(config) {
-        // Merge configuration with defaults
         options = {...options, ...config};
 
         setupCheckboxHandlers();
@@ -44,7 +42,6 @@ const ShoppingListModule = (function() {
                 item.removeClass('checked');
             }
 
-            // Update progress immediately for real-time feedback
             updateAllProgress();
 
             // Update on server
@@ -60,14 +57,12 @@ const ShoppingListModule = (function() {
                     'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
                 },
                 error: function() {
-                    // Revert on error
                     checkbox.prop('checked', !isChecked);
                     if (!isChecked) {
                         item.addClass('checked');
                     } else {
                         item.removeClass('checked');
                     }
-                    // Update progress again after reverting
                     updateAllProgress();
                     alert('Error updating item. Please try again.');
                 }
@@ -81,7 +76,6 @@ const ShoppingListModule = (function() {
             $(`${options.checkboxSelector}:checked`).each(function() {
                 $(this).prop('checked', false).trigger('change');
             });
-            // Progress will be updated by each checkbox change event
         });
     };
 
@@ -195,7 +189,6 @@ const ShoppingListModule = (function() {
         updateProgressMessage();
     };
 
-    // Update the checked count badges and clear button state
     const updateCheckedCount = function() {
         const checkedCount = $(`${options.checkboxSelector}:checked`).length;
         const totalCount = $(options.checkboxSelector).length;
@@ -286,7 +279,6 @@ const ShoppingListModule = (function() {
         console.log(`Progress message: ${message}`);
     };
 
-    // Public API
     return {
         init: init,
         updateAllProgress: updateAllProgress,

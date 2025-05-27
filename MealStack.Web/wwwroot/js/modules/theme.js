@@ -159,7 +159,6 @@ const ThemeModule = (function() {
     };
 
     const showNotification = function(message, type = 'info') {
-        // Remove existing notifications
         const existing = document.querySelector('.theme-notification');
         if (existing) {
             existing.remove();
@@ -204,7 +203,6 @@ const ThemeModule = (function() {
         return false;
     };
 
-    // Public API
     return {
         init: init,
         toggleTheme: toggleTheme,

@@ -1,0 +1,43 @@
+<div class="card shadow-sm mb-4 d-none" id="bulkActionsPanel">
+    <div class="card-header bg-warning text-dark">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-check2-square me-2"></i>Bulk Actions
+                <span class="badge bg-primary ms-2" id="selectedCount">0</span> selected
+            </h5>
+            <button type="button" class="btn btn-sm btn-outline-dark" id="clearBulkSelection">
+                <i class="bi bi-x me-1"></i>Clear Selection
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <form id="bulkActionForm" method="post" asp-action="BulkAction">
+            @Html.AntiForgeryToken()
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="bulkAction" class="form-label">Choose Action</label>
+                    <select class="form-select" id="bulkAction" name="action" required>
+                        <option value="">Select an action...</option>
+                        <option value="assignCategory">Assign Category</option>
+                        <option value="changeCategory">Change Category</option>
+                        <option value="setMeasurement">Set Default Measurement</option>
+                        <option value="clearCategory">Clear Category</option>
+                        <option value="clearMeasurement">Clear Measurement</option>
+                        <option value="export">Export Selected</option>
+                        <option value="delete">Delete Selected</option>
+                    </select>
+                </div>
+                <div class="col-md-4" id="bulkActionOptions">
+                    <!-- Dynamic options based on selected action -->
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-warning w-100" id="executeBulkAction">
+                        <i class="bi bi-lightning-charge me-1"></i>Execute Action
+                    </button>
+                </div>
+            </div>
+            <!-- Hidden field for selected IDs -->
+            <input type="hidden" id="selectedIds" name="ingredientIds" />
+        </form>
+    </div>
+</div>

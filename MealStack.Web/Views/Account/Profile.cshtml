@@ -50,7 +50,7 @@
         </div>
 
         <div class="col-md-6">
-            <!-- NEW: Theme Preference Card -->
+            <!-- Theme Preference Card -->
             <div class="card mb-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0"><i class="bi bi-palette me-2"></i>Appearance Settings</h5>
@@ -153,7 +153,6 @@
     <partial name="_ValidationScriptsPartial" />
     
     <script>
-        // Theme preview functionality
         $(document).ready(function() {
             function updateThemePreview() {
                 const selectedTheme = $('input[name="ThemePreference"]:checked').val();
@@ -168,10 +167,8 @@
                 }
             }
             
-            // Update preview when radio buttons change
             $('input[name="ThemePreference"]').on('change', updateThemePreview);
             
-            // Initial preview update
             updateThemePreview();
         });
     </script>

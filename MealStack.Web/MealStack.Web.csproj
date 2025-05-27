@@ -48,6 +48,8 @@
       <_ContentIncludedByDefault Remove="wwwroot\css\features\meal-planning.css" />
       <_ContentIncludedByDefault Remove="wwwroot\css\features\recipes.css" />
       <_ContentIncludedByDefault Remove="wwwroot\css\features\shopping.css" />
+      <_ContentIncludedByDefault Remove="Views\Ingredient\old\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Ingredient\legacy\index.cshtml" />
     </ItemGroup>
 
 </Project>

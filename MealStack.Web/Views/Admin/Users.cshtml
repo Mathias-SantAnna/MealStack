@@ -136,16 +136,13 @@
 
 @section Scripts {
     <script>
-        // Validate username input
         document.addEventListener('DOMContentLoaded', function() {
             const usernameInputs = document.querySelectorAll('input[name="username"]');
 
             usernameInputs.forEach(input => {
                 input.addEventListener('input', function() {
-                    // Remove any non-alphabet characters
                     this.value = this.value.replace(/[^a-zA-Z]/g, '');
 
-                    // Check length
                     if (this.value.length > 0 && this.value.length < 3) {
                         this.setCustomValidity('Username must be at least 3 characters');
                     } else {

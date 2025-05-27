@@ -1,0 +1,251 @@
+@model IEnumerable<dynamic>
+@{
+var columns = ViewData["Columns"] as List<(string Header, string Property, string Type, object Options)> ?? new List<(string, string, string, object)>();
+var itemType = ViewData["ItemType"] as string ?? "Item";
+var editAction = ViewData["EditAction"] as string;
+var deleteAction = ViewData["DeleteAction"] as string;
+var viewAction = ViewData["ViewAction"] as string;
+var controller = ViewData["Controller"] as string;
+var showBulkCheckboxes = ViewData["ShowBulkCheckboxes"] as bool? ?? true;
+var additionalActions = ViewData["AdditionalActions"] as List<(string Text, string Action, string Icon, string Class)>;
+}
+
+<div class="table-responsive">
+    <table class="table table-hover table-striped mb-0" id="managementTable">
+        <thead class="table-light">
+        <tr>
+            @if (showBulkCheckboxes)
+            {
+            <th scope="col" style="width: 40px;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAllHeader"
+                           title="Select all items on this page">
+                </div>
+            </th>
+            }
+            @foreach (var column in columns)
+            {
+            <th scope="col" class="@(column.Type == "sortable" ? "sortable-header" : "")"
+                data-sort="@column.Property">
+                @column.Header
+                @if (column.Type == "sortable")
+                {
+                <i class="bi bi-arrow-down-up sort-icon text-muted ms-1"></i>
+                }
+            </th>
+            }
+            <th scope="col" style="width: 200px;">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (Model != null && Model.Any())
+        {
+        @foreach (var item in Model)
+        {
+        var itemId = GetPropertyValue(item, "Id");
+        <tr data-item-id="@itemId" class="management-table-row">
+            @if (showBulkCheckboxes)
+            {
+            <td>
+                <div class="form-check">
+                    <input class="form-check-input item-checkbox" type="checkbox"
+                           value="@itemId" id="item_@itemId">
+                </div>
+            </td>
+            }
+            @foreach (var column in columns)
+            {
+            <td class="@GetColumnClass(column.Type)">
+                @await Html.PartialAsync("_TableCell", new { Item = item, Column = column })
+            </td>
+            }
+            <td>
+                <div class="btn-group" role="group" aria-label="Actions for @GetPropertyValue(item, "Name") ?? itemType">
+                    @if (!string.IsNullOrEmpty(viewAction))
+                    {
+                    <a asp-controller="@controller" asp-action="@viewAction" asp-route-id="@itemId"
+                       class="btn btn-sm btn-outline-info" title="View details">
+                        <i class="bi bi-eye"></i>
+                        <span class="d-none d-lg-inline ms-1">View</span>
+                    </a>
+                    }
+                    @if (!string.IsNullOrEmpty(editAction))
+                    {
+                    <a asp-controller="@controller" asp-action="@editAction" asp-route-id="@itemId"
+                       class="btn btn-sm btn-outline-primary" title="Edit @itemType">
+                        <i class="bi bi-pencil"></i>
+                        <span class="d-none d-lg-inline ms-1">Edit</span>
+                    </a>
+                    }
+                    @if (additionalActions != null)
+                    {
+                    @foreach (var action in additionalActions)
+                    {
+                    <a asp-controller="@controller" asp-action="@action.Action" asp-route-id="@itemId"
+                       class="btn btn-sm @action.Class" title="@action.Text">
+                        <i class="bi @action.Icon"></i>
+                        <span class="d-none d-lg-inline ms-1">@action.Text</span>
+                    </a>
+                    }
+                    }
+                    @if (!string.IsNullOrEmpty(deleteAction))
+                    {
+                    <button type="button" class="btn btn-sm btn-outline-danger delete-item-btn"
+                            data-item-id="@itemId" data-item-name="@GetPropertyValue(item, "Name")"
+                            title="Delete @itemType">
+                        <i class="bi bi-trash"></i>
+                        <span class="d-none d-lg-inline ms-1">Delete</span>
+                    </button>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(deleteAction))
+                {
+                <!-- Hidden delete form -->
+                <form id="delete-form-@itemId" asp-controller="@controller"
+                      asp-action="@deleteAction" asp-route-id="@itemId"
+                      method="post" style="display: none;">
+                    @Html.AntiForgeryToken()
+                </form>
+                }
+            </td>
+        </tr>
+        }
+        }
+        else
+        {
+        <tr>
+            <td colspan="@(columns.Count + (showBulkCheckboxes ? 2 : 1))" class="text-center py-5">
+                <div class="text-muted">
+                    <i class="bi bi-inbox display-1 d-block mb-3"></i>
+                    <h5>No @itemType.ToLower() found</h5>
+                    <p>There are no @itemType.ToLower() matching your search criteria.</p>
+                    @if (!string.IsNullOrEmpty(ViewData["CreateAction"] as string))
+                    {
+                    <a asp-controller="@controller" asp-action="@ViewData["CreateAction"]"
+                       class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Create First @itemType
+                    </a>
+                    }
+                </div>
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@functions {
+private object GetPropertyValue(object obj, string propertyName)
+{
+try
+{
+var type = obj.GetType();
+var property = type.GetProperty(propertyName);
+return property?.GetValue(obj);
+}
+catch
+{
+return null;
+}
+}
+
+private string GetColumnClass(string columnType)
+{
+return columnType switch
+{
+"number" => "text-end",
+"date" => "text-nowrap",
+"badge" => "text-center",
+"image" => "text-center",
+_ => ""
+};
+}
+}
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        // Table-specific functionality
+        const ManagementTable = {
+            init: function() {
+                this.setupDeleteButtons();
+                this.setupSorting();
+                this.setupRowSelection();
+            },
+
+            setupDeleteButtons: function() {
+                $('.delete-item-btn').on('click', function() {
+                    const itemId = $(this).data('item-id');
+                    const itemName = $(this).data('item-name') || 'this item';
+
+                    if (confirm(`Are you sure you want to delete "${itemName}"?\n\nThis action cannot be undone.`)) {
+                        $(`#delete-form-${itemId}`).submit();
+                    }
+                });
+            },
+
+            setupSorting: function() {
+                $('.sortable-header').on('click', function() {
+                    const sortField = $(this).data('sort');
+                    const currentSort = new URLSearchParams(window.location.search).get('sortBy');
+                    const currentDirection = new URLSearchParams(window.location.search).get('sortDirection') || 'asc';
+
+                    let newDirection = 'asc';
+                    if (currentSort === sortField && currentDirection === 'asc') {
+                        newDirection = 'desc';
+                    }
+
+                    // Update sort parameters and reload
+                    const url = new URL(window.location);
+                    url.searchParams.set('sortBy', sortField);
+                    url.searchParams.set('sortDirection', newDirection);
+                    url.searchParams.set('page', '1'); // Reset to first page
+
+                    window.location.href = url.toString();
+                });
+
+                // Update sort indicators
+                this.updateSortIndicators();
+            },
+
+            updateSortIndicators: function() {
+                const currentSort = new URLSearchParams(window.location.search).get('sortBy');
+                const currentDirection = new URLSearchParams(window.location.search).get('sortDirection') || 'asc';
+
+                $('.sort-icon').removeClass('bi-arrow-up bi-arrow-down bi-arrow-down-up text-primary')
+                    .addClass('bi-arrow-down-up text-muted');
+
+                if (currentSort) {
+                    const targetHeader = $(`.sortable-header[data-sort="${currentSort}"] .sort-icon`);
+                    targetHeader.removeClass('bi-arrow-down-up text-muted')
+                        .addClass(currentDirection === 'asc' ? 'bi-arrow-up text-primary' : 'bi-arrow-down text-primary');
+                }
+            },
+
+            setupRowSelection: function() {
+                // Row click selection (optional)
+                $('.management-table-row').on('click', function(e) {
+                    if (!$(e.target).is('input, button, a, .btn')) {
+                        const checkbox = $(this).find('.item-checkbox');
+                        checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
+                    }
+                });
+
+                // Highlight selected rows
+                $(document).on('change', '.item-checkbox', function() {
+                    const row = $(this).closest('tr');
+                    if (this.checked) {
+                        row.addClass('table-active');
+                    } else {
+                        row.removeClass('table-active');
+                    }
+                });
+            }
+        };
+
+        // Initialize table functionality
+        ManagementTable.init();
+    });
+</script>
+}

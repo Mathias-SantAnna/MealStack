@@ -240,7 +240,6 @@ namespace MealStack.Web.Services
             return DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
         }
 
-        // Then in AddMealItemAsync method:
         public async Task<MealPlanItemViewModel> AddMealItemAsync(MealPlanItemViewModel model)
         {
             var plan = await _context.MealPlans
@@ -249,9 +248,7 @@ namespace MealStack.Web.Services
 
             var recipe = await _context.Recipes.FindAsync(model.RecipeId)
                          ?? throw new InvalidOperationException("Recipe not found.");
-
-            // Ensure the date is within the meal plan date range
-            // Force UTC kind on user‐entered dates:
+            
             var plannedDate = model.PlannedDate;
             
             // Check if the date is within plan range
@@ -571,7 +568,6 @@ namespace MealStack.Web.Services
             {
                 item.Quantity = parts[0];
                 
-                // Check if second part is a unit
                 if (parts.Length >= 3 && IsUnit(parts[1]))
                 {
                     item.Unit = parts[1];
@@ -584,7 +580,6 @@ namespace MealStack.Web.Services
             }
             else
             {
-                // No quantity, just ingredient name
                 item.IngredientName = line;
             }
 
@@ -648,7 +643,7 @@ namespace MealStack.Web.Services
         private bool IsNumeric(string value)
         {
             return decimal.TryParse(value, out _) || 
-                   value.Contains('/') || // fractions like "1/2"
+                   value.Contains('/') || // fractions
                    value.Contains('.'); // decimals
         }
 

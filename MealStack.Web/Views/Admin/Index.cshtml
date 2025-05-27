@@ -45,8 +45,9 @@
             <div class="card-body">
                 <p>Manage ingredients used in recipes.</p>
                 <div class="d-grid gap-2">
-                    <a asp-controller="Ingredient" asp-action="Index" class="btn btn-outline-success">Manage Ingredients</a>
-                </div>
+                    <!-- FIXED: Corrected controller and action -->
+                    <a asp-controller="Admin" asp-action="ManageIngredients" class="btn btn-outline-secondary">Manage Ingredients</a>
+                    </div>
             </div>
         </div>
     </div>
@@ -66,7 +67,6 @@
     </div>
 </div>
 
-<!-- Added Meal Plan Management Section -->
 <div class="row">
     <div class="col-md-6 mb-4">
         <div class="card h-100">
@@ -77,6 +77,23 @@
                 <p>Manage user meal plans and shopping lists.</p>
                 <div class="d-grid gap-2">
                     <a asp-action="ManageMealPlans" class="btn btn-outline-info">Manage Meal Plans</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Application Statistics</h5>
+            </div>
+            <div class="card-body">
+                <p>Check out the system statistics.</p>
+                <div class="d-grid gap-2">
+                    <a asp-action="" class="btn btn-outline-dark">View Statistics</a>
+                    <div class="alert alert-warning text-center my-3" role="alert">
+                        <i class="bi bi-info-circle"></i>  
+                        Statistics features are coming soon. Stay tuned!
+                    </div>
                 </div>
             </div>
         </div>

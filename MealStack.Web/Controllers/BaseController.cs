@@ -25,22 +25,18 @@ namespace MealStack.Web.Controllers
                 var user = await _userManager.GetUserAsync(User);
                 if (user != null)
                 {
-                    // Set display name if available
                     if (!string.IsNullOrEmpty(user.UserName))
                         ViewData["DisplayName"] = user.UserName;
                     
-                    // Set user theme preference for layout
                     ViewBag.UserTheme = user.ThemePreference ?? "light";
                 }
                 else
                 {
-                    // Default theme for authenticated users without user record
                     ViewBag.UserTheme = "light";
                 }
             }
             else
             {
-                // Default theme for non-authenticated users
                 ViewBag.UserTheme = "light";
             }
             

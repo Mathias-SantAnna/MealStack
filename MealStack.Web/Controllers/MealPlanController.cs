@@ -258,7 +258,7 @@ namespace MealStack.Web.Controllers
             return View(mealPlan);
         }
 
-        // === AJAX: Add Meal Item ===
+        //  AJAX: Add Meal Item 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMealItem(
             [Bind("MealPlanId,RecipeId,PlannedDate,MealType,Servings,Notes")]
@@ -331,7 +331,7 @@ namespace MealStack.Web.Controllers
             }
         }
 
-        // === AJAX: Update Meal Item ===
+        //  AJAX: Update Meal Item 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateMealItem(
             [Bind("Id,MealPlanId,RecipeId,PlannedDate,MealType,Servings,Notes")]
@@ -593,7 +593,7 @@ namespace MealStack.Web.Controllers
             return "Other";
         }
 
-        // === AJAX: Recipe lookup for Select2 ===
+        //  AJAX: Recipe lookup for Select2
         [HttpGet]
         public async Task<IActionResult> GetRecipes(string term)
         {

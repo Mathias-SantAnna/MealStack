@@ -1,0 +1,204 @@
+@model (IEnumerable<string> Categories, IEnumerable<string> Measurements)
+
+@{
+    // Safely handle potentially null model
+    var categories = Model.Categories?.ToList() ?? new List<string>();
+    var measurements = Model.Measurements?.ToList() ?? new List<string>();
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+        <h6 class="mb-0">
+            <i class="bi bi-funnel me-2"></i>Search & Filter Ingredients
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="get" asp-action="Index" id="ingredientFilterForm">
+            <div class="row g-3">
+                <!-- Search Input -->
+                <div class="col-md-6">
+                    <label for="searchTerm" class="form-label">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" 
+                               id="searchTerm" 
+                               name="searchTerm" 
+                               class="form-control" 
+                               placeholder="Search ingredients by name, category, or description..." 
+                               value="@ViewData["SearchTerm"]">
+                        <button type="button" class="btn btn-outline-secondary" id="clearSearch">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sort By -->
+                <div class="col-md-3">
+                    <label for="sortBy" class="form-label">Sort By</label>
+                    <select id="sortBy" name="sortBy" class="form-select">
+                        <option value="name" selected="@(ViewData["SortBy"]?.ToString() == "name")">Name A-Z</option>
+                        <option value="name_desc" selected="@(ViewData["SortBy"]?.ToString() == "name_desc")">Name Z-A</option>
+                        <option value="category" selected="@(ViewData["SortBy"]?.ToString() == "category")">Category</option>
+                        <option value="measurement" selected="@(ViewData["SortBy"]?.ToString() == "measurement")">Measurement</option>
+                        <option value="newest" selected="@(ViewData["SortBy"]?.ToString() == "newest")">Newest First</option>
+                        <option value="author" selected="@(ViewData["SortBy"]?.ToString() == "author")">Created By</option>
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Apply Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Advanced Filters Row -->
+            <div class="row g-3 mt-2">
+                <!-- Category Filter -->
+                <div class="col-md-4">
+                    <label for="category" class="form-label">Category</label>
+                    <select id="category" name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        @if (categories.Any())
+                        {
+                            @foreach (var category in categories)
+                            {
+                                <option value="@category" selected="@(ViewData["Category"]?.ToString() == category)">
+                                    @category
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Measurement Filter -->
+                <div class="col-md-4">
+                    <label for="measurement" class="form-label">Measurement</label>
+                    <select id="measurement" name="measurement" class="form-select">
+                        <option value="">All Measurements</option>
+                        @if (measurements.Any())
+                        {
+                            @foreach (var measurement in measurements)
+                            {
+                                <option value="@measurement" selected="@(ViewData["Measurement"]?.ToString() == measurement)">
+                                    @measurement
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Reset Button -->
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-secondary w-100" id="resetFilters">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Reset Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hidden fields to maintain other filter states -->
+            <input type="hidden" name="page" value="1" id="pageInput" />
+        </form>
+
+        @if (!categories.Any() && !measurements.Any())
+        {
+            <div class="alert alert-info mt-3 mb-0">
+                <small>
+                    <i class="bi bi-info-circle me-1"></i>
+                    No categories or measurements available yet. Add some ingredients to populate the filters.
+                </small>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Real-time search with debounce
+            let searchTimeout;
+            
+            $('#searchTerm').on('input', function() {
+                clearTimeout(searchTimeout);
+                const searchTerm = $(this).val().trim();
+                
+                // Only auto-submit if user has typed something or cleared the field
+                if (searchTerm.length >= 2 || searchTerm.length === 0) {
+                    searchTimeout = setTimeout(function() {
+                        $('#ingredientFilterForm').submit();
+                    }, 500);
+                }
+            });
+
+            // Clear search functionality
+            $('#clearSearch').on('click', function() {
+                $('#searchTerm').val('').focus();
+                $('#ingredientFilterForm').submit();
+            });
+
+            // Reset all filters
+            $('#resetFilters').on('click', function() {
+                $('#ingredientFilterForm')[0].reset();
+                $('#pageInput').val('1');
+                $('#ingredientFilterForm').submit();
+            });
+
+            // Auto-submit on filter changes
+            $('#sortBy, #category, #measurement').on('change', function() {
+                $('#pageInput').val('1'); // Reset to page 1 when filters change
+                $('#ingredientFilterForm').submit();
+            });
+
+            // Show active filters
+            function updateActiveFilters() {
+                const activeFilters = [];
+                
+                const searchTerm = $('#searchTerm').val();
+                const category = $('#category').val();
+                const measurement = $('#measurement').val();
+                
+                if (searchTerm) activeFilters.push(`Search: "${searchTerm}"`);
+                if (category) activeFilters.push(`Category: ${category}`);
+                if (measurement) activeFilters.push(`Measurement: ${measurement}`);
+                
+                if (activeFilters.length > 0) {
+                    if (!$('#activeFilters').length) {
+                        const activeFiltersHtml = `
+                            <div id="activeFilters" class="mt-2">
+                                <small class="text-muted">Active filters: </small>
+                                <span id="activeFiltersList"></span>
+                            </div>
+                        `;
+                        $('.card-body').append(activeFiltersHtml);
+                    }
+                    
+                    const filterBadges = activeFilters.map(filter => 
+                        `<span class="badge bg-primary me-1">${filter}</span>`
+                    ).join('');
+                    
+                    $('#activeFiltersList').html(filterBadges);
+                } else {
+                    $('#activeFilters').remove();
+                }
+            }
+
+            // Update active filters on page load and filter changes
+            updateActiveFilters();
+            $('#searchTerm, #category, #measurement').on('change input', updateActiveFilters);
+
+            // Enhance UX with loading state
+            $('#ingredientFilterForm').on('submit', function() {
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalHtml = submitBtn.html();
+                
+                submitBtn.html('<i class="spinner-border spinner-border-sm me-1"></i>Searching...').prop('disabled', true);
+                
+                // Re-enable after 5 seconds as fallback
+                setTimeout(() => {
+                    submitBtn.html(originalHtml).prop('disabled', false);
+                }, 5000);
+            });
+        });
+    </script>
+}

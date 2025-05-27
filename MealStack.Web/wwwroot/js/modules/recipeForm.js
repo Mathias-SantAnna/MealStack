@@ -18,7 +18,6 @@ const RecipeForm = (function() {
         isEdit: false
     };
 
-    // Initialize the recipe form
     const init = function(config = {}) {
         console.log("RecipeForm initializing...");
 
@@ -38,7 +37,6 @@ const RecipeForm = (function() {
         console.log("RecipeForm initialized successfully");
     };
 
-    // Setup form validation
     const setupFormValidation = function() {
         $(options.titleSelector).on('blur', function() {
             const value = $(this).val().trim();
@@ -89,7 +87,6 @@ const RecipeForm = (function() {
         console.log("Form validation setup complete");
     };
 
-    // Setup image preview functionality
     const setupImagePreview = function() {
         $(options.imageFileSelector).on('change', function(e) {
             const file = e.target.files[0];
@@ -129,7 +126,6 @@ const RecipeForm = (function() {
         console.log("Image preview setup complete");
     };
 
-    // Setup form submission handling
     const setupFormSubmission = function() {
         $(options.formSelector).on('submit', function(e) {
             if (!validateForm()) {
@@ -160,7 +156,6 @@ const RecipeForm = (function() {
         console.log("Character counters setup complete");
     };
 
-    // Setup counter for a specific field
     const setupFieldCounter = function(selector, maxLength) {
         const $field = $(selector);
         if (!$field.length) return;
@@ -186,7 +181,6 @@ const RecipeForm = (function() {
         updateCounter(); 
     };
 
-    // Validate entire form
     const validateForm = function() {
         let isValid = true;
 
@@ -260,7 +254,6 @@ const RecipeForm = (function() {
         $(options.formSelector)[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    // Auto-save functionality 
     const setupAutoSave = function() {
         if (!options.isEdit) return; 
 
@@ -338,7 +331,6 @@ const RecipeForm = (function() {
         }
     };
 
-    // Public API
     return {
         init: init,
         validateForm: validateForm,
@@ -346,5 +338,4 @@ const RecipeForm = (function() {
     };
 })();
 
-// Make RecipeForm available globally
 window.RecipeForm = RecipeForm;

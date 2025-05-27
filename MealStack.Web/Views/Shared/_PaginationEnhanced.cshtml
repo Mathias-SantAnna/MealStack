@@ -1,0 +1,358 @@
+@{
+var currentPage = ViewBag.CurrentPage as int? ?? 1;
+var totalPages = ViewBag.TotalPages as int? ?? 1;
+var totalItems = ViewBag.TotalItems as int? ?? 0;
+var itemsPerPage = ViewBag.ItemsPerPage as int? ?? 10;
+var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+var action = ViewContext.RouteData.Values["action"]?.ToString();
+var searchTerm = ViewData["SearchTerm"] as string ?? "";
+var sortBy = ViewData["SortBy"] as string ?? "";
+var categoryId = ViewBag.SelectedCategoryId as int?;
+var difficulty = ViewData["Difficulty"] as string ?? "";
+
+// Calculate pagination display
+var showEllipsis = totalPages > 7;
+var startPage = Math.Max(1, currentPage - 2);
+var endPage = Math.Min(totalPages, currentPage + 2);
+
+if (endPage - startPage < 4 && totalPages > 5)
+{
+if (startPage == 1)
+        endPage = Math.Min(totalPages, 5);
+    else if (endPage == totalPages)
+        startPage = Math.Max(1, totalPages - 4);
+}
+
+var itemStart = ((currentPage - 1) * itemsPerPage) + 1;
+var itemEnd = Math.Min(currentPage * itemsPerPage, totalItems);
+
+// Helper function for generating page URLs
+Func<int, string> GetPageUrl = (int page) => {
+    var routeValues = new RouteValueDictionary();
+    routeValues.Add("page", page);
+
+    // Preserve search parameters
+    if (!string.IsNullOrEmpty(searchTerm))
+        routeValues.Add("searchTerm", searchTerm);
+    if (!string.IsNullOrEmpty(sortBy))
+        routeValues.Add("sortBy", sortBy);
+    if (categoryId.HasValue)
+        routeValues.Add("categoryId", categoryId.Value);
+    if (!string.IsNullOrEmpty(difficulty))
+        routeValues.Add("difficulty", difficulty);
+
+    // Add any other existing query parameters
+    foreach (var param in ViewContext.HttpContext.Request.Query)
+    {
+        if (param.Key != "page" && !routeValues.ContainsKey(param.Key))
+        {
+            routeValues.Add(param.Key, param.Value.ToString());
+        }
+    }
+
+    return Url.Action(action, controller, routeValues);
+};
+}
+
+@if (totalPages > 1)
+{
+<div class="card-footer bg-light border-top">
+    <div class="row align-items-center">
+        
+        <!-- Pagination Controls -->
+        <div class="col-md-6">
+            <nav aria-label="Page navigation" class="d-flex justify-content-md-end">
+                <ul class="pagination pagination-sm mb-0">
+
+                    <!-- First Page -->
+                    @if (currentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="@GetPageUrl(1)"
+                               title="First page"
+                               aria-label="First page">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                    }
+
+                    <!-- Previous Page -->
+                    @if (currentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="@GetPageUrl(currentPage - 1)"
+                               title="Previous page"
+                               aria-label="Previous page">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">
+                                <i class="bi bi-chevron-left"></i>
+                            </span>
+                        </li>
+                    }
+
+                    <!-- Page Numbers -->
+                    @if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@GetPageUrl(1)">1</a>
+                        </li>
+                        @if (startPage > 2)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                    }
+
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            @if (i == currentPage)
+                            {
+                                <span class="page-link" aria-current="page">
+                                    @i
+                                    <span class="visually-hidden">(current)</span>
+                                </span>
+                            }
+                            else
+                            {
+                                <a class="page-link" href="@GetPageUrl(i)">@i</a>
+                            }
+                        </li>
+                    }
+
+                    @if (endPage < totalPages)
+                    {
+                        @if (endPage < totalPages - 1)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+
+                        <li class="page-item">
+                            <a class="page-link" href="@GetPageUrl(totalPages)">@totalPages</a>
+                        </li>
+                    }
+
+                    <!-- Next Page -->
+                    @if (currentPage < totalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="@GetPageUrl(currentPage + 1)"
+                               title="Next page"
+                               aria-label="Next page">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">
+                                <i class="bi bi-chevron-right"></i>
+                            </span>
+                        </li>
+                    }
+
+                    <!-- Last Page -->
+                    @if (currentPage < totalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="@GetPageUrl(totalPages)"
+                               title="Last page"
+                               aria-label="Last page">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Mobile-friendly pagination -->
+    <div class="row mt-3 d-md-none">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                @if (currentPage > 1)
+                {
+                <a href="@GetPageUrl(currentPage - 1)" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-chevron-left me-1"></i>Previous
+                </a>
+                }
+                else
+                {
+                <span class="btn btn-outline-secondary btn-sm disabled">
+                    <i class="bi bi-chevron-left me-1"></i>Previous
+                </span>
+                }
+
+                <span class="text-muted">
+                    Page @currentPage of @totalPages
+                </span>
+
+                @if (currentPage < totalPages)
+                {
+                <a href="@GetPageUrl(currentPage + 1)" class="btn btn-outline-primary btn-sm">
+                    Next<i class="bi bi-chevron-right ms-1"></i>
+                </a>
+                }
+                else
+                {
+                <span class="btn btn-outline-secondary btn-sm disabled">
+                    Next<i class="bi bi-chevron-right ms-1"></i>
+                </span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Jump -->
+    @if (totalPages > 10)
+    {
+    <div class="row mt-3">
+        <div class="col-12 col-md-6 offset-md-6">
+            <div class="d-flex justify-content-md-end align-items-center">
+                <label for="quickJump" class="form-label me-2 mb-0 text-muted">Go to page:</label>
+                <div class="input-group" style="width: 150px;">
+                    <input type="number"
+                           id="quickJump"
+                           class="form-control form-control-sm"
+                           min="1"
+                           max="@totalPages"
+                           value="@currentPage"
+                           placeholder="Page #">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="quickJumpBtn">
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+</div>
+
+<!-- Loading indicator for AJAX pagination -->
+<div id="paginationLoading" class="d-none position-absolute w-100 h-100 d-flex align-items-center justify-content-center"
+     style="background: rgba(255,255,255,0.8); z-index: 10;">
+    <div class="text-center">
+        <div class="spinner-border text-primary mb-2" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="text-muted">Loading results...</div>
+    </div>
+</div>
+}
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        // Enhanced pagination with AJAX support
+        const PaginationEnhanced = {
+            init: function() {
+                this.setupItemsPerPageChange();
+                this.setupQuickJump();
+                this.setupAjaxPagination();
+            },
+
+            setupItemsPerPageChange: function() {
+                $('#itemsPerPage').on('change', function() {
+                    const itemsPerPage = $(this).val();
+                    const currentUrl = new URL(window.location);
+                    currentUrl.searchParams.set('itemsPerPage', itemsPerPage);
+                    currentUrl.searchParams.set('page', '1'); // Reset to first page
+                    window.location.href = currentUrl.toString();
+                });
+            },
+
+            setupQuickJump: function() {
+                $('#quickJumpBtn').on('click', function() {
+                    const page = parseInt($('#quickJump').val());
+                    const maxPage = parseInt($('#quickJump').attr('max'));
+
+                    if (page >= 1 && page <= maxPage) {
+                        const currentUrl = new URL(window.location);
+                        currentUrl.searchParams.set('page', page);
+                        window.location.href = currentUrl.toString();
+                    } else {
+                        alert(`Please enter a page number between 1 and ${maxPage}`);
+                    }
+                });
+
+                $('#quickJump').on('keypress', function(e) {
+                    if (e.which === 13) { // Enter key
+                        $('#quickJumpBtn').click();
+                    }
+                });
+            },
+
+            setupAjaxPagination: function() {
+                // Optional: AJAX pagination for better UX
+                if (typeof window.enableAjaxPagination !== 'undefined' && window.enableAjaxPagination) {
+                    $('.page-link').on('click', function(e) {
+                        e.preventDefault();
+                        const url = $(this).attr('href');
+
+                        if (url && url !== '#') {
+                            PaginationEnhanced.loadPage(url);
+                        }
+                    });
+                }
+            },
+
+            loadPage: function(url) {
+                $('#paginationLoading').removeClass('d-none');
+
+                $.get(url)
+                    .done(function(data) {
+                        // Replace the content area with new results
+                        const newContent = $(data).find('.card-body').html();
+                        $('.card-body').html(newContent);
+
+                        // Update pagination
+                        const newPagination = $(data).find('.card-footer').html();
+                        $('.card-footer').html(newPagination);
+
+                        // Update URL without page reload
+                        window.history.pushState({}, '', url);
+
+                        // Reinitialize pagination handlers
+                        this.init();
+                    })
+                    .fail(function() {
+                        // Fallback to regular page load
+                        window.location.href = url;
+                    })
+                    .always(function() {
+                        $('#paginationLoading').addClass('d-none');
+                    });
+            },
+
+            showLoading: function() {
+                $('#paginationLoading').removeClass('d-none');
+            },
+
+            hideLoading: function() {
+                $('#paginationLoading').addClass('d-none');
+            }
+        };
+
+        // Initialize enhanced pagination
+        PaginationEnhanced.init();
+
+        // Make available globally
+        window.PaginationEnhanced = PaginationEnhanced;
+    });
+</script>
+}

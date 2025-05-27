@@ -26,7 +26,6 @@ namespace MealStack.Web.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // GET: Category - View is accessible to all
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
@@ -37,14 +36,12 @@ namespace MealStack.Web.Controllers
             return View(categories);
         }
 
-        // GET: Category/Create - Admin only
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Category/Create - Admin only
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -52,7 +49,6 @@ namespace MealStack.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Handle image upload if provided
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
                     // Generate unique filename
@@ -83,7 +79,6 @@ namespace MealStack.Web.Controllers
             return View(category);
         }
 
-        // GET: Category/Edit/5 - Admin only
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
@@ -96,7 +91,6 @@ namespace MealStack.Web.Controllers
             return View(category);
         }
 
-        // POST: Category/Edit/5 - Admin only
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -181,7 +175,6 @@ namespace MealStack.Web.Controllers
             return View(category);
         }
 
-        // GET: Category/Delete/5 - Admin only
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -194,7 +187,6 @@ namespace MealStack.Web.Controllers
             return View(category);
         }
 
-        // POST: Category/Delete/5 - Admin only
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -231,7 +223,6 @@ namespace MealStack.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // API endpoint to get all categories - accessible to all
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAllCategories()

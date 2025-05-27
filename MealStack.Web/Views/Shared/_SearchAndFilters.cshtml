@@ -1,0 +1,326 @@
+@{
+var searchPlaceholder = ViewData["SearchPlaceholder"] as string ?? "Search...";
+var searchAction = ViewData["SearchAction"] as string ?? "Index";
+var searchController = ViewData["SearchController"] as string;
+var showAdvancedToggle = ViewData["ShowAdvancedToggle"] as bool? ?? true;
+var filters = ViewData["Filters"] as Dictionary<string, object>;
+var sortOptions = ViewData["SortOptions"] as Dictionary<string, string>;
+var currentSort = ViewData["CurrentSort"] as string ?? "";
+var currentSearch = ViewData["CurrentSearch"] as string ?? "";
+}
+
+<form method="get" asp-action="@searchAction" asp-controller="@searchController"
+      id="searchForm" class="management-search-form">
+
+    <!-- Basic Search Row -->
+    <div class="row g-3 align-items-end">
+        <!-- Search Input -->
+        <div class="col-md-6">
+            <label for="searchTerm" class="form-label">
+                <i class="bi bi-search me-1"></i>Search
+            </label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text"
+                       class="form-control"
+                       id="searchTerm"
+                       name="searchTerm"
+                       value="@currentSearch"
+                       placeholder="@searchPlaceholder"
+                       autocomplete="off">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        id="clearSearch"
+                        title="Clear search">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sort Options -->
+        @if (sortOptions != null && sortOptions.Any())
+        {
+        <div class="col-md-3">
+            <label for="sortBy" class="form-label">
+                <i class="bi bi-sort-down me-1"></i>Sort By
+            </label>
+            <select class="form-select" id="sortBy" name="sortBy">
+                @foreach (var option in sortOptions)
+                {
+                <option value="@option.Key" selected="@(currentSort == option.Key)">
+                    @option.Value
+                </option>
+                }
+            </select>
+        </div>
+        }
+
+        <!-- Search Actions -->
+        <div class="col-md-3">
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-search me-1"></i>Search
+                </button>
+                @if (showAdvancedToggle)
+                {
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#advancedFilters"
+                        aria-expanded="false">
+                    <i class="bi bi-sliders"></i>
+                </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Filters (Collapsible) -->
+    @if (showAdvancedToggle && filters != null && filters.Any())
+    {
+    <div class="collapse mt-4" id="advancedFilters">
+        <div class="card card-body bg-light">
+            <h6 class="mb-3">
+                <i class="bi bi-funnel me-2"></i>Advanced Filters
+            </h6>
+
+            <div class="row g-3">
+                @foreach (var filter in filters)
+                {
+                <div class="col-md-4">
+                    @await Html.PartialAsync("_FilterField", new {
+                    Name = filter.Key,
+                    Options = filter.Value
+                    })
+                </div>
+                }
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel me-1"></i>Apply Filters
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="resetFilters">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                        </button>
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#advancedFilters">
+                            <i class="bi bi-chevron-up me-1"></i>Hide Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Quick Filter Pills -->
+    @if (ViewData["QuickFilters"] != null)
+    {
+    <div class="mt-3">
+        <small class="text-muted">Quick filters:</small>
+        <div class="mt-1">
+            @foreach (var quickFilter in (Dictionary<string, string>)ViewData["QuickFilters"])
+            {
+            <button type="button"
+                    class="btn btn-outline-primary btn-sm me-2 mb-1 quick-filter"
+                    data-filter="@quickFilter.Key"
+                    data-value="@quickFilter.Value">
+                @quickFilter.Value
+            </button>
+            }
+        </div>
+    </div>
+    }
+
+    <!-- Active Filters Display -->
+    <div id="activeFilters" class="mt-3" style="display: none;">
+        <small class="text-muted">Active filters:</small>
+        <div id="activeFiltersList" class="mt-1"></div>
+    </div>
+
+    <!-- Hidden fields to maintain state -->
+    @if (ViewData["HiddenFields"] != null)
+    {
+    @foreach (var field in (Dictionary<string, string>)ViewData["HiddenFields"])
+    {
+    <input type="hidden" name="@field.Key" value="@field.Value" />
+    }
+    }
+</form>
+
+<!-- Real-time Search Indicator -->
+<div id="searchIndicator" class="position-fixed"
+     style="top: 20px; right: 20px; z-index: 1000; display: none;">
+    <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Searching...</span>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        const searchForm = $('#searchForm');
+        const searchInput = $('#searchTerm');
+        const clearButton = $('#clearSearch');
+        const resetButton = $('#resetFilters');
+        const searchIndicator = $('#searchIndicator');
+
+        // Debounced search for real-time filtering
+        let searchTimeout;
+        const SEARCH_DELAY = 500; // ms
+
+        // Real-time search on input
+        searchInput.on('input', function() {
+            const searchTerm = $(this).val().trim();
+
+            clearTimeout(searchTimeout);
+
+            if (searchTerm.length >= 2) {
+                searchIndicator.show();
+
+                searchTimeout = setTimeout(() => {
+                    performSearch();
+                }, SEARCH_DELAY);
+            } else if (searchTerm.length === 0) {
+                searchTimeout = setTimeout(() => {
+                    performSearch();
+                }, SEARCH_DELAY);
+            }
+        });
+
+        // Clear search
+        clearButton.on('click', function() {
+            searchInput.val('').focus();
+            performSearch();
+        });
+
+        // Reset all filters
+        resetButton.on('click', function() {
+            searchForm[0].reset();
+            $('.quick-filter').removeClass('active');
+            updateActiveFilters();
+            performSearch();
+        });
+
+        // Quick filter pills
+        $('.quick-filter').on('click', function() {
+            const filterName = $(this).data('filter');
+            const filterValue = $(this).data('value');
+            const isActive = $(this).hasClass('active');
+
+            if (isActive) {
+                // Remove filter
+                $(this).removeClass('active');
+                $(`[name="${filterName}"]`).val('');
+            } else {
+                // Add filter
+                $('.quick-filter[data-filter="' + filterName + '"]').removeClass('active');
+                $(this).addClass('active');
+                $(`[name="${filterName}"]`).val(filterValue);
+            }
+
+            updateActiveFilters();
+            performSearch();
+        });
+
+        // Handle sort change
+        $('#sortBy').on('change', function() {
+            performSearch();
+        });
+
+        // Advanced filter changes
+        $('#advancedFilters select, #advancedFilters input').on('change', function() {
+            updateActiveFilters();
+        });
+
+        function performSearch() {
+            if (typeof MealStackManagement !== 'undefined') {
+                MealStackManagement.showLoading();
+            }
+
+            searchIndicator.show();
+
+            // Use AJAX for better UX
+            const formData = searchForm.serialize();
+            const actionUrl = searchForm.attr('action') || window.location.pathname;
+
+            $.get(actionUrl, formData)
+                .done(function(data) {
+                    // Replace content with new results
+                    const newContent = $(data).find('.card-body').html();
+                    $('.card-body').html(newContent);
+
+                    // Update URL without page reload
+                    const newUrl = actionUrl + '?' + formData;
+                    window.history.replaceState({}, '', newUrl);
+                })
+                .fail(function() {
+                    // Fallback to form submission
+                    searchForm.submit();
+                })
+                .always(function() {
+                    searchIndicator.hide();
+                    if (typeof MealStackManagement !== 'undefined') {
+                        MealStackManagement.hideLoading();
+                    }
+                });
+        }
+
+        function updateActiveFilters() {
+            const activeFilters = [];
+            const filterContainer = $('#activeFilters');
+            const filtersList = $('#activeFiltersList');
+
+            // Check form inputs for active filters
+            searchForm.find('select, input[type="text"]').each(function() {
+                const value = $(this).val();
+                const name = $(this).attr('name');
+
+                if (value && value.trim() !== '' && name !== 'searchTerm') {
+                    const label = $(`label[for="${$(this).attr('id')}"]`).text() || name;
+                    activeFilters.push({
+                        name: name,
+                        label: label.replace(/[^\w\s]/gi, '').trim(),
+                        value: value
+                    });
+                }
+            });
+
+            // Update active filters display
+            if (activeFilters.length > 0) {
+                const filtersHtml = activeFilters.map(filter =>
+                    `<span class="badge bg-secondary me-1 mb-1">
+                            ${filter.label}: ${filter.value}
+                            <button type="button" class="btn-close btn-close-white btn-sm ms-1" 
+                                    data-filter="${filter.name}"></button>
+                        </span>`
+                ).join('');
+
+                filtersList.html(filtersHtml);
+                filterContainer.show();
+            } else {
+                filterContainer.hide();
+            }
+        }
+
+        // Remove individual active filters
+        $(document).on('click', '#activeFiltersList .btn-close', function() {
+            const filterName = $(this).data('filter');
+            $(`[name="${filterName}"]`).val('');
+            $('.quick-filter[data-filter="' + filterName + '"]').removeClass('active');
+            updateActiveFilters();
+            performSearch();
+        });
+
+        // Initialize active filters display
+        updateActiveFilters();
+    });
+</script>
+}

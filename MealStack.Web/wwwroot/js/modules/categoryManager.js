@@ -1,6 +1,5 @@
 const CategoryManager = (function() {
 
-    // Configuration
     const config = {
         selectors: {
             categorySelect: '.category-select',
@@ -24,11 +23,9 @@ const CategoryManager = (function() {
         ]
     };
 
-    // State
     let isAdmin = false;
     let categories = [];
 
-    // Initialize the category manager //
     function init() {
         console.log('CategoryManager: Initializing...');
 
@@ -51,10 +48,7 @@ const CategoryManager = (function() {
                 fallbackToStandardCategories();
             });
     }
-
-    /**
-     * Load categories from server
-     */
+    
     async function loadCategories() {
         try {
             const response = await $.get(config.endpoints.getCategories);
@@ -72,10 +66,7 @@ const CategoryManager = (function() {
 
         populateSelects();
     }
-
-    /**
-     * Populate all category select elements
-     */
+    
     function populateSelects() {
         $(config.selectors.categorySelect).each(function() {
             const $select = $(this);
@@ -84,22 +75,17 @@ const CategoryManager = (function() {
             $select.empty();
             $select.append('<option value="">Select a category...</option>');
 
-            // Add categories
             categories.forEach(category => {
                 const selected = category === currentValue ? 'selected' : '';
                 $select.append(`<option value="${category}" ${selected}>${category}</option>`);
             });
 
-            // Add custom option
             $select.append('<option value="custom">➕ Custom Category...</option>');
 
             console.log('CategoryManager: Populated select with', categories.length, 'categories');
         });
     }
-
-    /**
-     * Handle existing values that might not be in the standard list
-     */
+    
     function handleExistingValues() {
         $(config.selectors.categorySelect).each(function() {
             const $select = $(this);
@@ -114,21 +100,14 @@ const CategoryManager = (function() {
             }
         });
     }
-
-    /**
-     * Setup event handlers
-     */
+    
     function setupEventHandlers() {
-        // Category selection change
         $(document).on('change', config.selectors.categorySelect, handleCategoryChange);
 
-        // Custom input change
         $(document).on('input', config.selectors.customInput, handleCustomInput);
 
-        // Form submission
         $(document).on('submit', 'form', handleFormSubmission);
 
-        // Admin category creation
         if (isAdmin) {
             $(document).on('click', config.selectors.saveButton, handleCategoryCreation);
             $(document).on('shown.bs.modal', config.selectors.modal, focusModalInput);
@@ -137,10 +116,7 @@ const CategoryManager = (function() {
 
         console.log('CategoryManager: Event handlers setup complete');
     }
-
-    /**
-     * Handle category selection change
-     */
+    
     function handleCategoryChange(event) {
         const $select = $(event.target);
         const $customInput = $select.siblings(config.selectors.customInput);
@@ -152,21 +128,14 @@ const CategoryManager = (function() {
             $customInput.hide().val('');
         }
     }
-
-    /**
-     * Handle custom input changes
-     */
+    
     function handleCustomInput(event) {
         const $input = $(event.target);
         const $select = $input.siblings(config.selectors.categorySelect);
 
-        // Update the select value to match custom input
         $select.val($input.val());
     }
-
-    /**
-     * Handle form submission
-     */
+    
     function handleFormSubmission(event) {
         $(config.selectors.customInput).each(function() {
             const $input = $(this);
@@ -177,10 +146,7 @@ const CategoryManager = (function() {
             }
         });
     }
-
-    /**
-     * Handle admin category creation
-     */
+    
     async function handleCategoryCreation(event) {
         const $button = $(event.target);
         const $spinner = $button.find(config.selectors.spinner);
@@ -190,7 +156,6 @@ const CategoryManager = (function() {
         const categoryName = $nameInput.val().trim();
         const categoryDescription = $descriptionInput.val().trim();
 
-        // Validation
         if (!categoryName) {
             showFieldError($nameInput, 'Category name is required');
             return;
@@ -201,10 +166,8 @@ const CategoryManager = (function() {
             return;
         }
 
-        // Clear previous errors
         clearFieldError($nameInput);
 
-        // Show loading state
         $button.prop('disabled', true);
         $spinner.show();
 
@@ -223,17 +186,13 @@ const CategoryManager = (function() {
             });
 
             if (response.success) {
-                // Add to categories list
                 categories.push(categoryName);
                 categories.sort();
 
-                // Update all selects
                 populateSelects();
 
-                // Set the new category as selected
                 $(config.selectors.categorySelect).val(categoryName);
 
-                // Close modal and show success
                 $(config.selectors.modal).modal('hide');
                 showSuccessMessage(`Category "${categoryName}" created successfully!`);
 
@@ -245,47 +204,31 @@ const CategoryManager = (function() {
             console.error('CategoryManager: Error creating category:', error);
             showFieldError($nameInput, 'Failed to create category. Please try again.');
         } finally {
-            // Hide loading state
             $button.prop('disabled', false);
             $spinner.hide();
         }
     }
-
-    /**
-     * Focus modal input when shown
-     */
+    
     function focusModalInput() {
         $(config.selectors.nameInput).focus();
     }
-
-    /**
-     * Clear modal form when hidden
-     */
+    
     function clearModalForm() {
         $(config.selectors.nameInput).val('').removeClass('is-invalid');
         $(config.selectors.descriptionInput).val('');
         $(config.selectors.nameInput).siblings('.invalid-feedback').text('');
     }
-
-    /**
-     * Show field error
-     */
+    
     function showFieldError($field, message) {
         $field.addClass('is-invalid');
         $field.siblings('.invalid-feedback').text(message);
     }
-
-    /**
-     * Clear field error
-     */
+    
     function clearFieldError($field) {
         $field.removeClass('is-invalid');
         $field.siblings('.invalid-feedback').text('');
     }
-
-    /**
-     * Show success message
-     */
+    
     function showSuccessMessage(message) {
         const alertHtml = `
             <div class="alert alert-success alert-dismissible fade show category-success-alert" role="alert">
@@ -293,20 +236,15 @@ const CategoryManager = (function() {
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>`;
 
-        // Insert after the first h1 element
         $('h1').first().after(alertHtml);
 
-        // Auto-dismiss after 3 seconds
         setTimeout(() => {
             $('.category-success-alert').fadeOut(400, function() {
                 $(this).remove();
             });
         }, 3000);
     }
-
-    /**
-     * Fallback to standard categories if loading fails
-     */
+    
     function fallbackToStandardCategories() {
         console.log('CategoryManager: Using fallback categories');
         categories = config.standardCategories;
@@ -314,10 +252,7 @@ const CategoryManager = (function() {
         setupEventHandlers();
         handleExistingValues();
     }
-
-    /**
-     * Public API
-     */
+    
     return {
         init: init,
         getCategories: () => categories,
@@ -331,10 +266,8 @@ const CategoryManager = (function() {
     };
 })();
 
-// Auto-initialize when DOM is ready
 $(document).ready(() => {
     CategoryManager.init();
 });
 
-// Export for global access
 window.CategoryManager = CategoryManager;

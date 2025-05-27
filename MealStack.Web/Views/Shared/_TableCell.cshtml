@@ -1,0 +1,334 @@
+@{
+var item = ViewData["Item"];
+var column = ((string Header, string Property, string Type, object Options))ViewData["Column"];
+var value = GetPropertyValue(item, column.Property);
+var options = column.Options as Dictionary<string, object> ?? new Dictionary<string, object>();
+}
+
+@switch (column.Type?.ToLower())
+{
+case "text":
+<span title="@value">@value</span>
+break;
+
+case "truncated":
+var maxLength = options.ContainsKey("maxLength") ? (int)options["maxLength"] : 50;
+var text = value?.ToString() ?? "";
+if (text.Length > maxLength)
+{
+<span title="@text">@(text.Substring(0, maxLength))...</span>
+}
+else
+{
+<span>@text</span>
+}
+break;
+
+case "number":
+<span class="font-monospace">@value</span>
+break;
+
+case "currency":
+var currencyValue = value != null ? Convert.ToDecimal(value) : 0m;
+<span class="font-monospace">@currencyValue.ToString("C")</span>
+break;
+
+case "date":
+if (value is DateTime dateValue)
+{
+var format = options.ContainsKey("format") ? options["format"].ToString() : "MMM d, yyyy";
+<span class="text-nowrap" title="@dateValue.ToString("F")">@dateValue.ToString(format)</span>
+}
+else
+{
+<span class="text-muted">-</span>
+}
+break;
+
+case "datetime":
+if (value is DateTime dateTimeValue)
+{
+<span class="text-nowrap" title="@dateTimeValue.ToString("F")">
+                @dateTimeValue.ToString("MMM d, yyyy h:mm tt")
+            </span>
+}
+else
+{
+<span class="text-muted">-</span>
+}
+break;
+
+case "badge":
+var badgeClass = options.ContainsKey("class") ? options["class"].ToString() : "bg-secondary";
+var badgeMapping = options.ContainsKey("mapping") ? options["mapping"] as Dictionary<string, string> : null;
+
+if (badgeMapping != null && value != null && badgeMapping.ContainsKey(value.ToString()))
+{
+badgeClass = badgeMapping[value.ToString()];
+}
+
+<span class="badge @badgeClass">@value</span>
+break;
+
+case "difficulty":
+var difficultyClass = value?.ToString()?.ToLower() switch
+{
+"easy" => "bg-success",
+"medium" => "bg-warning text-dark",
+"hard" => "bg-danger",
+_ => "bg-secondary"
+};
+<span class="badge @difficultyClass">@value</span>
+break;
+
+case "boolean":
+if (value is bool boolValue)
+{
+if (boolValue)
+{
+<i class="bi bi-check-circle-fill text-success" title="Yes"></i>
+}
+else
+{
+<i class="bi bi-x-circle-fill text-danger" title="No"></i>
+}
+}
+break;
+
+case "image":
+var imagePath = value?.ToString();
+if (!string.IsNullOrEmpty(imagePath))
+{
+var altText = options.ContainsKey("alt") ? options["alt"].ToString() : "Image";
+<img src="@imagePath" alt="@altText" class="img-thumbnail" style="max-height: 40px; max-width: 60px;" loading="lazy" />
+}
+else
+{
+<div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 40px;">
+    <i class="bi bi-image text-muted"></i>
+</div>
+}
+break;
+
+case "avatar":
+var avatarPath = value?.ToString();
+var userName = GetPropertyValue(item, "Name") ?? GetPropertyValue(item, "UserName") ?? GetPropertyValue(item, "Title");
+if (!string.IsNullOrEmpty(avatarPath))
+{
+<img src="@avatarPath" alt="@userName" class="rounded-circle" style="width: 32px; height: 32px;" loading="lazy" />
+}
+else
+{
+var initial = userName?.ToString()?.FirstOrDefault().ToString().ToUpper() ?? "?";
+<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+     style="width: 32px; height: 32px; font-weight: 600;">
+    @initial
+</div>
+}
+break;
+
+case "categories":
+if (value is IEnumerable<object> categories)
+{
+<div class="d-flex flex-wrap gap-1">
+    @foreach (var category in categories.Take(3))
+    {
+    var categoryName = GetPropertyValue(category, "Name") ?? category.ToString();
+    var categoryColor = GetPropertyValue(category, "ColorClass")?.ToString() ?? "secondary";
+    <span class="badge bg-@categoryColor">@categoryName</span>
+    }
+    @if (categories.Count() > 3)
+    {
+    <span class="badge bg-light text-dark">+@(categories.Count() - 3) more</span>
+    }
+</div>
+}
+else if (value != null)
+{
+<span class="badge bg-info">@value</span>
+}
+else
+{
+<span class="text-muted">-</span>
+}
+break;
+
+case "tags":
+if (value is IEnumerable<string> tags)
+{
+<div class="d-flex flex-wrap gap-1">
+    @foreach (var tag in tags.Take(2))
+    {
+    <span class="badge bg-outline-primary">@tag</span>
+    }
+    @if (tags.Count() > 2)
+    {
+    <span class="badge bg-light text-dark">+@(tags.Count() - 2)</span>
+    }
+</div>
+}
+break;
+
+case "rating":
+if (value != null && decimal.TryParse(value.ToString(), out var rating))
+{
+<div class="d-flex align-items-center">
+    @for (int i = 1; i <= 5; i++)
+    {
+    if (i <= Math.Floor(rating))
+    {
+    <i class="bi bi-star-fill text-warning"></i>
+    }
+    else if ((decimal)(i - 0.5) <= rating)
+    {
+    <i class="bi bi-star-half text-warning"></i>
+    }
+    else
+    {
+    <i class="bi bi-star text-muted"></i>
+    }
+    }
+    <span class="ms-1 small text-muted">(@rating.ToString("0.0"))</span>
+</div>
+}
+break;
+
+case "progress":
+if (value != null && int.TryParse(value.ToString(), out var progress))
+{
+var progressClass = progress switch
+{
+>= 80 => "bg-success",
+>= 60 => "bg-info",
+>= 40 => "bg-warning",
+_ => "bg-danger"
+};
+<div class="progress" style="height: 20px;">
+    <div class="progress-bar @progressClass" role="progressbar"
+         style="width: @progress%" aria-valuenow="@progress"
+         aria-valuemin="0" aria-valuemax="100">
+        @progress%
+    </div>
+</div>
+}
+break;
+
+case "link":
+var linkUrl = options.ContainsKey("url") ? options["url"].ToString() : "#";
+var linkTarget = options.ContainsKey("target") ? options["target"].ToString() : "_self";
+<a href="@linkUrl" target="@linkTarget" class="text-decoration-none">@value</a>
+break;
+
+case "email":
+<a href="mailto:@value" class="text-decoration-none">@value</a>
+break;
+
+case "phone":
+<a href="tel:@value" class="text-decoration-none font-monospace">@value</a>
+break;
+
+case "status":
+var statusClass = value?.ToString()?.ToLower() switch
+{
+"active" or "enabled" or "published" => "bg-success",
+"inactive" or "disabled" or "draft" => "bg-secondary",
+"pending" or "review" => "bg-warning text-dark",
+"suspended" or "banned" or "deleted" => "bg-danger",
+_ => "bg-info"
+};
+<span class="badge @statusClass">@value</span>
+break;
+
+case "count":
+var count = value != null ? Convert.ToInt32(value) : 0;
+if (count > 0)
+{
+<span class="badge bg-primary rounded-pill">@count</span>
+}
+else
+{
+<span class="text-muted">0</span>
+}
+break;
+
+case "time":
+if (value != null && int.TryParse(value.ToString(), out var minutes))
+{
+if (minutes >= 60)
+{
+var hours = minutes / 60;
+var remainingMinutes = minutes % 60;
+<span class="text-nowrap">@hours h @remainingMinutes m</span>
+}
+else
+{
+<span class="text-nowrap">@minutes min</span>
+}
+}
+break;
+
+case "user":
+var userDisplayName = GetPropertyValue(item, "CreatedBy.UserName") ??
+GetPropertyValue(item, "User.UserName") ??
+GetPropertyValue(item, "CreatedBy") ??
+value;
+if (userDisplayName != null)
+{
+var userInitial = userDisplayName.ToString().FirstOrDefault().ToString().ToUpper();
+<div class="d-flex align-items-center">
+    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2"
+         style="width: 24px; height: 24px; font-size: 0.75rem; font-weight: 600;">
+        @userInitial
+    </div>
+    <span class="small">@userDisplayName</span>
+</div>
+}
+else
+{
+<span class="text-muted">Unknown</span>
+}
+break;
+
+default:
+if (value != null)
+{
+<span>@value</span>
+}
+else
+{
+<span class="text-muted">-</span>
+}
+break;
+}
+
+@functions {
+private object GetPropertyValue(object obj, string propertyPath)
+{
+if (obj == null || string.IsNullOrEmpty(propertyPath))
+return null;
+
+try
+{
+var properties = propertyPath.Split('.');
+var currentObject = obj;
+
+foreach (var property in properties)
+{
+if (currentObject == null) return null;
+
+var type = currentObject.GetType();
+var prop = type.GetProperty(property);
+
+if (prop == null) return null;
+
+currentObject = prop.GetValue(currentObject);
+}
+
+return currentObject;
+}
+catch
+{
+return null;
+}
+}
+}

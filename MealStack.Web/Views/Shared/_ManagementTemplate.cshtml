@@ -1,0 +1,502 @@
+@model dynamic
+@{
+var pageTitle = ViewData["PageTitle"] as string ?? "Management";
+var pageDescription = ViewData["PageDescription"] as string ?? "Manage system resources";
+var totalCount = ViewData["TotalCount"] as int? ?? 0;
+var itemType = ViewData["ItemType"] as string ?? "Items";
+var createAction = ViewData["CreateAction"] as string;
+var createController = ViewData["CreateController"] as string;
+var createButtonText = ViewData["CreateButtonText"] as string;
+var showBulkActions = ViewData["ShowBulkActions"] as bool? ?? true;
+var bulkActions = ViewData["BulkActions"] as Dictionary<string, string> ?? new Dictionary<string, string>();
+var filterCategories = ViewData["FilterCategories"] as IEnumerable<dynamic>;
+var searchPlaceholder = ViewData["SearchPlaceholder"] as string ?? "Search...";
+var sortOptions = ViewData["SortOptions"] as Dictionary<string, string> ?? new Dictionary<string, string>
+{
+    { "newest", "Newest First" },
+    { "oldest", "Oldest First" },
+    { "name", "Name A-Z" }
+};
+}
+
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>@pageTitle</h1>
+            <p class="text-muted mb-0">@pageDescription</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="badge bg-primary fs-6">@totalCount @itemType</span>
+            @if (!string.IsNullOrEmpty(createAction))
+            {
+                <a asp-controller="@createController" asp-action="@createAction" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-1"></i> @(createButtonText ?? $"Create {itemType.TrimEnd('s')}")
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Search & Filters Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-search me-2"></i>Search & Filters
+                </h5>
+                <button class="btn btn-sm btn-outline-secondary" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#advancedFilters"
+                        aria-expanded="false">
+                    <i class="bi bi-sliders me-1"></i>Advanced
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <form id="searchFilterForm" method="get" class="needs-validation" novalidate>
+                <!-- Basic Search Row -->
+                <div class="row g-3 align-items-end mb-3">
+                    <!-- Search Input -->
+                    <div class="col-md-5">
+                        <label for="searchTerm" class="form-label">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" id="searchTerm" name="searchTerm"
+                                   placeholder="@searchPlaceholder" value="@ViewData["SearchTerm"]">
+                            <button type="button" class="btn btn-outline-secondary" id="clearSearch">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sort By -->
+                    <div class="col-md-3">
+                        <label for="sortBy" class="form-label">Sort By</label>
+                        <select class="form-select" id="sortBy" name="sortBy">
+                            @foreach (var option in sortOptions)
+                            {
+                                <option value="@option.Key" selected="@(ViewData["SortBy"]?.ToString() == option.Key)">
+                                    @option.Value
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="col-md-4">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-fill">
+                                <i class="bi bi-search me-1"></i>Search
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="resetFilters">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categories Filter (Always Visible) -->
+                @if (filterCategories != null)
+                {
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Categories</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), ViewContext.RouteData.Values["controller"]?.ToString())"
+                                   class="btn @(ViewBag.SelectedCategoryId == null ? "btn-primary" : "btn-outline-primary") btn-sm">
+                                    All
+                                </a>
+                                @foreach (var category in filterCategories)
+                                {
+                                    <a href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), ViewContext.RouteData.Values["controller"]?.ToString(), new { categoryId = category.Id, searchTerm = ViewData["SearchTerm"], sortBy = ViewData["SortBy"] })"
+                                       class="btn @(ViewBag.SelectedCategoryId == category.Id ? "btn-primary" : "btn-outline-primary") btn-sm">
+                                        @category.Name
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Advanced Filters (Collapsible) -->
+                <div class="collapse" id="advancedFilters">
+                    <div class="border-top pt-3">
+                        @RenderSection("AdvancedFilters", required: false)
+                    </div>
+                </div>
+
+                <!-- Hidden fields to maintain state - FIXED -->
+                <input type="hidden" name="page" value="@(ViewBag.CurrentPage ?? 1)" />
+                @if (ViewBag.SelectedCategoryId != null)
+                {
+                    <input type="hidden" name="categoryId" value="@ViewBag.SelectedCategoryId" />
+                }
+            </form>
+        </div>
+    </div>
+
+    @if (showBulkActions && bulkActions.Any())
+    {
+        <!-- Bulk Actions Panel (Initially Hidden) -->
+        <div class="card shadow-sm mb-4 d-none" id="bulkActionsPanel">
+            <div class="card-header bg-warning text-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check2-square me-2"></i>Bulk Actions
+                        <span class="badge bg-primary ms-2" id="selectedCount">0</span> selected
+                    </h5>
+                    <button type="button" class="btn btn-sm btn-outline-dark" id="clearBulkSelection">
+                        <i class="bi bi-x me-1"></i>Clear Selection
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="bulkActionForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="bulkAction" class="form-label">Choose Action</label>
+                            <select class="form-select" id="bulkAction" name="bulkAction" required>
+                                <option value="">Select an action...</option>
+                                @foreach (var action in bulkActions)
+                                {
+                                    <option value="@action.Key">@action.Value</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4" id="bulkActionOptions">
+                            <!-- Dynamic options based on selected action -->
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-warning w-100" id="executeBulkAction">
+                                <i class="bi bi-lightning-charge me-1"></i>Execute Action
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Hidden field for selected IDs -->
+                    <input type="hidden" id="selectedIds" name="selectedIds" />
+                </form>
+            </div>
+        </div>
+    }
+
+    <!-- Main Content Card -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                @if (showBulkActions)
+                {
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" id="selectAllItems">
+                        <label class="form-check-label" for="selectAllItems">
+                            Select All
+                        </label>
+                    </div>
+                }
+                <h5 class="mb-0">@pageTitle Dashboard</h5>
+            </div>
+            <span class="badge bg-primary rounded-pill">@totalCount total</span>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="position-relative">
+            <div id="contentLoadingOverlay" class="d-none position-absolute w-100 h-100 d-flex align-items-center justify-content-center"
+                 style="background: rgba(255,255,255,0.8); z-index: 10;">
+                <div class="text-center">
+                    <div class="spinner-border text-primary mb-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div>Loading...</div>
+                </div>
+            </div>
+
+            <!-- Content Body -->
+            <div class="card-body p-0" id="managementContent">
+                @RenderBody()
+            </div>
+        </div>
+
+        <!-- Pagination Footer -->
+        <div class="card-footer bg-light">
+            @await Html.PartialAsync("_PaginationEnhanced")
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="text-center mt-4">
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Admin Dashboard
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Management Template Controller
+            const ManagementTemplate = {
+                selectedItems: new Set(),
+
+                init: function() {
+                    this.setupSearch();
+                    this.setupBulkActions();
+                    this.setupFilters();
+                    this.setupRealTimeFeatures();
+                },
+
+                setupSearch: function() {
+                    let searchTimeout;
+                    const searchInput = $('#searchTerm');
+                    const clearBtn = $('#clearSearch');
+
+                    // Real-time search with debounce
+                    searchInput.on('input', function() {
+                        clearTimeout(searchTimeout);
+                        const term = $(this).val().trim();
+
+                        if (term.length >= 2 || term.length === 0) {
+                            searchTimeout = setTimeout(() => {
+                                ManagementTemplate.performSearch();
+                            }, 500);
+                        }
+                    });
+
+                    // Clear search
+                    clearBtn.on('click', function() {
+                        searchInput.val('').focus();
+                        ManagementTemplate.performSearch();
+                    });
+
+                    // Form submission
+                    $('#searchFilterForm').on('submit', function(e) {
+                        e.preventDefault();
+                        ManagementTemplate.performSearch();
+                    });
+
+                    // Reset filters
+                    $('#resetFilters').on('click', function() {
+                        $('#searchFilterForm')[0].reset();
+                        ManagementTemplate.performSearch();
+                    });
+                },
+
+                setupBulkActions: function() {
+                    const selectAllCheckbox = $('#selectAllItems');
+                    const bulkPanel = $('#bulkActionsPanel');
+                    const selectedCountBadge = $('#selectedCount');
+                    const clearSelectionBtn = $('#clearBulkSelection');
+
+                    // Select all functionality
+                    selectAllCheckbox.on('change', function() {
+                        const isChecked = this.checked;
+                        $('.item-checkbox').prop('checked', isChecked);
+                        ManagementTemplate.updateBulkSelection();
+                    });
+
+                    // Individual item selection
+                    $(document).on('change', '.item-checkbox', function() {
+                        ManagementTemplate.updateBulkSelection();
+                    });
+
+                    // Clear bulk selection
+                    clearSelectionBtn.on('click', function() {
+                        $('.item-checkbox, #selectAllItems').prop('checked', false);
+                        ManagementTemplate.updateBulkSelection();
+                    });
+
+                    // Bulk action form submission
+                    $('#bulkActionForm').on('submit', function(e) {
+                        e.preventDefault();
+                        ManagementTemplate.executeBulkAction();
+                    });
+
+                    // Dynamic bulk action options
+                    $('#bulkAction').on('change', function() {
+                        ManagementTemplate.showBulkActionOptions($(this).val());
+                    });
+                },
+
+                updateBulkSelection: function() {
+                    const selectedCheckboxes = $('.item-checkbox:checked');
+                    const selectedCount = selectedCheckboxes.length;
+                    const totalCheckboxes = $('.item-checkbox').length;
+
+                    // Update selected items set
+                    this.selectedItems.clear();
+                    selectedCheckboxes.each(function() {
+                        ManagementTemplate.selectedItems.add($(this).val());
+                    });
+
+                    // Update UI
+                    $('#selectedCount').text(selectedCount);
+
+                    if (selectedCount > 0) {
+                        $('#bulkActionsPanel').removeClass('d-none');
+                    } else {
+                        $('#bulkActionsPanel').addClass('d-none');
+                    }
+
+                    // Update select all state
+                    const selectAllCheckbox = $('#selectAllItems')[0];
+                    if (selectedCount === 0) {
+                        selectAllCheckbox.indeterminate = false;
+                        selectAllCheckbox.checked = false;
+                    } else if (selectedCount === totalCheckboxes) {
+                        selectAllCheckbox.indeterminate = false;
+                        selectAllCheckbox.checked = true;
+                    } else {
+                        selectAllCheckbox.indeterminate = true;
+                        selectAllCheckbox.checked = false;
+                    }
+                },
+
+                showBulkActionOptions: function(action) {
+                    const optionsContainer = $('#bulkActionOptions');
+                    optionsContainer.empty();
+
+                    switch(action) {
+                        case 'addCategories':
+                        case 'removeCategories':
+                            optionsContainer.html(`
+                                <label class="form-label">Select Categories</label>
+                                <select class="form-select" name="categoryIds" multiple required>
+                                    @if (ViewBag.Categories != null)
+                                    {
+                                        @foreach (var category in ViewBag.Categories)
+                                        {
+                                            <option value="@category.Id">@category.Name</option>
+                                        }
+                                    }
+                                </select>
+                            `);
+                            break;
+                        case 'changeDifficulty':
+                            optionsContainer.html(`
+                                <label class="form-label">New Difficulty</label>
+                                <select class="form-select" name="newDifficulty" required>
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                            `);
+                            break;
+                        case 'export':
+                            optionsContainer.html(`
+                                <label class="form-label">Export Format</label>
+                                <select class="form-select" name="exportFormat" required>
+                                    <option value="csv">CSV</option>
+                                    <option value="json">JSON</option>
+                                    <option value="pdf">PDF</option>
+                                </select>
+                            `);
+                            break;
+                    }
+                },
+
+                executeBulkAction: function() {
+                    const action = $('#bulkAction').val();
+                    const selectedIds = Array.from(this.selectedItems);
+
+                    if (!action || selectedIds.length === 0) {
+                        alert('Please select an action and at least one item.');
+                        return;
+                    }
+
+                    if (action === 'delete' && !confirm(`Are you sure you want to delete ${selectedIds.length} items? This action cannot be undone.`)) {
+                        return;
+                    }
+
+                    // Update hidden field
+                    $('#selectedIds').val(selectedIds.join(','));
+
+                    // Show loading
+                    this.showLoading();
+
+                    // Submit form
+                    const formData = $('#bulkActionForm').serialize();
+                    const actionUrl = $('#bulkActionForm').attr('action') || '@Url.Action("BulkAction")';
+
+                    $.post(actionUrl, formData)
+                        .done(function(response) {
+                            if (response.success) {
+                                // Refresh page or update content
+                                location.reload();
+                            } else {
+                                alert('Error: ' + (response.message || 'Failed to execute bulk action'));
+                            }
+                        })
+                        .fail(function() {
+                            alert('Error: Failed to execute bulk action. Please try again.');
+                        })
+                        .always(function() {
+                            ManagementTemplate.hideLoading();
+                        });
+                },
+
+                performSearch: function() {
+                    this.showLoading();
+
+                    const formData = $('#searchFilterForm').serialize();
+                    const currentUrl = window.location.pathname;
+
+                    $.get(currentUrl, formData)
+                        .done(function(data) {
+                            // Update content
+                            const newContent = $(data).find('#managementContent').html();
+                            $('#managementContent').html(newContent);
+
+                            // Update pagination
+                            const newPagination = $(data).find('.card-footer').html();
+                            $('.card-footer').html(newPagination);
+
+                            // Update URL
+                            const newUrl = currentUrl + '?' + formData;
+                            window.history.replaceState({}, '', newUrl);
+
+                            // Reset bulk selection
+                            ManagementTemplate.selectedItems.clear();
+                            ManagementTemplate.updateBulkSelection();
+                        })
+                        .fail(function() {
+                            // Fallback to page reload
+                            $('#searchFilterForm')[0].submit();
+                        })
+                        .always(function() {
+                            ManagementTemplate.hideLoading();
+                        });
+                },
+
+                setupFilters: function() {
+                    // Sort change
+                    $('#sortBy').on('change', function() {
+                        ManagementTemplate.performSearch();
+                    });
+                },
+
+                setupRealTimeFeatures: function() {
+                    // Auto-refresh every 30 seconds if enabled
+                    if (window.enableAutoRefresh) {
+                        setInterval(() => {
+                            if (this.selectedItems.size === 0) {
+                                this.performSearch();
+                            }
+                        }, 30000);
+                    }
+                },
+
+                showLoading: function() {
+                    $('#contentLoadingOverlay').removeClass('d-none');
+                },
+
+                hideLoading: function() {
+                    $('#contentLoadingOverlay').addClass('d-none');
+                }
+            };
+
+            // Initialize the management template
+            ManagementTemplate.init();
+
+            // Make available globally
+            window.ManagementTemplate = ManagementTemplate;
+        });
+    </script>
+}
