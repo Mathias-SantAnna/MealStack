@@ -40,7 +40,6 @@ const RecipeModule = (function() {
             window.print();
         });
 
-        // Share recipe
         $(document).on('click', options.shareButtonSelector, function() {
             if (navigator.share) {
                 const title = $('h1').first().text();

@@ -171,7 +171,7 @@ namespace MealStack.Web.Controllers
 
         #endregion
 
-        #region ADMIN BULK ACTIONS 
+        #region Admin Bulk Actions
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -285,11 +285,6 @@ namespace MealStack.Web.Controllers
 
         #endregion
 
-        #region Other existing methods...
-        // Keep all your existing methods like Details, Create, Edit, Delete, etc.
-        // I'm only showing the key fixes above for brevity
-        #endregion
-
         #region Private Helper Methods
 
         private async Task<IActionResult> HandleExportIngredients(List<IngredientEntity> ingredients, string format)
@@ -368,7 +363,16 @@ namespace MealStack.Web.Controllers
         [Authorize]
         public IActionResult Create()
         {
-            return View();
+            // Initialize a new IngredientEntity to avoid nulls in the view
+            var ingredient = new IngredientEntity
+            {
+                Category = string.Empty,
+                Measurement = string.Empty,
+                Description = string.Empty,
+                Name = string.Empty
+            };
+
+            return View(ingredient);
         }
         
         [HttpPost]
@@ -381,14 +385,13 @@ namespace MealStack.Web.Controllers
                 ingredient.CreatedById = GetUserId();
                 ingredient.CreatedDate = DateTime.UtcNow;
 
-                // Remove validation for auto-set fields
                 ModelState.Remove("CreatedById");
                 ModelState.Remove("CreatedDate");
                 ModelState.Remove("CreatedBy");
 
                 if (ModelState.IsValid)
                 {
-                    // Check for duplicates (case insensitive) - FIXED
+                    // Check for duplicates (case insensitive)
                     var existingIngredient = await _context.Ingredients
                         .FirstOrDefaultAsync(i => EF.Functions.Like(i.Name, ingredient.Name));
 
@@ -455,14 +458,13 @@ namespace MealStack.Web.Controllers
                     return Forbid();
                 }
 
-                // Remove validation for auto-set fields
                 ModelState.Remove("CreatedById");
                 ModelState.Remove("CreatedDate");
                 ModelState.Remove("CreatedBy");
 
                 if (ModelState.IsValid)
                 {
-                    // Check for duplicates (excluding current ingredient, case insensitive) - FIXED
+                    // Check for duplicates (excluding current ingredient, case insensitive) 
                     var duplicateIngredient = await _context.Ingredients
                         .FirstOrDefaultAsync(i => EF.Functions.Like(i.Name, ingredient.Name) && i.Id != id);
 
@@ -472,7 +474,6 @@ namespace MealStack.Web.Controllers
                         return View(ingredient);
                     }
 
-                    // Update properties
                     existingIngredient.Name = ingredient.Name;
                     existingIngredient.Description = ingredient.Description;
                     existingIngredient.Category = ingredient.Category;
@@ -573,12 +574,14 @@ namespace MealStack.Web.Controllers
         {
             try
             {
+                _logger.LogInformation("Creating ingredient via AJAX: {Name}", model.Name);
+
                 if (string.IsNullOrEmpty(model.Name))
                 {
                     return Json(new { success = false, message = "Ingredient name is required" });
                 }
 
-                // Check for duplicates (case insensitive) - FIXED
+                // Check for duplicates (case insensitive)
                 var existingIngredient = await _context.Ingredients
                     .FirstOrDefaultAsync(i => EF.Functions.Like(i.Name, model.Name));
 
@@ -600,6 +603,8 @@ namespace MealStack.Web.Controllers
                 _context.Ingredients.Add(ingredient);
                 await _context.SaveChangesAsync();
 
+                _logger.LogInformation("Ingredient created successfully: {Id} - {Name}", ingredient.Id, ingredient.Name);
+
                 return Json(new
                 {
                     success = true,
@@ -608,15 +613,24 @@ namespace MealStack.Web.Controllers
                         id = ingredient.Id,
                         name = ingredient.Name,
                         category = ingredient.Category,
-                        measurement = ingredient.Measurement
+                        measurement = ingredient.Measurement, 
+                        description = ingredient.Description
                     }
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating ingredient via AJAX");
+                _logger.LogError(ex, "Error creating ingredient via AJAX: {Name}", model.Name);
                 return Json(new { success = false, message = "Error creating ingredient" });
             }
+        }
+
+        public class IngredientCreateModel
+        {
+            public string Name { get; set; }
+            public string Category { get; set; }
+            public string Measurement { get; set; } 
+            public string Description { get; set; }
         }
 
         #endregion

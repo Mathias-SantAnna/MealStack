@@ -5,307 +5,348 @@ const IngredientManager = {
         ingredientInputSelector: '#ingredient-search',
         quantityInputSelector: '#ingredient-quantity',
         unitSelectSelector: '#ingredient-unit',
-        newIngredientModalSelector: '#newIngredientModal',
+        newIngredientModalSelector: '#addIngredientModal',
+        newIngredientBtnSelector: '#add-new-ingredient-btn',
         saveNewIngredientSelector: '#save-new-ingredient',
-        autocompleteUrl: '/api/ingredients/search',
-        createIngredientUrl: '/api/ingredients/create',
-        debounceMs: 300
+        ingredientsTextareaSelector: '#Ingredients', 
+        autocompleteUrl: '/Ingredient/SearchIngredients',
+        createIngredientUrl: '/Ingredient/AddIngredientAjax'
     },
 
-    state: {
-        ingredients: [],
-        searchTimeout: null,
-        currentIndex: 0
-    },
+    ingredients: [],
+    initialized: false,
+    currentIndex: 0,
 
     init: function(customConfig = {}) {
-        this.config = { ...this.config, ...customConfig };
+        if (this.initialized) {
+            console.log("IngredientManager already initialized");
+            return true;
+        }
+
+        console.log("IngredientManager initializing...");
+        Object.assign(this.config, customConfig);
+
+        if (!$(this.config.containerSelector).length) {
+            console.error("Ingredients container not found");
+            return false;
+        }
+
         this.setupEventListeners();
         this.loadExistingIngredients();
         this.initializeAutocomplete();
+        this.setupModal();
+
+        this.initialized = true;
+        console.log("IngredientManager initialized successfully");
+        return true;
     },
 
     setupEventListeners: function() {
-        $(this.config.addButtonSelector).on('click', () => {
-            this.addIngredient();
-        });
+        const self = this;
 
-        $(document).on('click', '.remove-ingredient-btn', (e) => {
-            this.removeIngredient(e.target.closest('.ingredient-item'));
-        });
-
-        $(this.config.ingredientInputSelector).on('input', (e) => {
-            this.handleIngredientSearch(e.target.value);
-        });
-
-        $(this.config.ingredientInputSelector).on('keypress', (e) => {
-            if (e.which === 13) {
+        $(document).off('click.ingredientManager', this.config.addButtonSelector)
+            .on('click.ingredientManager', this.config.addButtonSelector, function(e) {
                 e.preventDefault();
-                this.addIngredient();
-            }
-        });
+                self.addIngredient();
+            });
 
-        $(this.config.quantityInputSelector).on('keypress', (e) => {
-            if (e.which === 13) {
+        $(document).off('click.ingredientManager', '.remove-ingredient-btn')
+            .on('click.ingredientManager', '.remove-ingredient-btn', function(e) {
                 e.preventDefault();
-                this.addIngredient();
-            }
-        });
+                self.removeIngredient($(this).closest('.ingredient-item'));
+            });
 
-        $(this.config.saveNewIngredientSelector).on('click', () => {
-            this.saveNewIngredient();
-        });
+        $(this.config.ingredientInputSelector + ', ' + this.config.quantityInputSelector)
+            .off('keypress.ingredientManager')
+            .on('keypress.ingredientManager', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    self.addIngredient();
+                }
+            });
 
-        $(this.config.newIngredientModalSelector).on('hidden.bs.modal', () => {
-            this.clearNewIngredientForm();
-        });
+        $(document).off('click.ingredientManager', this.config.newIngredientBtnSelector)
+            .on('click.ingredientManager', this.config.newIngredientBtnSelector, function(e) {
+                e.preventDefault();
+                self.openNewIngredientModal();
+            });
+
+        console.log("Event listeners setup complete");
     },
 
     loadExistingIngredients: function() {
         const $container = $(this.config.containerSelector);
-        const existingData = $container.data('existing-ingredients');
+        const $textarea = $(this.config.ingredientsTextareaSelector);
 
-        if (existingData) {
-            this.state.ingredients = JSON.parse(existingData);
-            this.renderIngredients();
-        } else {
-            $container.find('.ingredient-item').each((index, element) => {
-                const $element = $(element);
-                this.state.ingredients.push({
-                    id: $element.data('ingredient-id'),
-                    name: $element.find('.ingredient-name').text(),
-                    quantity: $element.find('.ingredient-quantity').text(),
-                    unit: $element.find('.ingredient-unit').text()
-                });
+        if ($textarea.length && $textarea.val().trim()) {
+            const lines = $textarea.val().trim().split('\n');
+            this.ingredients = [];
+
+            lines.forEach(line => {
+                const match = line.match(/^(\d+(?:\.\d+)?)\s+(\w+)\s+(.+)$/);
+                if (match) {
+                    this.ingredients.push({
+                        quantity: parseFloat(match[1]),
+                        unit: match[2],
+                        name: match[3],
+                        tempId: this.currentIndex++
+                    });
+                }
             });
+
+            this.renderIngredients();
         }
+
+        console.log(`Loaded ${this.ingredients.length} ingredients`);
     },
 
     initializeAutocomplete: function() {
+        if (typeof $.ui === 'undefined' || !$.ui.autocomplete) {
+            console.warn("jQuery UI autocomplete not available");
+            return;
+        }
+
+        const self = this;
         $(this.config.ingredientInputSelector).autocomplete({
-            source: (request, response) => {
-                clearTimeout(this.state.searchTimeout);
-                this.state.searchTimeout = setTimeout(() => {
-                    this.fetchIngredientSuggestions(request.term, response);
-                }, this.config.debounceMs);
+            source: function(request, response) {
+                $.ajax({
+                    url: self.config.autocompleteUrl,
+                    data: { term: request.term },
+                    success: function(data) {
+                        response(data.map(item => ({
+                            label: item.name,
+                            value: item.name,
+                            measurement: item.measurement
+                        })));
+                    }
+                });
             },
             minLength: 2,
-            select: (event, ui) => {
-                $(this.config.ingredientInputSelector).val(ui.item.label);
+            select: function(event, ui) {
+                $(self.config.ingredientInputSelector).val(ui.item.value);
+                if (ui.item.measurement) {
+                    $(self.config.unitSelectSelector).val(ui.item.measurement);
+                }
                 return false;
-            },
-            appendTo: 'body',
-            classes: {
-                'ui-autocomplete': 'custom-autocomplete'
             }
         });
-    },
-
-    handleIngredientSearch: function(searchTerm) {
-        if (searchTerm.length < 2) return;
-
-        clearTimeout(this.state.searchTimeout);
-        this.state.searchTimeout = setTimeout(() => {
-            this.fetchIngredientSuggestions(searchTerm, (suggestions) => {
-                this.displaySuggestions(suggestions);
-            });
-        }, this.config.debounceMs);
-    },
-
-    fetchIngredientSuggestions: function(term, callback) {
-        $.ajax({
-            url: this.config.autocompleteUrl,
-            method: 'GET',
-            data: { term: term },
-            success: (data) => {
-                const suggestions = data.map(item => ({
-                    label: item.name,
-                    value: item.name,
-                    id: item.id,
-                    defaultUnit: item.defaultMeasurement
-                }));
-                callback(suggestions);
-            },
-            error: (xhr, status, error) => {
-                console.error('Failed to fetch ingredient suggestions:', error);
-                callback([]);
-            }
-        });
-    },
-
-    displaySuggestions: function(suggestions) {
     },
 
     addIngredient: function() {
-        const ingredientName = $(this.config.ingredientInputSelector).val().trim();
-        const quantity = $(this.config.quantityInputSelector).val().trim();
-        const unit = $(this.config.unitSelectSelector).val();
+        const name = $(this.config.ingredientInputSelector).val().trim();
+        const quantity = parseFloat($(this.config.quantityInputSelector).val() || '1');
+        const unit = $(this.config.unitSelectSelector).val() || 'cup';
 
-        if (!ingredientName) {
+        if (!name) {
             this.showMessage('Please enter an ingredient name.', 'warning');
             return;
         }
 
-        if (!quantity || isNaN(quantity) || parseFloat(quantity) <= 0) {
+        if (isNaN(quantity) || quantity <= 0) {
             this.showMessage('Please enter a valid quantity.', 'warning');
             return;
         }
 
-        const existingIngredient = this.state.ingredients.find(ing =>
-            ing.name.toLowerCase() === ingredientName.toLowerCase()
-        );
-
-        if (existingIngredient) {
-            this.showMessage('This ingredient is already added to the recipe.', 'warning');
+        if (this.ingredients.some(ing => ing.name.toLowerCase() === name.toLowerCase())) {
+            this.showMessage('This ingredient is already added.', 'warning');
             return;
         }
 
-        const ingredient = {
-            id: null, 
-            name: ingredientName,
-            quantity: parseFloat(quantity),
-            unit: unit || 'cup',
-            tempId: this.state.currentIndex++
-        };
-
-        this.state.ingredients.push(ingredient);
+        this.ingredients.push({
+            name: name,
+            quantity: quantity,
+            unit: unit,
+            tempId: this.currentIndex++
+        });
 
         this.clearIngredientForm();
-
         this.renderIngredients();
-
-        this.showMessage(`Added ${ingredient.name} to recipe.`, 'success');
+        this.updateIngredientsTextarea();
+        this.showMessage(`Added ${quantity} ${unit} ${name}`, 'success');
     },
 
-    removeIngredient: function(ingredientElement) {
-        const $element = $(ingredientElement);
+    removeIngredient: function($element) {
         const tempId = $element.data('temp-id');
-        const ingredientName = $element.find('.ingredient-name').text();
+        const name = $element.find('.ingredient-name').text();
 
-        this.state.ingredients = this.state.ingredients.filter(ing => ing.tempId !== tempId);
+        this.ingredients = this.ingredients.filter(ing => ing.tempId !== tempId);
 
         $element.fadeOut(300, () => {
             $element.remove();
-            this.updateIngredientHiddenFields();
+            this.updateIngredientsTextarea();
+
+            if (this.ingredients.length === 0) {
+                this.renderIngredients();
+            }
         });
 
-        this.showMessage(`Removed ${ingredientName} from recipe.`, 'info');
+        this.showMessage(`Removed ${name}`, 'info');
     },
 
     renderIngredients: function() {
         const $container = $(this.config.containerSelector);
         $container.empty();
 
-        if (this.state.ingredients.length === 0) {
+        if (this.ingredients.length === 0) {
             $container.html(`
                 <div class="text-center text-muted py-4">
-                    <i class="bi bi-inbox display-6"></i>
-                    <p class="mt-2">No ingredients added yet.</p>
+                    <i class="bi bi-basket display-6"></i>
+                    <p class="mt-2">No ingredients added yet. Add ingredients above to get started!</p>
                 </div>
             `);
             return;
         }
 
-        this.state.ingredients.forEach((ingredient, index) => {
-            const ingredientHtml = this.createIngredientHTML(ingredient, index);
-            $container.append(ingredientHtml);
+        this.ingredients.forEach(ingredient => {
+            $container.append(this.createIngredientHTML(ingredient));
         });
 
-        this.updateIngredientHiddenFields();
+        this.updateIngredientsTextarea();
     },
 
-    createIngredientHTML: function(ingredient, index) {
+    createIngredientHTML: function(ingredient) {
+        const quantity = ingredient.quantity % 1 === 0 ?
+            ingredient.quantity.toString() :
+            ingredient.quantity.toFixed(2).replace(/\.?0+$/, '');
+
         return `
-            <div class="ingredient-item card mb-2" data-temp-id="${ingredient.tempId}" data-ingredient-id="${ingredient.id || ''}">
+            <div class="ingredient-item card mb-2" data-temp-id="${ingredient.tempId}">
                 <div class="card-body p-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="flex-grow-1">
-                            <div class="d-flex align-items-center">
-                                <span class="ingredient-quantity fw-bold me-2">${ingredient.quantity}</span>
-                                <span class="ingredient-unit text-muted me-2">${ingredient.unit}</span>
-                                <span class="ingredient-name">${ingredient.name}</span>
-                            </div>
+                            <span class="ingredient-quantity fw-bold text-primary">${quantity}</span>
+                            <span class="ingredient-unit text-muted">${ingredient.unit}</span>
+                            <span class="ingredient-name">${ingredient.name}</span>
                         </div>
-                        <div class="ingredient-actions">
-                            <button type="button" class="btn btn-sm btn-outline-danger remove-ingredient-btn" 
-                                    title="Remove ingredient">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-ingredient-btn" 
+                                title="Remove ${ingredient.name}">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                 </div>
-                
-                <input type="hidden" name="RecipeIngredients[${index}].IngredientName" value="${ingredient.name}">
-                <input type="hidden" name="RecipeIngredients[${index}].Quantity" value="${ingredient.quantity}">
-                <input type="hidden" name="RecipeIngredients[${index}].Unit" value="${ingredient.unit}">
-                ${ingredient.id ? `<input type="hidden" name="RecipeIngredients[${index}].IngredientId" value="${ingredient.id}">` : ''}
             </div>
         `;
     },
 
-    updateIngredientHiddenFields: function() {
-        $('#ingredients-hidden-fields').remove();
+    updateIngredientsTextarea: function() {
+        const $textarea = $(this.config.ingredientsTextareaSelector);
 
-        const $hiddenContainer = $('<div id="ingredients-hidden-fields"></div>');
+        if (!$textarea.length) {
+            console.error("Ingredients textarea not found!");
+            return;
+        }
 
-        this.state.ingredients.forEach((ingredient, index) => {
-            $hiddenContainer.append(`
-                <input type="hidden" name="RecipeIngredients[${index}].IngredientName" value="${ingredient.name}">
-                <input type="hidden" name="RecipeIngredients[${index}].Quantity" value="${ingredient.quantity}">
-                <input type="hidden" name="RecipeIngredients[${index}].Unit" value="${ingredient.unit}">
-                ${ingredient.id ? `<input type="hidden" name="RecipeIngredients[${index}].IngredientId" value="${ingredient.id}">` : ''}
-            `);
-        });
+        const ingredientsText = this.ingredients
+            .map(ing => `${ing.quantity} ${ing.unit} ${ing.name}`)
+            .join('\n');
 
-        $('form').append($hiddenContainer);
+        $textarea.val(ingredientsText);
+
+        $textarea.removeClass('d-none').hide();
+
+        console.log(`Updated ingredients textarea with ${this.ingredients.length} ingredients`);
     },
 
     clearIngredientForm: function() {
         $(this.config.ingredientInputSelector).val('').focus();
-        $(this.config.quantityInputSelector).val('');
+        $(this.config.quantityInputSelector).val('1');
         $(this.config.unitSelectSelector).val('cup');
     },
 
-    saveNewIngredient: function() {
+    setupModal: function() {
+        const self = this;
         const $modal = $(this.config.newIngredientModalSelector);
-        const ingredientData = {
-            name: $modal.find('#new-ingredient-name').val().trim(),
-            description: $modal.find('#new-ingredient-description').val().trim(),
-            categoryId: $modal.find('#new-ingredient-category').val(),
-            defaultMeasurement: $modal.find('#new-ingredient-measurement').val()
-        };
 
-        if (!ingredientData.name) {
-            this.showMessage('Please enter an ingredient name.', 'warning');
+        if (!$modal.length) {
+            console.warn("New ingredient modal not found");
+            return;
+        }
+
+        $(document).off('click.ingredientManager', this.config.saveNewIngredientSelector)
+            .on('click.ingredientManager', this.config.saveNewIngredientSelector, function(e) {
+                e.preventDefault();
+                self.saveNewIngredient();
+            });
+
+        $modal.off('hidden.bs.modal.ingredientManager')
+            .on('hidden.bs.modal.ingredientManager', function() {
+                self.clearNewIngredientForm();
+                self.cleanupModal();
+            });
+
+        $modal.off('hide.bs.modal.ingredientManager')
+            .on('hide.bs.modal.ingredientManager', function() {
+                setTimeout(() => {
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open').css('padding-right', '');
+                }, 100);
+            });
+    },
+
+    openNewIngredientModal: function() {
+        const $modal = $(this.config.newIngredientModalSelector);
+
+        if (!$modal.length) {
+            this.showMessage("Modal not found", 'danger');
+            return;
+        }
+
+        this.cleanupModal();
+        this.clearNewIngredientForm();
+
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
+            bsModal.show();
+        } else {
+            $modal.modal('show');
+        }
+    },
+
+    saveNewIngredient: function() {
+        const name = $('#new-ingredient-name').val().trim();
+        const category = $('#new-ingredient-category').val();
+        const measurement = $('#new-ingredient-measurement').val();
+        const description = $('#new-ingredient-description').val().trim();
+
+        if (!name) {
+            this.showModalMessage('Please enter an ingredient name.', 'danger');
             return;
         }
 
         const $saveBtn = $(this.config.saveNewIngredientSelector);
         const originalText = $saveBtn.text();
-
         $saveBtn.prop('disabled', true).text('Saving...');
 
         $.ajax({
             url: this.config.createIngredientUrl,
             method: 'POST',
-            data: ingredientData,
-            headers: {
-                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            data: {
+                name: name,
+                category: category,
+                measurement: measurement,
+                description: description,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
             },
             success: (response) => {
-                if (response.success) {
+                if (response && response.success) {
                     $(this.config.ingredientInputSelector).val(response.ingredient.name);
 
-                    $modal.modal('hide');
+                    if (response.ingredient.measurement) {
+                        $(this.config.unitSelectSelector).val(response.ingredient.measurement);
+                    }
 
-                    this.showMessage('New ingredient created successfully!', 'success');
+                    this.closeModal();
+
+                    $(this.config.quantityInputSelector).focus();
+
+                    this.showMessage('New ingredient created! Now set the quantity and click Add.', 'success');
                 } else {
-                    this.showMessage(response.message || 'Failed to create ingredient.', 'danger');
+                    this.showModalMessage(response?.message || 'Failed to create ingredient.', 'danger');
                 }
             },
             error: (xhr, status, error) => {
                 console.error('Failed to create ingredient:', error);
-                this.showMessage('An error occurred while creating the ingredient.', 'danger');
+                this.showModalMessage('Error creating ingredient.', 'danger');
             },
             complete: () => {
                 $saveBtn.prop('disabled', false).text(originalText);
@@ -313,49 +354,75 @@ const IngredientManager = {
         });
     },
 
-    clearNewIngredientForm: function() {
+    closeModal: function() {
         const $modal = $(this.config.newIngredientModalSelector);
-        $modal.find('input, textarea, select').val('');
+
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const bsModal = bootstrap.Modal.getInstance($modal[0]);
+            if (bsModal) {
+                bsModal.hide();
+            }
+        } else {
+            $modal.modal('hide');
+        }
+
+        setTimeout(() => this.cleanupModal(), 300);
+    },
+
+    cleanupModal: function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
+        $(this.config.newIngredientModalSelector).removeClass('show').css('display', '');
+    },
+
+    clearNewIngredientForm: function() {
+        $('#new-ingredient-name, #new-ingredient-description').val('');
+        $('#new-ingredient-category, #new-ingredient-measurement').val('');
+        $('#modal-messages').empty();
     },
 
     showMessage: function(message, type = 'info') {
-        const alertClass = `alert-${type}`;
-        const icon = {
-            success: 'bi-check-circle',
-            danger: 'bi-exclamation-triangle',
-            warning: 'bi-exclamation-triangle',
-            info: 'bi-info-circle'
-        }[type] || 'bi-info-circle';
-
         const alertHtml = `
-            <div class="alert ${alertClass} alert-dismissible fade show ingredient-alert" role="alert">
-                <i class="bi ${icon} me-2"></i>${message}
+            <div class="alert alert-${type} alert-dismissible fade show ingredient-alert" role="alert">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         `;
 
+        $('.ingredient-alert').remove();
         $(this.config.containerSelector).before(alertHtml);
 
-        setTimeout(() => {
-            $('.ingredient-alert').fadeOut();
-        }, 3000);
+        setTimeout(() => $('.ingredient-alert').fadeOut(), 4000);
+    },
+
+    showModalMessage: function(message, type = 'info') {
+        $('#modal-messages').html(`
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `);
     },
 
     getIngredients: function() {
-        return this.state.ingredients;
+        return [...this.ingredients];
     },
 
     setIngredients: function(ingredients) {
-        this.state.ingredients = ingredients;
+        this.ingredients = ingredients || [];
         this.renderIngredients();
+        this.updateIngredientsTextarea();
     }
 };
 
-$(document).ready(() => {
+$(document).ready(function() {
     if ($('#ingredients-container').length &&
         (window.location.pathname.includes('/Recipe/Create') ||
             window.location.pathname.includes('/Recipe/Edit'))) {
-        IngredientManager.init();
+
+        setTimeout(() => {
+            IngredientManager.init();
+        }, 100);
     }
 });
 

@@ -28,7 +28,7 @@ ViewData["Title"] = "Edit Ingredient";
             <!-- Category Selection Section -->
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <partial name="_CategorySelection" model="@Model.Category" />
+                    <partial name="_CategorySelection" model="@(Model?.Category ?? string.Empty)" />
                 </div>
 
                 <div class="col-md-6">

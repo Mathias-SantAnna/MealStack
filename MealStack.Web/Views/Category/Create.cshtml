@@ -2,64 +2,154 @@
 
 @{
     ViewData["Title"] = "Create Category";
+    ViewData["PageTitle"] = "Create New Category";
+    ViewData["PageDescription"] = "Add a new category for organizing recipes";
 }
 
-<div class="container py-4">
-    <h1>Create Category</h1>
+<partial name="_PageHeader" />
+<partial name="_MessageAlerts" />
 
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <form asp-action="Create" enctype="multipart/form-data">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
+<div class="container">
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-plus-circle me-2"></i>Create New Category
+            </h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                
+                <div class="row">
+                    <div class="col-md-6">
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label">Category Name</label>
-                            <input asp-for="Name" class="form-control" required />
+                            <input asp-for="Name" class="form-control" placeholder="e.g., Breakfast, Desserts" required />
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="Description" class="form-label">Description</label>
-                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <textarea asp-for="Description" class="form-control" rows="3" 
+                                      placeholder="Brief description of this category (optional)"></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Category Image</label>
-                            <input type="file" class="form-control" name="ImageFile" accept="image/*" />
-                            <small class="text-muted">Upload an image for this category (optional)</small>
+                            <label asp-for="ColorClass" class="form-label">Color Theme</label>
+                            <select asp-for="ColorClass" class="form-select" id="colorSelect" required>
+                                <option value="">Select a color theme</option>
+                                @foreach (var color in ViewBag.ColorOptions as Dictionary<string, string>)
+                                {
+                                    <option value="@color.Key">@color.Value</option>
+                                }
+                            </select>
+                            <span asp-validation-for="ColorClass" class="text-danger"></span>
+                            <small class="form-text text-muted">This color will be used for category pills and badges throughout the site</small>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="ColorClass" class="form-label">Color</label>
-                            <select asp-for="ColorClass" class="form-select">
-                                <option value="">Default (Secondary)</option>
-                                <option value="primary">Primary (Blue)</option>
-                                <option value="secondary">Secondary (Gray)</option>
-                                <option value="success">Success (Green)</option>
-                                <option value="danger">Danger (Red)</option>
-                                <option value="warning">Warning (Yellow)</option>
-                                <option value="info">Info (Light Blue)</option>
-                                <option value="light">Light</option>
-                                <option value="dark">Dark</option>
-                            </select>
-                            <small class="text-muted">Choose a color for the category badge (used if no image is uploaded)</small>
-                            <span asp-validation-for="ColorClass" class="text-danger"></span>
+                            <label asp-for="ImagePath" class="form-label">Image URL</label>
+                            <input asp-for="ImagePath" class="form-control" placeholder="https://example.com/image.jpg (optional)" />
+                            <span asp-validation-for="ImagePath" class="text-danger"></span>
+                            <small class="form-text text-muted">Optional image for the category</small>
                         </div>
-
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
-                            <button type="submit" class="btn btn-success">Create</button>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Color Preview</label>
+                            <div class="border rounded p-3 bg-light">
+                                <div class="mb-2">
+                                    <strong>Category Pill Preview:</strong>
+                                </div>
+                                <div class="mb-3">
+                                    <span id="categoryPillPreview" class="category-pill bg-secondary">
+                                        Sample Category
+                                    </span>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <strong>Badge Preview:</strong>
+                                </div>
+                                <div>
+                                    <span id="badgePreview" class="badge bg-secondary">
+                                        Sample Badge
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                    </form>
+                        
+                        <!-- Color Reference -->
+                        <div class="mb-3">
+                            <label class="form-label">Available Colors</label>
+                            <div class="border rounded p-3 bg-light">
+                                <div class="row g-2">
+                                    @foreach (var color in ViewBag.ColorOptions as Dictionary<string, string>)
+                                    {
+                                        <div class="col-6 col-sm-4">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-@color.Key me-2">●</span>
+                                                <small>@color.Value</small>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Create Category
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Back to Categories
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            $('#colorSelect').on('change', function() {
+                const selectedColor = $(this).val();
+                const categoryName = $('#Name').val() || 'Sample Category';
+                
+                if (selectedColor) {
+                    $('#categoryPillPreview')
+                        .removeClass()
+                        .addClass(`category-pill bg-${selectedColor}`)
+                        .text(categoryName);
+                    
+                    $('#badgePreview')
+                        .removeClass()
+                        .addClass(`badge bg-${selectedColor}`)
+                        .text(categoryName);
+                } else {
+                    $('#categoryPillPreview')
+                        .removeClass()
+                        .addClass('category-pill bg-secondary')
+                        .text('Sample Category');
+                    
+                    $('#badgePreview')
+                        .removeClass()
+                        .addClass('badge bg-secondary')
+                        .text('Sample Badge');
+                }
+            });
+            
+            $('#Name').on('input', function() {
+                const categoryName = $(this).val() || 'Sample Category';
+                $('#categoryPillPreview').text(categoryName);
+                $('#badgePreview').text(categoryName);
+            });
+        });
+    </script>
 }

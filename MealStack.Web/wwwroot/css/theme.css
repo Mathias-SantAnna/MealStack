@@ -21,33 +21,53 @@
     --danger-color: #dc3545;
     --info-color: #17a2b8;
 
+    /* Dark Color Variables for Special Occasions */
+    --dark-color: #343a40;
+    --dark-color-rgb: 52, 58, 64;
+    --dark-hover: #212529;
+    --dark-active: #000000;
+
     /* Light Theme Variables (Default) */
-    --bg-primary: #fef7f0;          
-    --bg-secondary: #fff5f0;        
-    --bg-tertiary: #f4a460;         
-    --bg-white: #ffffff;            
+    --bg-primary: #fef7f0;
+    --bg-secondary: #fff5f0;
+    --bg-tertiary: #f4a460;
+    --bg-white: #ffffff;
 
-    --text-primary: #2c1810;        
-    --text-secondary: #6b4423;      
-    --text-muted: #8d5524;          
+    --text-primary: #2c1810;
+    --text-secondary: #6b4423;
+    --text-muted: #8d5524;
 
-    --border-color: #f4a460;        
-    --border-light: #ffa366;        
+    --border-color: #f4a460;
+    --border-light: #ffa366;
 
-    --card-bg: #ffffff;             
-    --navbar-bg: #ffffff;           
-    --navbar-text: #2c1810;         
+    --card-bg: #ffffff;
+    --navbar-bg: #ffffff;
+    --navbar-text: #2c1810;
 
-    --btn-bg: #ffffff;              
-    --btn-text: #2c1810;           
+    --btn-bg: #ffffff;
+    --btn-text: #2c1810;
 
-    --input-bg: #ffffff;            
-    --input-border: #f4a460;      
-    --input-text: #2c1810;         
+    --input-bg: #ffffff;
+    --input-border: #f4a460;
+    --input-text: #2c1810;
 
-    --shadow: rgba(255, 107, 53, 0.15);        
-    --shadow-hover: rgba(255, 107, 53, 0.25);  
-    --overlay-bg: rgba(254, 247, 240, 0.95);   
+    --shadow: rgba(255, 107, 53, 0.15);
+    --shadow-hover: rgba(255, 107, 53, 0.25);
+    --overlay-bg: rgba(254, 247, 240, 0.95);
+    
+    /* Extended color variables */
+    --purple-color: #6f42c1;
+    --pink-color: #d63384;
+    --orange-color: #fd7e14;
+    --teal-color: #20c997;
+    --indigo-color: #6610f2;
+    --cyan-color: #0dcaf0;
+    --lime-color: #32cd32;
+    --amber-color: #ffc107;
+    --rose-color: #e91e63;
+    --emerald-color: #50c878;
+    --violet-color: #8a2be2;
+    --sky-color: #87ceeb;
 
     /* Orange Theme Specific Variables */
     --orange-gradient: linear-gradient(135deg, #ff6b35 0%, #d73502 100%);
@@ -56,36 +76,136 @@
 
     /* Transition speed */
     --transition-speed: 0.3s;
+
+    /* Z-index layers */
+    --z-sticky: 1000;
+}
+
+/* Extended background color classes */
+.bg-purple { background-color: var(--purple-color) !important; }
+.bg-pink { background-color: var(--pink-color) !important; }
+.bg-orange { background-color: var(--orange-color) !important; }
+.bg-teal { background-color: var(--teal-color) !important; }
+.bg-indigo { background-color: var(--indigo-color) !important; }
+.bg-cyan { background-color: var(--cyan-color) !important; }
+.bg-lime { background-color: var(--lime-color) !important; }
+.bg-amber { background-color: var(--amber-color) !important; }
+.bg-rose { background-color: var(--rose-color) !important; }
+.bg-emerald { background-color: var(--emerald-color) !important; }
+.bg-violet { background-color: var(--violet-color) !important; }
+.bg-sky { background-color: var(--sky-color) !important; }
+
+/* Extended text color classes */
+.text-purple { color: var(--purple-color) !important; }
+.text-pink { color: var(--pink-color) !important; }
+.text-orange { color: var(--orange-color) !important; }
+.text-teal { color: var(--teal-color) !important; }
+.text-indigo { color: var(--indigo-color) !important; }
+.text-cyan { color: var(--cyan-color) !important; }
+.text-lime { color: var(--lime-color) !important; }
+.text-amber { color: var(--amber-color) !important; }
+.text-rose { color: var(--rose-color) !important; }
+.text-emerald { color: var(--emerald-color) !important; }
+.text-violet { color: var(--violet-color) !important; }
+.text-sky { color: var(--sky-color) !important; }
+
+/* Extended border color classes for category pills */
+.border-purple { border-color: var(--purple-color) !important; }
+.border-pink { border-color: var(--pink-color) !important; }
+.border-orange { border-color: var(--orange-color) !important; }
+.border-teal { border-color: var(--teal-color) !important; }
+.border-indigo { border-color: var(--indigo-color) !important; }
+.border-cyan { border-color: var(--cyan-color) !important; }
+.border-lime { border-color: var(--lime-color) !important; }
+.border-amber { border-color: var(--amber-color) !important; }
+.border-rose { border-color: var(--rose-color) !important; }
+.border-emerald { border-color: var(--emerald-color) !important; }
+.border-violet { border-color: var(--violet-color) !important; }
+.border-sky { border-color: var(--sky-color) !important; }
+
+/* Additional category pill border support for extended colors */
+.category-pill.bg-purple { border-color: var(--purple-color) !important; }
+.category-pill.bg-pink { border-color: var(--pink-color) !important; }
+.category-pill.bg-orange { border-color: var(--orange-color) !important; }
+.category-pill.bg-teal { border-color: var(--teal-color) !important; }
+.category-pill.bg-indigo { border-color: var(--indigo-color) !important; }
+.category-pill.bg-cyan { border-color: var(--cyan-color) !important; }
+.category-pill.bg-lime { border-color: var(--lime-color) !important; }
+.category-pill.bg-amber { border-color: var(--amber-color) !important; }
+.category-pill.bg-rose { border-color: var(--rose-color) !important; }
+.category-pill.bg-emerald { border-color: var(--emerald-color) !important; }
+.category-pill.bg-violet { border-color: var(--violet-color) !important; }
+.category-pill.bg-sky { border-color: var(--sky-color) !important; }
+
+/* Badge support for extended colors */
+.badge.bg-purple { color: white !important; }
+.badge.bg-pink { color: white !important; }
+.badge.bg-orange { color: white !important; }
+.badge.bg-teal { color: white !important; }
+.badge.bg-indigo { color: white !important; }
+.badge.bg-cyan { color: black !important; }
+.badge.bg-lime { color: black !important; }
+.badge.bg-amber { color: black !important; }
+.badge.bg-rose { color: white !important; }
+.badge.bg-emerald { color: white !important; }
+.badge.bg-violet { color: white !important; }
+.badge.bg-sky { color: black !important; }
+
+/* Ensure text contrast for light colored backgrounds */
+.bg-light, .bg-warning, .bg-amber, .bg-lime, .bg-cyan, .bg-sky {
+    color: #212529 !important;
+}
+
+/* Dark theme support for extended colors */
+[data-theme="dark"] .category-pill.bg-purple,
+[data-theme="dark"] .category-pill.bg-pink,
+[data-theme="dark"] .category-pill.bg-orange,
+[data-theme="dark"] .category-pill.bg-teal,
+[data-theme="dark"] .category-pill.bg-indigo,
+[data-theme="dark"] .category-pill.bg-cyan,
+[data-theme="dark"] .category-pill.bg-lime,
+[data-theme="dark"] .category-pill.bg-amber,
+[data-theme="dark"] .category-pill.bg-rose,
+[data-theme="dark"] .category-pill.bg-emerald,
+[data-theme="dark"] .category-pill.bg-violet,
+[data-theme="dark"] .category-pill.bg-sky {
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: #2c1810 !important;
 }
 
 /*      Dark Theme Variables        */
 [data-theme="dark"] {
-    --bg-primary: #2c1810;          
-    --bg-secondary: #3d2517;        
-    --bg-tertiary: #4a2d1c;         
-    --bg-white: #ffffff;            
+    --bg-primary: #2c1810;
+    --bg-secondary: #3d2517;
+    --bg-tertiary: #4a2d1c;
+    --bg-white: #ffffff;
 
-    --text-primary: #fef7f0;        
-    --text-secondary: #f4a460;      
-    --text-muted: #8d5524;          
+    --text-primary: #fef7f0;
+    --text-secondary: #f4a460;
+    --text-muted: #8d5524;
 
-    --border-color: #6b4423;        
-    --border-light: #8d5524;        
+    --border-color: #6b4423;
+    --border-light: #8d5524;
 
-    --card-bg: #ffffff;             
-    --navbar-bg: #2c1810;           
-    --navbar-text: #fef7f0;         
+    --card-bg: #ffffff;
+    --navbar-bg: #2c1810;
+    --navbar-text: #fef7f0;
 
-    --btn-bg: #6b4423;              
-    --btn-text: #fef7f0;           
+    --btn-bg: #6b4423;
+    --btn-text: #fef7f0;
 
-    --input-bg: #ffffff;            
-    --input-border: #8d5524;        
-    --input-text: #2c1810;          
+    --input-bg: #ffffff;
+    --input-border: #8d5524;
+    --input-text: #2c1810;
 
     --shadow: rgba(0, 0, 0, 0.3);
     --shadow-hover: rgba(0, 0, 0, 0.4);
-    --overlay-bg: rgba(44, 24, 16, 0.8);   
+    --overlay-bg: rgba(44, 24, 16, 0.8);
+
+    /* Dark theme specific variables */
+    --dark-color: #6c757d;
+    --dark-color-rgb: 108, 117, 125;
+    --dark-hover: #5a6268;
 }
 
 /*     GLOBAL THEME APPLICATION     */
@@ -199,7 +319,7 @@ body {
 .navbar .navbar-brand,
 .navbar .nav-link,
 .navbar .dropdown-toggle {
-    color: #fef7f0 !important; 
+    color: #fef7f0 !important;
     font-weight: 600;
 }
 
@@ -294,11 +414,11 @@ body {
     color: #fef7f0 !important;
 }
 
-/* Categories Bar - Both Themes */
+/* Categories Bar - Consistent Background */
 .categories-section,
 .categories-showcase,
 .category-nav-container {
-    background-color: #FFDEAD !important;
+    background-color: #FFF3E0 !important;
     border: 2px solid #ff6b35;
     border-radius: 16px;
     padding: 1.5rem;
@@ -373,53 +493,297 @@ body {
     transform: translateY(-2px);
 }
 
-/* Recipe card buttons - WHITE BACKGROUND */
-.recipe-card .btn {
+/* Recipe card buttons - WHITE BACKGROUND WITH CONSISTENT COLORS 
+.recipe-card .btn,
+.recipe-card-wrapper .btn,
+.card .btn-group .btn {
     background-color: white !important;
-    color: #2c1810 !important;
-    border: 2px solid #dee2e6;
+    border: 2px solid !important;
     font-weight: 600;
     transition: all var(--transition-speed) ease;
-}
+}*/
 
-.recipe-card .btn:hover {
+.recipe-card .btn:hover,
+.recipe-card-wrapper .btn:hover,
+.card .btn-group .btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.recipe-card .btn-outline-danger {
+/* View button - Green */
+.recipe-card .btn-outline-info,
+.recipe-card-wrapper .btn-outline-info {
+    border-color: #28a745 !important;
+    color: #28a745 !important;
+    background-color: white !important;
+}
+
+.recipe-card .btn-outline-info:hover,
+.recipe-card-wrapper .btn-outline-info:hover {
+    background-color: #28a745 !important;
+    color: white !important;
+    border-color: #28a745 !important;
+}
+
+/* Edit button - Yellow */
+.recipe-card .btn-outline-primary,
+.recipe-card-wrapper .btn-outline-primary {
+    border-color: #ffc107 !important;
+    color: #856404 !important;
+    background-color: white !important;
+}
+
+.recipe-card .btn-outline-primary:hover,
+.recipe-card-wrapper .btn-outline-primary:hover {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+    border-color: #ffc107 !important;
+}
+
+/* Delete button - Red */
+.recipe-card .btn-outline-danger,
+.recipe-card-wrapper .btn-outline-danger,
+.card .btn-outline-danger {
     border-color: #dc3545 !important;
     color: #dc3545 !important;
     background-color: white !important;
 }
 
-.recipe-card .btn-outline-danger:hover {
+.recipe-card .btn-outline-danger:hover,
+.recipe-card-wrapper .btn-outline-danger:hover,
+.card .btn-outline-danger:hover {
+    background-color: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+    box-shadow: 0 4px 16px rgba(220, 53, 69, 0.3);
+}
+
+/* Homepage View All button */
+.btn-view-all {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    background-color: white !important;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-view-all:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border-color: var(--primary-color) !important;
+    transform: translateY(-2px);
+}
+
+/* Meal plan card buttons */
+.meal-plan-card .btn,
+.card .meal-plan-card .btn,
+.card-footer .btn {
+    transition: all 0.3s ease;
+}
+
+.meal-plan-card .btn:hover,
+.card .meal-plan-card .btn:hover,
+.card-footer .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* View button in meal plans - Blue */
+.meal-plan-card .btn-outline-primary,
+.card-footer .btn-outline-primary {
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    background-color: white !important;
+}
+
+.meal-plan-card .btn-outline-primary:hover,
+.card-footer .btn-outline-primary:hover {
+    background-color: var(--primary-hover) !important;
+    color: white !important;
+}
+
+/* Shopping List button in meal plans - Green 
+.meal-plan-card .btn-outline-success,
+.card-footer .btn-outline-success {
+    border-color: #28a745 !important;
+    color: #28a745 !important;
+    background-color: white !important;
+}
+
+.meal-plan-card .btn-outline-success:hover,
+.card-footer .btn-outline-success:hover {
+    background-color: #28a745 !important;
+    color: white !important;
+}*/
+
+/* Admin dashboard card buttons */
+.admin-card .btn,
+.admin-dashboard .card .btn,
+.admin-panel .btn {
+    background-color: white !important;
+    color: #2c1810 !important;
+    border: 3px solid !important;
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+}
+
+.admin-card .btn:hover,
+.admin-dashboard .card .btn:hover,
+.admin-panel .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Admin button categories with proper borders */
+.admin-card .btn-primary,
+.admin-card .btn[href*="Users"],
+.admin-dashboard .btn-danger {
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+
+.admin-card .btn-primary:hover,
+.admin-card .btn[href*="Users"]:hover,
+.admin-dashboard .btn-danger:hover {
     background-color: #dc3545 !important;
     color: white !important;
 }
 
-/* Meal plan card buttons - WHITE BACKGROUND */
-.meal-plan-card .btn-outline-primary,
-.meal-plan-card .btn-outline-success {
-    background-color: white !important;
-    color: #2c1810 !important;
-    border: 2px solid currentColor;
-    font-weight: 600;
+.admin-card .btn[href*="ManageRecipes"],
+.admin-dashboard .btn-primary {
+    border-color: #007bff !important;
+    color: #007bff !important;
 }
 
-/* Admin dashboard buttons with category borders */
-.admin-card .btn {
-    background-color: white !important;
-    color: #2c1810 !important;
-    border: 2px solid;
-    font-weight: 600;
+.admin-card .btn[href*="ManageRecipes"]:hover,
+.admin-dashboard .btn-primary:hover {
+    background-color: #007bff !important;
+    color: white !important;
 }
 
-.admin-card .btn-primary { border-color: #007bff !important; }
-.admin-card .btn-success { border-color: #28a745 !important; }
-.admin-card .btn-warning { border-color: #ffc107 !important; }
-.admin-card .btn-danger { border-color: #dc3545 !important; }
-.admin-card .btn-info { border-color: #17a2b8 !important; }
+/* Manage Ingredients button styling */
+.admin-card .btn[href*="Ingredient"],
+.admin-dashboard .btn-success,
+.admin-card .btn-outline-secondary[href*="ManageIngredients"] {
+    border-color: #8d5524 !important;
+    color: #8d5524 !important;
+    background-color: white !important;
+}
+
+.admin-card .btn[href*="Ingredient"]:hover,
+.admin-dashboard .btn-success:hover,
+.admin-card .btn-outline-secondary[href*="ManageIngredients"]:hover {
+    background-color: #8d5524 !important;
+    color: white !important;
+    border-color: #8d5524 !important;
+}
+
+.admin-card .btn[href*="Category"],
+.admin-dashboard .btn-warning {
+    border-color: #ffc107 !important;
+    color: #856404 !important;
+}
+
+.admin-card .btn[href*="Category"]:hover,
+.admin-dashboard .btn-warning:hover {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.admin-card .btn[href*="MealPlan"],
+.admin-dashboard .btn-info {
+    border-color: #17a2b8 !important;
+    color: #17a2b8 !important;
+}
+
+.admin-card .btn[href*="MealPlan"]:hover,
+.admin-dashboard .btn-info:hover {
+    background-color: #17a2b8 !important;
+    color: white !important;
+}
+
+/* Management pages View, Edit, Delete buttons */
+.management-table .btn-outline-info,
+.management-table .btn[title="View details"],
+.management-table .btn[title="View ingredient"] {
+    border-color: #28a745 !important;
+    color: #28a745 !important;
+    background-color: white !important;
+}
+
+.management-table .btn-outline-info:hover,
+.management-table .btn[title="View details"]:hover,
+.management-table .btn[title="View ingredient"]:hover {
+    background-color: #28a745 !important;
+    color: white !important;
+    border-color: #28a745 !important;
+}
+
+.management-table .btn-outline-primary,
+.management-table .btn[title="Edit recipe"],
+.management-table .btn[title="Edit ingredient"] {
+    border-color: #ffc107 !important;
+    color: #856404 !important;
+    background-color: white !important;
+}
+
+.management-table .btn-outline-primary:hover,
+.management-table .btn[title="Edit recipe"]:hover,
+.management-table .btn[title="Edit ingredient"]:hover {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+    border-color: #ffc107 !important;
+}
+
+.management-table .btn-outline-danger,
+.management-table .btn[title="Delete recipe"],
+.management-table .btn[title="Delete ingredient"] {
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+    background-color: white !important;
+}
+
+.management-table .btn-outline-danger:hover,
+.management-table .btn[title="Delete recipe"]:hover,
+.management-table .btn[title="Delete ingredient"]:hover {
+    background-color: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+}
+
+/* Meal Plan Detail page Edit & Delete buttons */
+.meal-plan-detail .btn-outline-secondary,
+.meal-plan-actions .btn-outline-secondary {
+    border-color: #ffc107 !important;
+    color: #856404 !important;
+    background-color: white !important;
+}
+
+.meal-plan-detail .btn-outline-secondary:hover,
+.meal-plan-actions .btn-outline-secondary:hover {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+    border-color: #ffc107 !important;
+}
+
+.meal-plan-detail .btn-outline-danger,
+.meal-plan-actions .btn-outline-danger {
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+    background-color: white !important;
+}
+
+.meal-plan-detail .btn-outline-danger:hover,
+.meal-plan-actions .btn-outline-danger:hover {
+    background-color: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+}
 
 /* "Add New Ingredient" and "Add Ingredient" buttons in dark theme */
 [data-theme="dark"] #add-new-ingredient-btn,
@@ -467,42 +831,66 @@ body {
 
 /*      FORM ENHANCEMENTS        */
 
-/*  forms  - Light theme */
+/* Standardized Form Input System */
 .form-control,
-.form-select {
-    background-color: var(--input-bg);
-    border: 2px solid var(--border-light);
-    color: var(--input-text);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    transition: all var(--transition-speed) ease;
+.form-select,
+textarea.form-control {
+    background-color: #ffffff !important;
+    border: 2px solid var(--border-light, #ffa366) !important;
+    color: #2c1810 !important;
+    border-radius: 8px !important;
+    padding: 0.75rem 1rem !important;
+    transition: all 0.3s ease !important;
+    font-size: 1rem !important;
 }
 
 .form-control:focus,
-.form-select:focus {
-    background-color: var(--input-bg);
-    border-color: var(--primary-color);
-    color: var(--input-text);
-    box-shadow: 0 0 0 0.25rem rgba(255, 107, 53, 0.25);
-    transform: translateY(-1px);
-}
-
-/* Dark theme form */
-[data-theme="dark"] .form-control,
-[data-theme="dark"] .form-select,
-[data-theme="dark"] .form-check-label,
-[data-theme="dark"] .form-label {
+.form-select:focus,
+textarea.form-control:focus {
     background-color: #ffffff !important;
-    border-color: var(--border-light) !important;
-    color: #2c1810 !important;
-}
-
-[data-theme="dark"] .form-control:focus,
-[data-theme="dark"] .form-select:focus {
-    background-color: #ffffff !important;
-    border-color: var(--primary-color) !important;
+    border-color: #ff6b35 !important;
     color: #2c1810 !important;
     box-shadow: 0 0 0 0.25rem rgba(255, 107, 53, 0.25) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Ingredient-specific form inputs */
+#ingredient-search,
+#ingredient-quantity,
+#ingredient-unit,
+.ingredient-chip .form-control,
+.ingredient-chip .form-select {
+    background-color: #ffffff !important;
+    border: 2px solid #dee2e6 !important;
+    color: #2c1810 !important;
+    border-radius: 6px !important;
+    font-size: 0.9rem !important;
+}
+
+/* Admin form styling consistency */
+.admin-panel .form-control,
+.management-table .form-control,
+.bulk-actions .form-control,
+.bulk-actions .form-select {
+    background-color: #ffffff !important;
+    color: #2c1810 !important;
+    border: 2px solid #dee2e6 !important;
+}
+
+/* Dark theme form consistency */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] textarea.form-control,
+[data-theme="dark"] #ingredient-search,
+[data-theme="dark"] #ingredient-quantity,
+[data-theme="dark"] #ingredient-unit {
+    background-color: #ffffff !important;
+    border-color: var(--border-light, #ffa366) !important;
+    color: #2c1810 !important;
+}
+
+[data-theme="dark"] .form-label {
+    color: #fef7f0 !important;
 }
 
 /*      RECIPE DETAILS PAGE      */
@@ -560,13 +948,14 @@ body {
     color: #2c1810 !important;
 }
 
-/*      CATEGORY NAVIGATION - GLASS STYLE       */
+/*      CATEGORY NAVIGATION - GLASS STYLE WITH DYNAMIC COLORS      */
 
-/* Glass-style category buttons with colored borders */
+/* Dynamic category buttons - Remove hardcoded colors, use Bootstrap classes */
 .category-pill {
-    background: rgba(255, 255, 255, 0.9) !important;
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.9) !important; /* Default background, overridden by bg-{colorClass} */
     color: #2c1810 !important;
-    border: 2px solid transparent;
+    border: 2px solid #dee2e6 !important; /* Default border, enhanced per color below */
     border-radius: 2rem;
     padding: 0.6rem 1.5rem;
     font-weight: 600;
@@ -585,22 +974,179 @@ body {
     color: #2c1810 !important;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
 }
 
-/* Category-specific borders */
-.category-pill[data-category="breakfast"] { border-color: #ffc107; }
-.category-pill[data-category="lunch"] { border-color: #17a2b8; }
-.category-pill[data-category="dinner"] { border-color: #6f42c1; }
-.category-pill[data-category="dessert"] { border-color: #e83e8c; }
-.category-pill[data-category="appetizer"] { border-color: #fd7e14; }
-.category-pill[data-category="snack"] { border-color: #28a745; }
-.category-pill[data-category="vegetarian"] { border-color: #20c997; }
-.category-pill[data-category="vegan"] { border-color: #6f42c1; }
-
-/* Fallback for categories without specific colors */
-.category-pill:not([data-category]) {
-    border-color: var(--primary-color);
+/* Bootstrap color class support with enhanced borders */
+.category-pill.bg-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
 }
+.category-pill.bg-secondary {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+    color: white !important;
+}
+.category-pill.bg-success {
+    background-color: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+    color: white !important;
+}
+.category-pill.bg-danger {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+    color: white !important;
+}
+.category-pill.bg-warning {
+    background-color: var(--warning-color) !important;
+    border-color: var(--warning-color) !important;
+    color: #212529 !important;
+}
+.category-pill.bg-info {
+    background-color: var(--info-color) !important;
+    border-color: var(--info-color) !important;
+    color: white !important;
+}
+.category-pill.bg-light {
+    background-color: #f8f9fa !important;
+    border-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+.category-pill.bg-dark {
+    background-color: var(--dark-color) !important;
+    border-color: var(--dark-color) !important;
+    color: white !important;
+}
+
+/* Extended color palette support */
+.category-pill.bg-purple {
+    background-color: var(--purple-color) !important;
+    border-color: var(--purple-color) !important;
+    color: white !important;
+}
+.category-pill.bg-pink {
+    background-color: var(--pink-color) !important;
+    border-color: var(--pink-color) !important;
+    color: white !important;
+}
+.category-pill.bg-orange {
+    background-color: var(--orange-color) !important;
+    border-color: var(--orange-color) !important;
+    color: white !important;
+}
+.category-pill.bg-teal {
+    background-color: var(--teal-color) !important;
+    border-color: var(--teal-color) !important;
+    color: white !important;
+}
+.category-pill.bg-indigo {
+    background-color: var(--indigo-color) !important;
+    border-color: var(--indigo-color) !important;
+    color: white !important;
+}
+.category-pill.bg-cyan {
+    background-color: var(--cyan-color) !important;
+    border-color: var(--cyan-color) !important;
+    color: #212529 !important;
+}
+.category-pill.bg-lime {
+    background-color: var(--lime-color) !important;
+    border-color: var(--lime-color) !important;
+    color: #212529 !important;
+}
+.category-pill.bg-amber {
+    background-color: var(--amber-color) !important;
+    border-color: var(--amber-color) !important;
+    color: #212529 !important;
+}
+.category-pill.bg-rose {
+    background-color: var(--rose-color) !important;
+    border-color: var(--rose-color) !important;
+    color: white !important;
+}
+.category-pill.bg-emerald {
+    background-color: var(--emerald-color) !important;
+    border-color: var(--emerald-color) !important;
+    color: white !important;
+}
+.category-pill.bg-violet {
+    background-color: var(--violet-color) !important;
+    border-color: var(--violet-color) !important;
+    color: white !important;
+}
+.category-pill.bg-sky {
+    background-color: var(--sky-color) !important;
+    border-color: var(--sky-color) !important;
+    color: #212529 !important;
+}
+
+/* Hover states maintain color consistency */
+.category-pill.bg-primary:hover,
+.category-pill.bg-secondary:hover,
+.category-pill.bg-success:hover,
+.category-pill.bg-danger:hover,
+.category-pill.bg-info:hover,
+.category-pill.bg-dark:hover,
+.category-pill.bg-purple:hover,
+.category-pill.bg-pink:hover,
+.category-pill.bg-orange:hover,
+.category-pill.bg-teal:hover,
+.category-pill.bg-indigo:hover,
+.category-pill.bg-rose:hover,
+.category-pill.bg-emerald:hover,
+.category-pill.bg-violet:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.category-pill.bg-warning:hover,
+.category-pill.bg-light:hover,
+.category-pill.bg-cyan:hover,
+.category-pill.bg-lime:hover,
+.category-pill.bg-amber:hover,
+.category-pill.bg-sky:hover {
+    opacity: 0.8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark theme adjustments for category pills */
+[data-theme="dark"] .category-pill {
+    backdrop-filter: blur(10px);
+}
+
+[data-theme="dark"] .category-pill.bg-primary,
+[data-theme="dark"] .category-pill.bg-secondary,
+[data-theme="dark"] .category-pill.bg-success,
+[data-theme="dark"] .category-pill.bg-danger,
+[data-theme="dark"] .category-pill.bg-info,
+[data-theme="dark"] .category-pill.bg-dark,
+[data-theme="dark"] .category-pill.bg-purple,
+[data-theme="dark"] .category-pill.bg-pink,
+[data-theme="dark"] .category-pill.bg-orange,
+[data-theme="dark"] .category-pill.bg-teal,
+[data-theme="dark"] .category-pill.bg-indigo,
+[data-theme="dark"] .category-pill.bg-rose,
+[data-theme="dark"] .category-pill.bg-emerald,
+[data-theme="dark"] .category-pill.bg-violet {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #2c1810 !important;
+    border-color: currentColor !important;
+}
+
+[data-theme="dark"] .category-pill.bg-warning,
+[data-theme="dark"] .category-pill.bg-light,
+[data-theme="dark"] .category-pill.bg-cyan,
+[data-theme="dark"] .category-pill.bg-lime,
+[data-theme="dark"] .category-pill.bg-amber,
+[data-theme="dark"] .category-pill.bg-sky {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #2c1810 !important;
+    border-color: var(--primary-color) !important;
+}
+
 
 /*       COMPONENT STYLES       */
 

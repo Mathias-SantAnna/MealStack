@@ -1,6 +1,5 @@
 const MealPlannerModule = (function() {
     const defaults = {
-        // Shopping list
         shoppingItemCheckboxSelector: '.shopping-item-checkbox',
         shoppingItemSelector:         '.shopping-item',
         clearCheckedItemsSelector:    '#clearCheckedItems',
@@ -14,7 +13,6 @@ const MealPlannerModule = (function() {
         addMealModalSelector:    '#addMealModal',
         plannedDateInputSelector:'#addMeal_PlannedDate',
 
-        // Edit Meal modal
         editMealFormSelector:    '#editMealForm',
         updateMealBtnSelector:   '#updateMealBtn',
         removeMealBtnSelector:   '.remove-meal-btn',
@@ -52,7 +50,6 @@ const MealPlannerModule = (function() {
         }
     }
 
-    // 1) Datepicker init
     const initDatepickers = function() {
         if ($.fn.datepicker) {
             $('.datepicker').each(function() {
@@ -81,7 +78,6 @@ const MealPlannerModule = (function() {
         }
     };
 
-    // 2) Select2 for Add-Meal recipe selector
     const initRecipeSearch = function() {
         const $el = $(options.recipeSearchSelector);
         if ($el.length && $.fn.select2 && !$el.data('select2')) { 
@@ -104,7 +100,6 @@ const MealPlannerModule = (function() {
         }
     };
 
-    // 3) Shopping-list behaviors
     const initShoppingList = function() {
         if (!$('.shopping-item').length) {
             return;
@@ -149,7 +144,6 @@ const MealPlannerModule = (function() {
             });
         });
 
-        // clear all
         $(document).off('click', options.clearCheckedItemsSelector).on('click', options.clearCheckedItemsSelector, function(e) {
             e.preventDefault();
             $(`${options.shoppingItemCheckboxSelector}:checked`).each(function() {
@@ -178,7 +172,6 @@ const MealPlannerModule = (function() {
         });
     };
 
-    // 4) Meal-plan add / edit / update / remove
     const setupMealPlanEventListeners = function() {
         if (eventHandlersInitialized) {
             return; 
@@ -230,7 +223,6 @@ const MealPlannerModule = (function() {
                 return;
             }
 
-            // Disable submit button to prevent multiple submissions
             const submitBtn = $(options.saveMealBtnSelector);
             submitBtn.prop('disabled', true);
             submitBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...');
@@ -286,7 +278,6 @@ const MealPlannerModule = (function() {
             }, 300);
         });
 
-        // Edit Meal modal setup
         $('#editMealModal').off('show.bs.modal').on('show.bs.modal', function(event) {
             const btn   = $(event.relatedTarget);
             const modal = $(this);
@@ -304,7 +295,6 @@ const MealPlannerModule = (function() {
             }, 300);
         });
 
-        // Update Meal
         $(document).off('click', options.updateMealBtnSelector).on('click', options.updateMealBtnSelector, function() {
             const form = $(options.editMealFormSelector)[0];
             if (!form.checkValidity()) {
@@ -312,7 +302,6 @@ const MealPlannerModule = (function() {
                 return;
             }
 
-            // Disable button to prevent multiple submissions
             const updateBtn = $(this);
             updateBtn.prop('disabled', true);
             updateBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...');
@@ -349,7 +338,6 @@ const MealPlannerModule = (function() {
             });
         });
 
-        // Remove Meal
         $(document).off('click', options.removeMealBtnSelector).on('click', options.removeMealBtnSelector, function() {
             const btn         = $(this);
             const itemId      = btn.data('meal-id');

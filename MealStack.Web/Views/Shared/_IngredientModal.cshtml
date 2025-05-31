@@ -1,82 +1,105 @@
-<div class="modal fade" id="addIngredientModal" tabindex="-1" aria-labelledby="addIngredientModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Add New Ingredient Modal -->
+<div class="modal fade" id="addIngredientModal" tabindex="-1"
+     aria-labelledby="addIngredientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addIngredientModalLabel">Add New Ingredient</h5>
+                <h5 class="modal-title" id="addIngredientModalLabel">
+                    <i class="bi bi-plus-circle me-2 text-success"></i>Add New Ingredient
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
             <div class="modal-body">
-                <div class="mb-3">
-                    <label for="new-ingredient-name" class="form-label">Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="new-ingredient-name" required>
-                    <div class="form-text">Enter the ingredient name (e.g., "Chicken Breast", "Olive Oil")</div>
+                <!-- Alert container for modal messages -->
+                <div id="modal-messages"></div>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Adding a new ingredient:</strong> This will be saved to the database and available for all users.
                 </div>
-                
-                <div class="mb-3">
-                    <label class="form-label">Category</label>
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <!-- ADMIN: Enhanced category management -->
-                        <div class="input-group">
-                            <select class="form-select" id="new-ingredient-category-select">
-                                <option value="">Select existing category...</option>
-                                <!-- Categories will be loaded dynamically -->
+
+                <form id="newIngredientForm">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label for="new-ingredient-name" class="form-label">
+                            Ingredient Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               id="new-ingredient-name"
+                               name="name"
+                               required
+                               maxlength="100"
+                               placeholder="e.g., Chicken Breast, Olive Oil, Fresh Basil">
+                        <div class="form-text">Enter the ingredient name as it should appear in recipes</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="new-ingredient-category" class="form-label">Category</label>
+                            <select class="form-select" id="new-ingredient-category" name="category">
+                                <option value="">Select a category (optional)</option>
+                                <option value="Meat & Poultry">Meat & Poultry</option>
+                                <option value="Seafood">Seafood</option>
+                                <option value="Dairy & Eggs">Dairy & Eggs</option>
+                                <option value="Vegetables">Vegetables</option>
+                                <option value="Fruits">Fruits</option>
+                                <option value="Grains & Cereals">Grains & Cereals</option>
+                                <option value="Herbs & Spices">Herbs & Spices</option>
+                                <option value="Oils & Vinegars">Oils & Vinegars</option>
+                                <option value="Baking">Baking</option>
+                                <option value="Pantry Staples">Pantry Staples</option>
+                                <option value="Condiments">Condiments</option>
+                                <option value="Beverages">Beverages</option>
+                                <option value="Other">Other</option>
                             </select>
-                            <button type="button" class="btn btn-outline-secondary" id="add-custom-category-btn" title="Add custom category">
-                                <i class="bi bi-plus"></i>
-                            </button>
+                            <div class="form-text">Helps organize ingredients</div>
                         </div>
-                        <input type="text" class="form-control mt-2 d-none" id="new-ingredient-category" placeholder="Enter new category name">
-                        <div class="form-text">
-                            <i class="bi bi-shield-check text-success me-1"></i>
-                            <strong>Admin only:</strong> You can select existing categories or create new ones.
+
+                        <div class="col-md-6">
+                            <label for="new-ingredient-measurement" class="form-label">Default Unit</label>
+                            <select class="form-select" id="new-ingredient-measurement" name="measurement">
+                                <option value="">Select default unit (optional)</option>
+                                <optgroup label="Volume">
+                                    <option value="cup">Cup</option>
+                                    <option value="tbsp">Tablespoon</option>
+                                    <option value="tsp">Teaspoon</option>
+                                    <option value="ml">Milliliter</option>
+                                    <option value="l">Liter</option>
+                                    <option value="fl oz">Fluid Ounce</option>
+                                </optgroup>
+                                <optgroup label="Weight">
+                                    <option value="g">Gram</option>
+                                    <option value="kg">Kilogram</option>
+                                    <option value="oz">Ounce</option>
+                                    <option value="lb">Pound</option>
+                                </optgroup>
+                                <optgroup label="Count">
+                                    <option value="piece">Piece</option>
+                                    <option value="slice">Slice</option>
+                                    <option value="clove">Clove</option>
+                                    <option value="pinch">Pinch</option>
+                                    <option value="handful">Handful</option>
+                                    <option value="dash">Dash</option>
+                                </optgroup>
+                            </select>
+                            <div class="form-text">Most common unit for this ingredient</div>
                         </div>
-                    }
-                    else
-                    {
-                        <!-- REGULAR USER: Dropdown only -->
-                        <select class="form-select" id="new-ingredient-category">
-                            <option value="">Select a category...</option>
-                            <!-- Categories will be loaded dynamically -->
-                        </select>
-                        <div class="form-text">
-                            <i class="bi bi-info-circle text-primary me-1"></i>
-                            Select from existing categories. Contact an admin to add new categories.
-                        </div>
-                    }
-                </div>
-                
-                <div class="mb-3">
-                    <label for="new-ingredient-measurement" class="form-label">Default Measurement Unit</label>
-                    <select class="form-select" id="new-ingredient-measurement">
-                        <option value="">Select a unit (optional)</option>
-                        <optgroup label="Weight">
-                            <option value="grams">Grams (g)</option>
-                            <option value="kilograms">Kilograms (kg)</option>
-                            <option value="ounces">Ounces (oz)</option>
-                            <option value="pounds">Pounds (lb)</option>
-                        </optgroup>
-                        <optgroup label="Volume">
-                            <option value="milliliters">Milliliters (ml)</option>
-                            <option value="liters">Liters (L)</option>
-                            <option value="teaspoons">Teaspoons (tsp)</option>
-                            <option value="tablespoons">Tablespoons (tbsp)</option>
-                            <option value="cups">Cups</option>
-                        </optgroup>
-                        <optgroup label="Count">
-                            <option value="pieces">Pieces</option>
-                            <option value="units">Units</option>
-                        </optgroup>
-                    </select>
-                    <div class="form-text">Choose the most common unit for this ingredient (can be changed per recipe)</div>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="new-ingredient-description" class="form-label">Description (Optional)</label>
-                    <textarea class="form-control" id="new-ingredient-description" rows="2" 
-                              placeholder="Brief description or cooking notes (e.g., 'Boneless, skinless', 'Extra virgin')"></textarea>
-                    <div class="form-text">Add any helpful details about this ingredient</div>
-                </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="new-ingredient-description" class="form-label">Description</label>
+                        <textarea class="form-control"
+                                  id="new-ingredient-description"
+                                  name="description"
+                                  rows="2"
+                                  maxlength="500"
+                                  placeholder="Optional: Add any helpful details (e.g., 'Boneless, skinless', 'Extra virgin', 'Fresh or dried')"></textarea>
+                        <div class="form-text">Add any helpful details about this ingredient</div>
+                    </div>
+                </form>
 
                 <!-- Preview section -->
                 <div class="card bg-light mt-3" id="ingredient-preview" style="display: none;">
@@ -86,6 +109,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-circle me-1"></i>Cancel
@@ -97,70 +121,3 @@
         </div>
     </div>
 </div>
-
-<script>
-// Enhanced modal functionality
-$(document).ready(function() {
-    // Live preview functionality
-    $('#addIngredientModal input, #addIngredientModal select, #addIngredientModal textarea').on('input change', function() {
-        updateIngredientPreview();
-    });
-
-    function updateIngredientPreview() {
-        const name = $('#new-ingredient-name').val().trim();
-        const category = $('#new-ingredient-category-select').val() || $('#new-ingredient-category').val();
-        const measurement = $('#new-ingredient-measurement').val();
-        const description = $('#new-ingredient-description').val().trim();
-
-        if (name) {
-            let preview = `<span class="fw-bold">${name}</span>`;
-            
-            if (category) {
-                preview += ` <span class="badge bg-info text-dark ms-1">${category}</span>`;
-            }
-            
-            if (measurement) {
-                preview += ` <small class="text-muted">(${measurement})</small>`;
-            }
-            
-            if (description) {
-                preview += `<br><small class="text-muted">${description}</small>`;
-            }
-
-            $('#preview-content').html(preview);
-            $('#ingredient-preview').show();
-        } else {
-            $('#ingredient-preview').hide();
-        }
-    }
-
-    // Enhanced validation
-    $('#save-new-ingredient').on('click', function() {
-        const name = $('#new-ingredient-name').val().trim();
-        
-        if (!name) {
-            $('#new-ingredient-name').addClass('is-invalid');
-            $('#new-ingredient-name').focus();
-            return;
-        } else {
-            $('#new-ingredient-name').removeClass('is-invalid');
-        }
-
-        // Trigger the save through IngredientModule
-        if (typeof IngredientModule !== 'undefined' && IngredientModule.saveNewIngredientViaModal) {
-            IngredientModule.saveNewIngredientViaModal();
-        }
-    });
-
-    // Clear validation on input
-    $('#new-ingredient-name').on('input', function() {
-        $(this).removeClass('is-invalid');
-    });
-
-    // Reset modal when closed
-    $('#addIngredientModal').on('hidden.bs.modal', function() {
-        $('#ingredient-preview').hide();
-        $('#new-ingredient-name').removeClass('is-invalid');
-    });
-});
-</script>

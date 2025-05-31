@@ -110,7 +110,7 @@ Layout = "_Layout";
                                     <option value="">Any Difficulty</option>
                                     <option value="Easy" selected="@(ViewData["Difficulty"]?.ToString() == "Easy")">Easy</option>
                                     <option value="Medium" selected="@(ViewData["Difficulty"]?.ToString() == "Medium")">Medium</option>
-                                    <option value="Hard" selected="@(ViewData["Difficulty"]?.ToString() == "Hard")">Hard</option>
+                                    <option value="Masterchef" selected="@(ViewData["Difficulty"]?.ToString() == "Masterchef")">Masterchef</option>
                                 </select>
                             </div>
 
@@ -143,7 +143,7 @@ Layout = "_Layout";
         </div>
     </div>
 
-    <!-- Bulk Actions Panel (Initially Hidden) -->
+    <!-- Bulk Actions Panel  -->
     <div class="card shadow-sm mb-4 d-none" id="bulkActionsPanel">
         <div class="card-header bg-warning text-dark">
             <div class="d-flex justify-content-between align-items-center">
@@ -346,12 +346,12 @@ Layout = "_Layout";
                         <td>
                             <div class="btn-group" role="group">
                                 <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.Id"
-                                   class="btn btn-sm btn-outline-info" title="View details">
+                                   class="btn btn-sm btn-outline-success" title="View details">
                                     <i class="bi bi-eye"></i>
                                     <span class="d-none d-lg-inline ms-1">View</span>
                                 </a>
                                 <a asp-controller="Recipe" asp-action="Edit" asp-route-id="@recipe.Id"
-                                   class="btn btn-sm btn-outline-primary" title="Edit recipe">
+                                   class="btn btn-sm btn-outline-alert" title="Edit recipe">
                                     <i class="bi bi-pencil"></i>
                                     <span class="d-none d-lg-inline ms-1">Edit</span>
                                 </a>
@@ -393,7 +393,6 @@ Layout = "_Layout";
             </div>
         </div>
 
-        <!-- Pagination Footer -->
         @if (ViewBag.TotalPages > 1)
         {
         <div class="card-footer bg-light">
@@ -428,7 +427,6 @@ Layout = "_Layout";
         }
     </div>
 
-    <!-- Back Button -->
     <div class="text-center mt-4">
         <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Back to Admin Dashboard
@@ -439,7 +437,6 @@ Layout = "_Layout";
 @section Scripts {
 <script>
     $(document).ready(function() {
-        // Recipe Management functionality
         const RecipeManagement = {
             selectedItems: new Set(),
 
@@ -454,18 +451,14 @@ Layout = "_Layout";
                 const searchInput = $('#searchTerm');
                 const clearBtn = $('#clearSearch');
 
-                // Clear search
                 clearBtn.on('click', function() {
                     searchInput.val('').focus();
                     $('#searchFilterForm').submit();
                 });
 
-                // Form submission
                 $('#searchFilterForm').on('submit', function(e) {
-                    // Allow normal form submission
                 });
 
-                // Reset filters
                 $('#resetFilters').on('click', function() {
                     $('#searchFilterForm')[0].reset();
                     $('#searchFilterForm').submit();
@@ -478,7 +471,6 @@ Layout = "_Layout";
                 const selectedCountBadge = $('#selectedCount');
                 const clearSelectionBtn = $('#clearBulkSelection');
 
-                // Select all functionality
                 selectAllCheckbox.on('change', function() {
                     const isChecked = this.checked;
                     $('.item-checkbox').prop('checked', isChecked);
@@ -486,24 +478,20 @@ Layout = "_Layout";
                     RecipeManagement.updateBulkSelection();
                 });
 
-                // Individual item selection
                 $(document).on('change', '.item-checkbox', function() {
                     RecipeManagement.updateBulkSelection();
                 });
 
-                // Clear bulk selection
                 clearSelectionBtn.on('click', function() {
                     $('.item-checkbox, #selectAllItems, #selectAllHeader').prop('checked', false);
                     RecipeManagement.updateBulkSelection();
                 });
 
-                // Bulk action form submission
                 $('#bulkActionForm').on('submit', function(e) {
                     e.preventDefault();
                     RecipeManagement.executeBulkAction();
                 });
 
-                // Dynamic bulk action options
                 $('#bulkAction').on('change', function() {
                     RecipeManagement.showBulkActionOptions($(this).val());
                 });
@@ -514,13 +502,11 @@ Layout = "_Layout";
                 const selectedCount = selectedCheckboxes.length;
                 const totalCheckboxes = $('.item-checkbox').length;
 
-                // Update selected items set
                 this.selectedItems.clear();
                 selectedCheckboxes.each(function() {
                     RecipeManagement.selectedItems.add($(this).val());
                 });
 
-                // Update UI
                 $('#selectedCount').text(selectedCount);
 
                 if (selectedCount > 0) {
@@ -529,7 +515,6 @@ Layout = "_Layout";
                     $('#bulkActionsPanel').addClass('d-none');
                 }
 
-                // Update select all state
                 const selectAllCheckboxes = $('#selectAllItems, #selectAllHeader');
                 if (selectedCount === 0) {
                     selectAllCheckboxes.prop('indeterminate', false).prop('checked', false);
@@ -566,7 +551,7 @@ Layout = "_Layout";
                             <select class="form-select" name="newDifficulty" required>
                                 <option value="Easy">Easy</option>
                                 <option value="Medium">Medium</option>
-                                <option value="Hard">Hard</option>
+                                <option value="Masterchef">Masterchef</option>
                             </select>
                         `);
                         break;

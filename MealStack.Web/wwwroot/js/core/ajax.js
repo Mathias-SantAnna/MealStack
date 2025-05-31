@@ -56,7 +56,6 @@ const AjaxService = (function() {
         });
     };
 
-    // Public API
     return {
         post,
         get

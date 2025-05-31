@@ -165,12 +165,6 @@ namespace MealStack.Web.Controllers
             return View(mealPlans);
         }
         #endregion
-        
-        public async Task<IActionResult> ManageCategories()
-        {
-            var categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-            return View(categories);
-        }
 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleUserRole(string userId, string roleName)

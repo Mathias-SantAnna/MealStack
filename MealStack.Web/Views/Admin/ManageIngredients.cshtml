@@ -333,14 +333,14 @@ ViewData["ActionButtonController"] = "Ingredient";
                         <td>
                             <div class="btn-group" role="group">
                                 <a asp-action="Details" asp-route-id="@ingredient.Id"
-                                   class="btn btn-sm btn-outline-info" title="View details">
+                                   class="btn btn-sm btn-outline-success" title="View details">
                                     <i class="bi bi-eye"></i>
                                     <span class="d-none d-lg-inline ms-1">View</span>
                                 </a>
                                 @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || ingredient.CreatedById == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
                                 {
                                 <a asp-action="Edit" asp-route-id="@ingredient.Id"
-                                   class="btn btn-sm btn-outline-primary" title="Edit ingredient">
+                                   class="btn btn-sm btn-outline-alert" title="Edit ingredient">
                                     <i class="bi bi-pencil"></i>
                                     <span class="d-none d-lg-inline ms-1">Edit</span>
                                 </a>

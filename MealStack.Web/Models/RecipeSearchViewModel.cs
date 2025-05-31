@@ -10,6 +10,7 @@ namespace MealStack.Web.Models
         public string Difficulty { get; set; }
         public string SortBy { get; set; } = "newest";
         public int? CategoryId { get; set; }
+        public string CreatedBy { get; set; } 
         
         // Advanced search 
         public List<string> Ingredients { get; set; } = new List<string>();

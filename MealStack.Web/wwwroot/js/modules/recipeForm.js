@@ -91,21 +91,18 @@ const RecipeForm = (function() {
         $(options.imageFileSelector).on('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                // Validate file type
                 if (!file.type.startsWith('image/')) {
                     alert('Please select a valid image file');
                     $(this).val('');
                     return;
                 }
 
-                // Validate file size
                 if (file.size > 1 * 1024 * 1024) {
                     alert('Image file size must be less than 1MB');
                     $(this).val('');
                     return;
                 }
 
-                // Create preview
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     $('#image-preview').remove();

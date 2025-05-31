@@ -109,15 +109,15 @@
                                 <span>Created @plan.CreatedDate.ToString("MMM d, yyyy")</span>
                             </div>
                         </div>
-                        <div class="card-footer bg-white">
+                        <div class="card-footer bg-white meal-plan-footer">
                             <div class="row">
                                 <div class="col-6">
-                                    <a asp-action="Details" asp-route-id="@plan.Id" class="btn btn-sm btn-outline-primary w-100">
+                                    <a asp-action="Details" asp-route-id="@plan.Id" class="btn btn-sm btn-outline-primary meal-plan-footer-btn">
                                         <i class="bi bi-eye me-1"></i> View
                                     </a>
                                 </div>
                                 <div class="col-6">
-                                    <a asp-action="ShoppingList" asp-route-id="@plan.Id" class="btn btn-sm btn-outline-success w-100">
+                                    <a asp-action="ShoppingList" asp-route-id="@plan.Id" class="btn btn-sm btn-outline-success meal-plan-footer-btn">
                                         <i class="bi bi-cart me-2"></i> Shopping List
                                     </a>
                                 </div>

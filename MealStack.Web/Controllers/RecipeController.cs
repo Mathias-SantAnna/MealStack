@@ -363,7 +363,6 @@ namespace MealStack.Web.Controllers
                     return View(recipe);
                 }
 
-                // Use transaction for data integrity
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 
                 try
@@ -547,7 +546,6 @@ namespace MealStack.Web.Controllers
                 
                 try
                 {
-                    // Update existing entity properties (don't replace entity)
                     existingRecipe.Title = recipe.Title;
                     existingRecipe.Description = recipe.Description;
                     existingRecipe.Ingredients = recipe.Ingredients;
@@ -559,7 +557,6 @@ namespace MealStack.Web.Controllers
                     existingRecipe.Difficulty = recipe.Difficulty;
                     existingRecipe.Notes = recipe.Notes;
                     
-                    // After SetValues, restore critical fields:
                     if (string.IsNullOrEmpty(existingRecipe.CreatedById)) {
                         throw new Exception("existingRecipe.CreatedById was lost during update!");
                     }
@@ -567,7 +564,6 @@ namespace MealStack.Web.Controllers
                     
                     _logger.LogInformation("Updated recipe properties for {RecipeId}", id);
                     
-                    // Remove all existing categories
                     var existingCategories = existingRecipe.RecipeCategories.ToList();
                     foreach (var category in existingCategories)
                     {
@@ -576,7 +572,6 @@ namespace MealStack.Web.Controllers
                     
                     _logger.LogInformation("Removed {CategoryCount} existing categories", existingCategories.Count);
                     
-                    // Add new categories if any
                     if (selectedCategories != null && selectedCategories.Length > 0)
                     {
                         foreach (var categoryId in selectedCategories)
@@ -591,7 +586,6 @@ namespace MealStack.Web.Controllers
                         _logger.LogInformation("Added {CategoryCount} new categories", selectedCategories.Length);
                     }
                     
-                    // Save all changes
                     var changeCount = await _context.SaveChangesAsync();
                     _logger.LogInformation("Saved {ChangeCount} changes to database", changeCount);
                     
@@ -679,7 +673,6 @@ namespace MealStack.Web.Controllers
             }
         }
         
-        // API endpoint for search suggestions (recipes and ingredients)
         [HttpGet]
         public async Task<IActionResult> GetSearchSuggestions(string term)
         {
@@ -723,6 +716,7 @@ namespace MealStack.Web.Controllers
 
         #region Helper Methods
 
+        // UPDATE your existing SetupViewDataForSearch method:
         private void SetupViewDataForSearch(RecipeSearchViewModel searchModel)
         {
             ViewData["SearchTerm"] = searchModel.SearchTerm;
@@ -731,14 +725,75 @@ namespace MealStack.Web.Controllers
             ViewData["SortBy"] = searchModel.SortBy ?? "newest";
             ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
             ViewData["CategoryId"] = searchModel.CategoryId;
+            ViewData["CreatedBy"] = searchModel.CreatedBy; // ADD THIS LINE
         }
 
+        // UPDATE your existing SetupPaginationAndCategories method:
         private async Task SetupPaginationAndCategories(int page, int totalRecipes, int pageSize, int? categoryId)
         {
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling(totalRecipes / (double)pageSize);
             ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
             ViewBag.SelectedCategoryId = categoryId;
+            
+            // ADD THESE LINES for Authors list:
+            ViewBag.Authors = await _context.Recipes
+                .Include(r => r.CreatedBy)
+                .Where(r => r.CreatedBy != null)
+                .Select(r => new { Id = r.CreatedById, Name = r.CreatedBy.UserName })
+                .Distinct()
+                .OrderBy(a => a.Name)
+                .ToListAsync();
+        }
+
+        // UPDATE your existing ApplyAdditionalFilters method by adding this filter:
+        private IQueryable<RecipeEntity> ApplyAdditionalFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
+        {
+            if (searchModel.Ingredients != null && searchModel.Ingredients.Any())
+            {
+                query = ApplyIngredientsFilter(query, searchModel.Ingredients, searchModel.MatchAllIngredients);
+            }
+            
+            if (!string.IsNullOrEmpty(searchModel.Difficulty))
+            {
+                if (Enum.TryParse<DifficultyLevel>(searchModel.Difficulty, out var difficultyLevel))
+                {
+                    query = query.Where(r => r.Difficulty == difficultyLevel);
+                }
+            }
+            
+            // ADD THIS BLOCK for Created By filter:
+            if (!string.IsNullOrEmpty(searchModel.CreatedBy))
+            {
+                query = query.Where(r => r.CreatedById == searchModel.CreatedBy);
+            }
+            
+            if (searchModel.MinServings.HasValue)
+            {
+                query = query.Where(r => r.Servings >= searchModel.MinServings.Value);
+            }
+            
+            if (searchModel.MaxServings.HasValue)
+            {
+                query = query.Where(r => r.Servings <= searchModel.MaxServings.Value);
+            }
+            
+            if (searchModel.MinPrepTime.HasValue)
+            {
+                query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) >= searchModel.MinPrepTime.Value);
+            }
+            
+            if (searchModel.MaxPrepTime.HasValue)
+            {
+                query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= searchModel.MaxPrepTime.Value);
+            }
+            
+            if (searchModel.CategoryId.HasValue)
+            {
+                query = query.Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == searchModel.CategoryId.Value));
+            }
+            
+            return query;
         }
 
         private async Task AddFavoriteStatusToViewBag()
@@ -948,50 +1003,7 @@ namespace MealStack.Web.Controllers
                     r.Description.ToLower().Contains(term) || 
                     r.Ingredients.ToLower().Contains(term)));
         }
-
-        private IQueryable<RecipeEntity> ApplyAdditionalFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
-        {
-            if (searchModel.Ingredients != null && searchModel.Ingredients.Any())
-            {
-                query = ApplyIngredientsFilter(query, searchModel.Ingredients, searchModel.MatchAllIngredients);
-            }
-            
-            if (!string.IsNullOrEmpty(searchModel.Difficulty))
-            {
-                if (Enum.TryParse<DifficultyLevel>(searchModel.Difficulty, out var difficultyLevel))
-                {
-                    query = query.Where(r => r.Difficulty == difficultyLevel);
-                }
-            }
-            
-            if (searchModel.MinServings.HasValue)
-            {
-                query = query.Where(r => r.Servings >= searchModel.MinServings.Value);
-            }
-            
-            if (searchModel.MaxServings.HasValue)
-            {
-                query = query.Where(r => r.Servings <= searchModel.MaxServings.Value);
-            }
-            
-            if (searchModel.MinPrepTime.HasValue)
-            {
-                query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) >= searchModel.MinPrepTime.Value);
-            }
-            
-            if (searchModel.MaxPrepTime.HasValue)
-            {
-                query = query.Where(r => (r.PrepTimeMinutes + r.CookTimeMinutes) <= searchModel.MaxPrepTime.Value);
-            }
-            
-            if (searchModel.CategoryId.HasValue)
-            {
-                query = query.Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == searchModel.CategoryId.Value));
-            }
-            
-            return query;
-        }
-
+        
         private IQueryable<RecipeEntity> ApplySorting(IQueryable<RecipeEntity> query, string sortBy)
         {
             return sortBy switch

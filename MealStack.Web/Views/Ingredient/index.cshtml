@@ -105,23 +105,7 @@ ViewData["ShowButtonForAnonymous"] = "false";
                 <div class="collapse" id="advancedFilters">
                     <div class="border-top pt-3">
                         <div class="row g-3">
-                            <div class="col-md-3">
-                                <label for="categoryFilter" class="form-label">Category</label>
-                                <select class="form-select" id="categoryFilter" name="category">
-                                    <option value="">All Categories</option>
-                                    @if (ViewBag.Categories != null)
-                                    {
-                                    @foreach (var category in ViewBag.Categories)
-                                    {
-                                    <option value="@category" selected="@(ViewData["Category"]?.ToString() == category)">
-                                        @category
-                                    </option>
-                                    }
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label for="measurementFilter" class="form-label">Measurement Type</label>
                                 <select class="form-select" id="measurementFilter" name="measurement">
                                     <option value="">All Measurements</option>
@@ -137,7 +121,7 @@ ViewData["ShowButtonForAnonymous"] = "false";
                                 </select>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label for="authorFilter" class="form-label">Created By</label>
                                 <select class="form-select" id="authorFilter" name="createdBy">
                                     <option value="">All Authors</option>
@@ -153,7 +137,7 @@ ViewData["ShowButtonForAnonymous"] = "false";
                                 </select>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label for="hasDescriptionFilter" class="form-label">Description Status</label>
                                 <select class="form-select" id="hasDescriptionFilter" name="hasDescription">
                                     <option value="">Any</option>

@@ -83,7 +83,6 @@ const ThemeModule = (function() {
                     radio.checked = true;
                 }
 
-                // Change listener for live preview
                 radio.addEventListener('change', function() {
                     if (this.checked) {
                         previewTheme(this.value);

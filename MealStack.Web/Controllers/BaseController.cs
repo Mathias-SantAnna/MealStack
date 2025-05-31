@@ -6,17 +6,25 @@ using MealStack.Web.Models;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Security.Claims;
+
 
 namespace MealStack.Web.Controllers
 {
     public abstract class BaseController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        protected readonly UserManager<ApplicationUser> _userManager;
 
-        public BaseController(UserManager<ApplicationUser> userManager)
+        public BaseController(UserManager<ApplicationUser> userManager = null)
         {
             _userManager = userManager;
         }
+        
+        protected string GetCurrentUserName(ClaimsPrincipal user)
+        {
+            return _userManager?.GetUserName(user) ?? string.Empty;
+        }
+
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {

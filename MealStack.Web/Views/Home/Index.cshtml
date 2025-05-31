@@ -1,4 +1,6 @@
 ﻿@model IEnumerable<MealStack.Infrastructure.Data.RecipeEntity>
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 @{
     ViewData["Title"] = "Home";
 }
@@ -13,20 +15,7 @@
                     <p class="lead mb-4 text-shadow">Discover, create, and organize your favorite recipes in one place.</p>
                     
                     <!-- Search Bar -->
-                    <form id="searchForm" asp-controller="Recipe" asp-action="Index" method="get">
-                        <div class="search-container mb-4">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control" id="searchTerm" name="searchTerm" 
-                                    placeholder="Search recipes or ingredients..." value="@ViewData["SearchTerm"]">
-                                <button class="btn btn-primary" type="submit">Search</button>
-                                <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#advancedSearchOptions" aria-expanded="false">
-                                    <i class="bi bi-sliders"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    <partial name="_SearchBar" model="@null" />
                     
                     <!-- CTA Buttons -->
                     <div class="d-flex flex-wrap justify-content-center gap-3">
@@ -53,10 +42,12 @@
             <h2 class="display-5 mb-3">Ready to start your recipe collection?</h2>
             <p class="lead mb-4 text-dark">Join MealStack today and start organizing your favorite recipes.</p>
             <div class="d-flex justify-content-center gap-3">
-                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-cta">
-                    <i class="bi bi-person-plus me-2"></i> Sign Up Now</a>
-                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-custom-login btn-cta">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Log In</a>
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-cta-large">
+                    <i class="bi bi-person-plus"></i>Sign Up Now
+                </a>
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-custom-login">
+                    <i class="bi bi-box-arrow-in-right"></i>Log In
+                </a>
             </div>
         </div>
     </section>

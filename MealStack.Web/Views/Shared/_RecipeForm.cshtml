@@ -29,39 +29,95 @@
     <small class="text-muted">Upload an image of your dish (optional)</small>
 </div>
 
-<!-- Ingredients section -->
+<!-- SIMPLIFIED Ingredients section -->
 <div class="mb-3">
     <label for="Ingredients" class="form-label">Ingredients</label>
     <div id="ingredients-section" class="border rounded p-3 mb-2">
-        <div class="d-flex mb-2">
-            <input type="text" id="ingredient-search" class="form-control me-2" placeholder="Search for an ingredient" aria-label="Search for ingredients" />
-            <button type="button" id="add-ingredient-btn" class="btn btn-outline-primary">Add</button>
+        <!-- Ingredient input row -->
+        <div class="row mb-3">
+            <!-- Quantity -->
+            <div class="col-2">
+                <label for="ingredient-quantity" class="form-label">Quantity</label>
+                <input type="number" 
+                       id="ingredient-quantity" 
+                       class="form-control" 
+                       placeholder="1" 
+                       min="0.1" 
+                       step="0.1" 
+                       value="1" />
+            </div>
+            
+            <!-- Unit -->
+            <div class="col-2">
+                <label for="ingredient-unit" class="form-label">Unit</label>
+                <select id="ingredient-unit" class="form-select">
+                    <option value="cup">Cup</option>
+                    <option value="tbsp">Tbsp</option>
+                    <option value="tsp">Tsp</option>
+                    <option value="g">Grams</option>
+                    <option value="kg">Kg</option>
+                    <option value="oz">Oz</option>
+                    <option value="lb">Lb</option>
+                    <option value="ml">mL</option>
+                    <option value="l">Liter</option>
+                    <option value="piece">Piece</option>
+                    <option value="slice">Slice</option>
+                    <option value="clove">Clove</option>
+                    <option value="pinch">Pinch</option>
+                </select>
+            </div>
+            
+            <!-- Ingredient Search -->
+            <div class="col-6">
+                <label for="ingredient-search" class="form-label">Ingredient</label>
+                <input type="text" 
+                       id="ingredient-search" 
+                       class="form-control" 
+                       placeholder="Search for an ingredient..." />
+            </div>
+            
+            <!-- Add Button -->
+            <div class="col-2">
+                <label class="form-label">&nbsp;</label>
+                <button type="button" 
+                        id="add-ingredient-btn" 
+                        class="btn btn-primary w-100">
+                    <i class="bi bi-plus"></i> Add
+                </button>
+            </div>
         </div>
-        <div id="ingredients-container" class="mb-2" role="list" aria-label="Selected ingredients">
-            <!-- Ingredient chips here -->
+        
+        <!-- Ingredients container -->
+        <div id="ingredients-container" class="mb-3">
+            <!-- Ingredient items will be added here -->
         </div>
+        
+        <!-- Add new ingredient button -->
         <div class="d-flex justify-content-between align-items-center">
-            <button type="button" id="add-new-ingredient-btn" class="btn btn-sm btn-outline-success">
-                <i class="bi bi-plus-circle"></i> Add New Ingredient
+            <button type="button" 
+                    id="add-new-ingredient-btn" 
+                    class="btn btn-success"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#addIngredientModal">
+                <i class="bi bi-plus-circle me-1"></i>Add New Ingredient
             </button>
             <small class="text-muted">Can't find what you need? Add a new ingredient.</small>
         </div>
     </div>
-    <textarea asp-for="Ingredients" id="Ingredients" class="form-control d-none" required aria-describedby="ingredients-help"></textarea>
-    <div id="ingredients-help" class="form-text">
-        Ingredients will be automatically formatted as you add them above.
-    </div>
+    
+    <!-- Hidden textarea for form submission (critical for saving ingredients) -->
+    <textarea asp-for="Ingredients" 
+              id="Ingredients" 
+              class="form-control" 
+              style="display: none;"
+              required></textarea>
     <span asp-validation-for="Ingredients" class="text-danger"></span>
 </div>
 
 <div class="mb-3">
     <label asp-for="Instructions" class="form-label">Instructions</label>
     <textarea asp-for="Instructions" class="form-control" rows="5" required 
-              placeholder="Step-by-step instructions for preparing your recipe..."
-              aria-describedby="instructions-help"></textarea>
-    <div id="instructions-help" class="form-text">
-        Enter each step on a new line, preferably with step numbers (e.g. "1. Preheat oven...").
-    </div>
+              placeholder="Step-by-step instructions..."></textarea>
     <span asp-validation-for="Instructions" class="text-danger"></span>
 </div>
 
@@ -69,25 +125,19 @@
     <div class="col-md-4">
         <label asp-for="PrepTimeMinutes" class="form-label">Prep Time (minutes)</label>
         <input asp-for="PrepTimeMinutes" class="form-control" type="number" min="1" max="1440" 
-               value="@(Model.Id > 0 ? Model.PrepTimeMinutes : 15)" required 
-               aria-describedby="prep-time-help" />
-        <div id="prep-time-help" class="form-text">Time to prepare ingredients</div>
+               value="@(Model.Id > 0 ? Model.PrepTimeMinutes : 15)" required />
         <span asp-validation-for="PrepTimeMinutes" class="text-danger"></span>
     </div>
     <div class="col-md-4">
         <label asp-for="CookTimeMinutes" class="form-label">Cook Time (minutes)</label>
         <input asp-for="CookTimeMinutes" class="form-control" type="number" min="0" max="1440" 
-               value="@(Model.Id > 0 ? Model.CookTimeMinutes : 30)" required 
-               aria-describedby="cook-time-help" />
-        <div id="cook-time-help" class="form-text">Time to cook the dish</div>
+               value="@(Model.Id > 0 ? Model.CookTimeMinutes : 30)" required />
         <span asp-validation-for="CookTimeMinutes" class="text-danger"></span>
     </div>
     <div class="col-md-4">
         <label asp-for="Servings" class="form-label">Servings</label>
         <input asp-for="Servings" class="form-control" type="number" min="1" max="100" 
-               value="@(Model.Id > 0 ? Model.Servings : 4)" required 
-               aria-describedby="servings-help" />
-        <div id="servings-help" class="form-text">Number of people this serves</div>
+               value="@(Model.Id > 0 ? Model.Servings : 4)" required />
         <span asp-validation-for="Servings" class="text-danger"></span>
     </div>
 </div>
@@ -95,8 +145,7 @@
 <div class="mb-3">
     <label asp-for="Difficulty" class="form-label">Difficulty Level</label>
     <select asp-for="Difficulty" asp-items="Html.GetEnumSelectList<MealStack.Infrastructure.Data.DifficultyLevel>()" 
-            class="form-select" aria-describedby="difficulty-help"></select>
-    <div id="difficulty-help" class="form-text">Choose the skill level required for this recipe</div>
+            class="form-select"></select>
     <span asp-validation-for="Difficulty" class="text-danger"></span>
 </div>
 
@@ -104,7 +153,7 @@
 {
     <fieldset class="mb-3">
         <legend class="form-label">Categories</legend>
-        <div class="border rounded p-3" role="group" aria-labelledby="categories-help">
+        <div class="border rounded p-3">
             <div class="row">
                 @foreach (var category in ViewBag.Categories)
                 {
@@ -122,7 +171,6 @@
                     </div>
                 }
             </div>
-            <div id="categories-help" class="form-text">Select categories that best describe your recipe</div>
         </div>
     </fieldset>
 }
@@ -130,9 +178,7 @@
 <div class="mb-3">
     <label asp-for="Notes" class="form-label">Recipe Notes <span class="text-muted">(Optional)</span></label>
     <textarea asp-for="Notes" class="form-control" rows="3" 
-              placeholder="Any additional tips, variations, or notes about this recipe..."
-              aria-describedby="notes-help"></textarea>
-    <div id="notes-help" class="form-text">Add any extra tips, substitutions, or personal notes</div>
+              placeholder="Any additional tips or notes..."></textarea>
     <span asp-validation-for="Notes" class="text-danger"></span>
 </div>
 

@@ -51,7 +51,6 @@ const MealStack = (function() {
             }
         }
 
-        // Ingredient Module 
         if (path.includes('/recipe/create') || path.includes('/recipe/edit')) {
             console.log("Initializing IngredientModule for Recipe Form.");
             if (typeof IngredientModule !== 'undefined') {
@@ -72,7 +71,6 @@ const MealStack = (function() {
             }
         }
 
-        // Recipe details page
         if (path.includes('/recipe/details/')) {
             console.log("Recipe Details page - ratings handled by rating.js");
 
@@ -82,7 +80,6 @@ const MealStack = (function() {
             }
         }
 
-        // Meal Planner Module 
         if (path.includes('/mealplan')) {
             console.log("Initializing MealPlannerModule.");
             if (typeof MealPlannerModule !== 'undefined') {

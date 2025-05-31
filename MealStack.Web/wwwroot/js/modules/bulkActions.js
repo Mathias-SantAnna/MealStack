@@ -177,7 +177,7 @@ const BulkActions = {
                     <option value="">Choose difficulty...</option>
                     <option value="Easy">Easy</option>
                     <option value="Medium">Medium</option>
-                    <option value="Hard">Hard</option>
+                    <option value="Masterchef">Masterchef</option>
                 </select>
             </div>
         `;

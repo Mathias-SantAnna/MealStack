@@ -1,4 +1,4 @@
-/*      BASE STYLES & LAYOUT - FOR DARK THEME       */
+/*      BASE STYLES & LAYOUT - FOUNDATION       */
 
 /* Document setup */
 html {
@@ -9,11 +9,25 @@ html {
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin-bottom: 60px;
+    margin-bottom: 100px; 
     color: var(--text-primary);
     background: var(--warm-gradient);
     line-height: 1.6;
     min-height: 100vh;
+}
+
+/* CSS Variables - Core Foundation */
+:root {
+    --z-sticky: 1000;
+    --dark-color: #343a40;
+    --dark-color-rgb: 52, 58, 64;
+    --dark-hover: #212529;
+}
+
+[data-theme="dark"] {
+    --dark-color: #6c757d;
+    --dark-color-rgb: 108, 117, 125;
+    --dark-hover: #5a6268;
 }
 
 /* Dark theme background override */
@@ -28,7 +42,7 @@ body {
 
 /* Main content area */
 main {
-    padding-bottom: 80px !important;
+    padding-bottom: 40px !important; /* REDUCED from 80px since we increased body margin */
     clear: both;
     overflow: hidden;
 }
@@ -102,10 +116,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Layout components */
-:root {
-    --z-sticky: 1000;
-}
-
 .footer {
     position: absolute;
     bottom: 0;
@@ -115,6 +125,13 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
     z-index: var(--z-sticky);
+}
+
+/* Back to Home button spacing */
+.btn-back-home,
+.text-center.mt-4 {
+    margin-bottom: 3rem !important; 
+    padding-bottom: 1rem !important;
 }
 
 /* Lists */
@@ -192,6 +209,26 @@ ol, ul {
     border-left: none;
 }
 
+/* Prevent modal backdrop issues */
+.modal-backdrop {
+    z-index: 1040;
+}
+
+.modal {
+    z-index: 1050;
+}
+
+/* Ensure body scroll is restored */
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Container bottom spacing for pages with pagination */
+.container:last-child,
+.container:last-of-type {
+    margin-bottom: 2rem;
+}
+
 /* Animations */
 @keyframes heartPulse {
     0% { transform: scale(1); }
@@ -220,11 +257,18 @@ ol, ul {
     }
 
     body {
-        margin-bottom: 100px;
+        margin-bottom: 140px; 
     }
 
     .search-container {
         width: 100%;
+    }
+
+    /* Mobile back button spacing */
+    .btn-back-home,
+    .text-center.mt-4 {
+        margin-bottom: 4rem !important;
+        padding-bottom: 1.5rem !important;
     }
 }
 

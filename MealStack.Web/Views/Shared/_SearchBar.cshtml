@@ -19,24 +19,24 @@
         <div class="collapse mt-3" id="advancedSearchOptions">
             <div class="card card-body">
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Search Type</label>
                         <select class="form-select" id="searchType" name="searchType">
-                            <option value="all" selected="@(ViewData["SearchType"]?.ToString() == "all")">All (Title, Description, Ingredients)</option>
+                            <option value="all" selected="@(ViewData["SearchType"]?.ToString() == "all")">All (Title, Descript, etc)</option>
                             <option value="title" selected="@(ViewData["SearchType"]?.ToString() == "title")">Title Only</option>
                             <option value="ingredients" selected="@(ViewData["SearchType"]?.ToString() == "ingredients")">Ingredients Only</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Difficulty</label>
                         <select class="form-select" id="difficulty" name="difficulty">
                             <option value="">Any difficulty</option>
                             <option value="Easy" selected="@(ViewData["Difficulty"]?.ToString() == "Easy")">Easy</option>
                             <option value="Medium" selected="@(ViewData["Difficulty"]?.ToString() == "Medium")">Medium</option>
-                            <option value="Hard" selected="@(ViewData["Difficulty"]?.ToString() == "Hard")">Hard</option>
+                            <option value="Masterchef" selected="@(ViewData["Difficulty"]?.ToString() == "Masterchef")">Masterchef</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Sort By</label>
                         <select class="form-select" id="sortBy" name="sortBy">
                             <option value="newest" selected="@(ViewData["SortBy"]?.ToString() == "newest" || ViewData["SortBy"] == null)">Newest first</option>
@@ -44,6 +44,21 @@
                             <option value="fastest" selected="@(ViewData["SortBy"]?.ToString() == "fastest")">Quickest prep</option>
                             <option value="easiest" selected="@(ViewData["SortBy"]?.ToString() == "easiest")">Easiest first</option>
                             <option value="highestRated" selected="@(ViewData["SortBy"]?.ToString() == "highestRated")">Highest Rated</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="authorFilter" class="form-label">Created By</label>
+                        <select class="form-select" id="authorFilter" name="createdBy">
+                            <option value="">All Authors</option>
+                            @if (ViewBag.Authors != null)
+                            {
+                                @foreach (var author in ViewBag.Authors)
+                                {
+                                    <option value="@author.Id" selected="@(ViewData["CreatedBy"]?.ToString() == author.Id)">
+                                        @author.Name
+                                    </option>
+                                }
+                            }
                         </select>
                     </div>
                 </div>

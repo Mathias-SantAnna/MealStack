@@ -43,7 +43,6 @@ const Utils = (function() {
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     };
 
-    // Parse JSON safely
     const parseJson = function(jsonString, defaultValue = null) {
         try {
             return JSON.parse(jsonString);
@@ -53,7 +52,6 @@ const Utils = (function() {
         }
     };
 
-    // Public API
     return {
         debounce,
         formatTime,

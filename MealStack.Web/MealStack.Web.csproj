@@ -50,6 +50,7 @@
       <_ContentIncludedByDefault Remove="wwwroot\css\features\shopping.css" />
       <_ContentIncludedByDefault Remove="Views\Ingredient\old\Index.cshtml" />
       <_ContentIncludedByDefault Remove="Views\Ingredient\legacy\index.cshtml" />
+      <_ContentIncludedByDefault Remove="wwwroot\js\modules\legacy\adminIngredientsManagement.js" />
     </ItemGroup>
 
 </Project>

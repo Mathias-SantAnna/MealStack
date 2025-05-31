@@ -1,7 +1,7 @@
 @model MealStack.Infrastructure.Data.RecipeEntity
 
 @{
-    ViewData["Title"] = "Create Recipe";
+ViewData["Title"] = "Create Recipe";
 }
 
 <div class="container py-4">
@@ -20,26 +20,67 @@
 <partial name="_IngredientModal" />
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
-    <!-- jQuery UI -->
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+<!-- jQuery UI for autocomplete -->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
-    <!-- Reusable JS modules -->
-    <script src="~/js/modules/ingredientManager.js"></script>
-    <script src="~/js/modules/recipeForm.js"></script>
+<!-- AJAX token -->
+<partial name="_AjaxAntiForgeryToken" />
 
-    <script>
-        $(document).ready(function() {
-            // Initialize RecipeForm module
-            if (typeof RecipeForm !== 'undefined') {
-                RecipeForm.init({
-                    isEdit: false
+<!-- Load scripts in correct order -->
+<script src="~/js/modules/ingredientManager.js" asp-append-version="true"></script>
+<script src="~/js/modules/recipeFormValidator.js" asp-append-version="true"></script>
+
+<!-- Initialize everything -->
+<script>
+    $(document).ready(function() {
+        console.log("Create Recipe page initializing...");
+
+        // Wait for DOM to be fully ready
+        setTimeout(function() {
+            // Initialize IngredientManager
+            if (typeof IngredientManager !== 'undefined') {
+                console.log("Initializing IngredientManager...");
+
+                const success = IngredientManager.init({
+                    autocompleteUrl: '@Url.Action("SearchIngredients", "Ingredient")',
+                    createIngredientUrl: '@Url.Action("AddIngredientAjax", "Ingredient")'
                 });
+
+                if (success) {
+                    console.log("IngredientManager initialized successfully");
+                } else {
+                    console.error("Failed to initialize IngredientManager");
+                }
             } else {
-                console.error('RecipeForm module not loaded');
+                console.error("IngredientManager not found!");
             }
-        });
-    </script>
+
+            // Initialize form validator
+            if (typeof RecipeFormValidator !== 'undefined') {
+                console.log("Initializing RecipeFormValidator...");
+                RecipeFormValidator.init();
+            } else {
+                console.warn("RecipeFormValidator not found");
+            }
+
+            // Debug check - verify textarea is being updated
+            setInterval(function() {
+                const ingredientsVal = $('#Ingredients').val();
+                if (ingredientsVal) {
+                    console.log("Ingredients textarea has content:", ingredientsVal.split('\n').length + " items");
+                }
+            }, 2000);
+
+            console.log("Page initialization complete");
+        }, 200);
+    });
+
+    // Global error handler
+    window.addEventListener('error', function(e) {
+        console.error('Global error:', e.error);
+    });
+</script>
 }

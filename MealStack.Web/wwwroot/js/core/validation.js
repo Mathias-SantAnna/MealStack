@@ -51,7 +51,6 @@ const ValidationService = (function() {
     const validateForm = function(formSelector, validations) {
         let isValid = true;
 
-        // Process each validation rule
         Object.entries(validations).forEach(([selector, validationFn]) => {
             const element = $(formSelector).find(selector);
             if (element.length) {
@@ -63,7 +62,6 @@ const ValidationService = (function() {
         return isValid;
     };
 
-    // Setup real-time validation on input events
     const setupRealTimeValidation = function(formSelector, validations) {
         const form = $(formSelector);
 
@@ -77,7 +75,6 @@ const ValidationService = (function() {
         });
     };
 
-    // Public API
     return {
         required,
         minLength,

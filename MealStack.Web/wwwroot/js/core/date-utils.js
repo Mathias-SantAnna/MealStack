@@ -1,9 +1,4 @@
 const DateUtils = (function() {
-    /**
-     * Format a date as YYYY-MM-DD
-     * @param {Date} date - The date to format
-     * @returns {string} Formatted date string
-     */
     const formatISODate = function(date) {
         if (!date) date = new Date();
 
@@ -13,12 +8,7 @@ const DateUtils = (function() {
 
         return `${year}-${month}-${day}`;
     };
-
-    /**
-     * Format a date in a localized format (e.g., "May 22, 2025")
-     * @param {Date|string} date - The date to format or date string
-     * @returns {string} Formatted date string
-     */
+    
     const formatLocalDate = function(date) {
         if (!date) return '';
 
@@ -32,22 +22,15 @@ const DateUtils = (function() {
             day: 'numeric'
         });
     };
-
-    /**
-     * Parse a date string in various formats
-     * @param {string} dateString - The date string to parse
-     * @returns {Date|null} Parsed date object or null if invalid
-     */
+    
     const parseDate = function(dateString) {
         if (!dateString) return null;
 
-        // Try standard parsing first
         let date = new Date(dateString);
         if (!isNaN(date.getTime())) {
             return date;
         }
 
-        // Try different formats
         const formats = [
             // ISO format
             {
@@ -96,13 +79,7 @@ const DateUtils = (function() {
 
         return null;
     };
-
-    /**
-     * Get the days between two dates
-     * @param {Date|string} startDate - Start date
-     * @param {Date|string} endDate - End date
-     * @returns {number} Number of days
-     */
+    
     const daysBetween = function(startDate, endDate) {
         if (typeof startDate === 'string') startDate = new Date(startDate);
         if (typeof endDate === 'string') endDate = new Date(endDate);
@@ -114,15 +91,9 @@ const DateUtils = (function() {
         const millisecondsPerDay = 1000 * 60 * 60 * 24;
         const millisecondsDifference = Math.abs(endDate - startDate);
 
-        return Math.round(millisecondsDifference / millisecondsPerDay) + 1; // +1 to include both start and end days
+        return Math.round(millisecondsDifference / millisecondsPerDay) + 1;
     };
-
-    /**
-     * Generate an array of dates between start and end dates
-     * @param {Date|string} startDate - Start date
-     * @param {Date|string} endDate - End date
-     * @returns {Date[]} Array of dates
-     */
+    
     const dateRange = function(startDate, endDate) {
         if (typeof startDate === 'string') startDate = new Date(startDate);
         if (typeof endDate === 'string') endDate = new Date(endDate);

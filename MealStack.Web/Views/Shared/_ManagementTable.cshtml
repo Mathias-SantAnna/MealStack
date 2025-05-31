@@ -64,7 +64,7 @@ var additionalActions = ViewData["AdditionalActions"] as List<(string Text, stri
                     @if (!string.IsNullOrEmpty(viewAction))
                     {
                     <a asp-controller="@controller" asp-action="@viewAction" asp-route-id="@itemId"
-                       class="btn btn-sm btn-outline-info" title="View details">
+                       class="btn btn-sm btn-outline-success" title="View details">
                         <i class="bi bi-eye"></i>
                         <span class="d-none d-lg-inline ms-1">View</span>
                     </a>
@@ -72,7 +72,7 @@ var additionalActions = ViewData["AdditionalActions"] as List<(string Text, stri
                     @if (!string.IsNullOrEmpty(editAction))
                     {
                     <a asp-controller="@controller" asp-action="@editAction" asp-route-id="@itemId"
-                       class="btn btn-sm btn-outline-primary" title="Edit @itemType">
+                       class="btn btn-sm btn-outline-alert" title="Edit @itemType">
                         <i class="bi bi-pencil"></i>
                         <span class="d-none d-lg-inline ms-1">Edit</span>
                     </a>

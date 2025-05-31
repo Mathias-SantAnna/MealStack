@@ -19,7 +19,6 @@ $(document).ready(function() {
         updateStarDisplay($widget, currentUserRating);
     });
 
-    // Click handler for rating submission
     $('.star-rating').off('click.rating').on('click.rating', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -43,13 +42,11 @@ $(document).ready(function() {
         updateStarDisplay($widget, rating);
         $widget.data('user-rating', rating);
 
-        // Show loading state
         $widget.find('.star-rating').css('opacity', '0.7');
 
         submitRating(recipeId, rating, $widget);
     });
 
-    // Hover effects
     $('.star-rating').hover(
         function() {
             const $star = $(this);
@@ -77,7 +74,6 @@ $(document).ready(function() {
 
     console.log("🎨 Rating system setup complete");
 
-    // CRITICAL: Function to update star display
     function updateStarDisplay($widget, userRating) {
         console.log(`🎨 Updating star display to ${userRating} stars`);
 
@@ -85,29 +81,24 @@ $(document).ready(function() {
             const starValue = parseInt($(this).data('rating'));
             const $star = $(this);
 
-            // Remove all star classes first
             $star.removeClass('bi-star bi-star-fill text-warning');
 
             if (starValue <= userRating) {
-                // Filled star
                 $star.addClass('bi-star-fill text-warning');
                 console.log(`🎨 Star ${starValue}: FILLED`);
             } else {
-                // Empty star
                 $star.addClass('bi-star');
                 console.log(`🎨 Star ${starValue}: EMPTY`);
             }
         });
 
-        // Force a visual refresh
         $widget.find('.star-rating').each(function() {
             this.style.display = 'none';
-            this.offsetHeight; // Trigger reflow
+            this.offsetHeight; 
             this.style.display = '';
         });
     }
 
-    // Function to submit rating
     function submitRating(recipeId, rating, $widget) {
         console.log("📡 Submitting rating to server...");
 
@@ -130,12 +121,10 @@ $(document).ready(function() {
                 console.log("✅ Server response:", result);
 
                 if (result && result.success) {
-                    // Server confirmed - ensure visual state is correct
                     console.log(`🎨 Server confirmed rating ${rating} - ensuring visual state`);
                     updateStarDisplay($widget, rating);
                     $widget.data('user-rating', rating);
 
-                    // Update statistics display
                     if (result.averageRating !== undefined) {
                         $('#average-rating').text(parseFloat(result.averageRating).toFixed(1));
                         console.log(`📊 Updated average rating: ${result.averageRating}`);
@@ -146,10 +135,8 @@ $(document).ready(function() {
                         console.log(`📊 Updated total ratings: ${result.totalRatings}`);
                     }
 
-                    // Success feedback
                     showSuccessMessage(`Rated ${rating} stars!`);
 
-                    // Add sparkle effect
                     $widget.find('.star-rating').addClass('animate-pulse');
                     setTimeout(() => {
                         $widget.find('.star-rating').removeClass('animate-pulse');
@@ -159,7 +146,6 @@ $(document).ready(function() {
                     console.error("❌ Server error:", result);
                     alert("Error: " + (result.message || "Failed to submit rating"));
 
-                    // Revert visual state
                     const previousRating = parseInt($widget.data('user-rating')) || 0;
                     updateStarDisplay($widget, previousRating);
                 }
@@ -168,19 +154,16 @@ $(document).ready(function() {
                 console.error("❌ AJAX Error:", error);
                 alert("Failed to submit rating. Please try again.");
 
-                // Revert visual state
                 const previousRating = parseInt($widget.data('user-rating')) || 0;
                 updateStarDisplay($widget, previousRating);
             },
             complete: function() {
-                // Remove loading state
                 $widget.find('.star-rating').css('opacity', '1');
                 console.log("📡 AJAX request completed");
             }
         });
     }
 
-    // Success message function
     function showSuccessMessage(message) {
         $('.rating-success-message').remove();
 
@@ -202,7 +185,6 @@ $(document).ready(function() {
     }
 });
 
-// Add CSS for better visual feedback
 const style = document.createElement('style');
 style.textContent = `
     .star-rating {

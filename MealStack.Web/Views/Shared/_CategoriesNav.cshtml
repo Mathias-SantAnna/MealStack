@@ -11,9 +11,9 @@
         {
             foreach (var category in ViewBag.Categories)
             {
-                <!-- Individual Category Buttons -->
+                <!-- Individual Category Buttons with dynamic colors from database -->
                 <a href="@Url.Action(ViewData["SearchAction"]?.ToString() ?? "Index", "Recipe", new { categoryId = category.Id })"
-                   class="category-pill @(ViewBag.SelectedCategoryId != null && ViewBag.SelectedCategoryId == category.Id ? "active" : "")"
+                   class="category-pill bg-@(string.IsNullOrEmpty(category.ColorClass) ? "secondary" : category.ColorClass) @(ViewBag.SelectedCategoryId != null && ViewBag.SelectedCategoryId == category.Id ? "active" : "")"
                    data-category="@category.Name.ToLower()"
                    data-category-id="@category.Id">
                     @category.Name
