@@ -284,7 +284,7 @@ namespace MealStack.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Create(RecipeEntity recipe, IFormFile ImageFile, int[]? selectedCategories)
+        public async Task<IActionResult> Create(RecipeEntity recipe, IFormFile? ImageFile, int[]? selectedCategories)
         {
             return await TryExecuteAsync(async () =>
             {
@@ -304,13 +304,16 @@ namespace MealStack.Web.Controllers
                 ModelState.Remove("CreatedById");
                 ModelState.Remove("CreatedDate");
                 ModelState.Remove("CreatedBy");
+                ModelState.Remove("ImageFile"); // Remove ImageFile from validation
                 
                 recipe.Ingredients = recipe.Ingredients ?? string.Empty;
                 recipe.Description = recipe.Description ?? string.Empty;
                 recipe.Notes = recipe.Notes ?? string.Empty;
+                recipe.ImagePath = null; // Initialize as null
 
                 _logger.LogInformation("Recipe ingredients data: {Ingredients}", recipe.Ingredients);
                 
+                // 🔧 FIX: Only process image if one was uploaded
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
                     try
@@ -323,6 +326,11 @@ namespace MealStack.Web.Controllers
                         _logger.LogError(ex, "Error saving recipe image");
                         ModelState.AddModelError("ImageFile", "Error uploading image. Please try again.");
                     }
+                }
+                else
+                {
+                    _logger.LogInformation("No image uploaded - recipe will be created without image");
+                    recipe.ImagePath = null; // Explicitly set to null
                 }
                 
                 if (!ModelState.IsValid)

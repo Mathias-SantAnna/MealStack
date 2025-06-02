@@ -36,51 +36,46 @@ ViewData["Title"] = "Create Recipe";
 <!-- Initialize everything -->
 <script>
     $(document).ready(function() {
+        // Prevent multiple initializations
+        if (window.mealStackInitialized) {
+            console.log("MealStack already initialized, skipping...");
+            return;
+        }
+        window.mealStackInitialized = true;
+
         console.log("Create Recipe page initializing...");
 
-        // Wait for DOM to be fully ready
-        setTimeout(function() {
-            // Initialize IngredientManager
-            if (typeof IngredientManager !== 'undefined') {
-                console.log("Initializing IngredientManager...");
+        // Initialize IngredientManager only once
+        if (typeof IngredientManager !== 'undefined' && !window.ingredientManagerInitialized) {
+            console.log("Initializing IngredientManager...");
 
+            try {
                 const success = IngredientManager.init({
                     autocompleteUrl: '@Url.Action("SearchIngredients", "Ingredient")',
                     createIngredientUrl: '@Url.Action("AddIngredientAjax", "Ingredient")'
                 });
 
                 if (success) {
+                    window.ingredientManagerInitialized = true;
                     console.log("IngredientManager initialized successfully");
-                } else {
-                    console.error("Failed to initialize IngredientManager");
                 }
-            } else {
-                console.error("IngredientManager not found!");
+            } catch (error) {
+                console.error("Failed to initialize IngredientManager:", error);
             }
+        }
 
-            // Initialize form validator
-            if (typeof RecipeFormValidator !== 'undefined') {
-                console.log("Initializing RecipeFormValidator...");
+        // Initialize form validator only once
+        if (typeof RecipeFormValidator !== 'undefined' && !window.recipeFormValidatorInitialized) {
+            console.log("Initializing RecipeFormValidator...");
+            try {
                 RecipeFormValidator.init();
-            } else {
-                console.warn("RecipeFormValidator not found");
+                window.recipeFormValidatorInitialized = true;
+            } catch (error) {
+                console.error("Failed to initialize RecipeFormValidator:", error);
             }
+        }
 
-            // Debug check - verify textarea is being updated
-            setInterval(function() {
-                const ingredientsVal = $('#Ingredients').val();
-                if (ingredientsVal) {
-                    console.log("Ingredients textarea has content:", ingredientsVal.split('\n').length + " items");
-                }
-            }, 2000);
-
-            console.log("Page initialization complete");
-        }, 200);
-    });
-
-    // Global error handler
-    window.addEventListener('error', function(e) {
-        console.error('Global error:', e.error);
+        console.log("Page initialization complete");
     });
 </script>
 }

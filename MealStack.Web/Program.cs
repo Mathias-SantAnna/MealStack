@@ -10,25 +10,53 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 
-// Enable legacy timestamp behavior for Npgsql
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Get connection string from configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-// Database Configuration
+// Database Configuration - Support both SQL Server (local) and PostgreSQL (Azure)
 builder.Services.AddDbContext<MealStackDbContext>(options =>
 {
-    options.UseNpgsql(connectionString);
-    
-    // Only enable detailed logging in development
     if (builder.Environment.IsDevelopment())
     {
+        // LOCAL DEVELOPMENT - Use SQL Server LocalDB for easier setup
+        if (connectionString.Contains("localdb") || connectionString.Contains("Data Source"))
+        {
+            Console.WriteLine(" Using SQL Server LocalDB for local development");
+            options.UseSqlServer(connectionString);
+        }
+        else if (connectionString.Contains("localhost") || connectionString.Contains("127.0.0.1"))
+        {
+            // LOCAL PostgreSQL
+            Console.WriteLine(" Using local PostgreSQL for development");
+            options.UseNpgsql(connectionString);
+            // Disable legacy timestamp for local PostgreSQL
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        }
+        else
+        {
+            // Remote PostgreSQL (like Azure) in development mode
+            Console.WriteLine(" Using remote PostgreSQL in development mode");
+            options.UseNpgsql(connectionString);
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        }
+        
+        // Enhanced logging for development
         options.LogTo(Console.WriteLine, LogLevel.Information);
         options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+    else
+    {
+        // PRODUCTION - Use PostgreSQL (Azure)
+        Console.WriteLine(" Using PostgreSQL for production");
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        options.UseNpgsql(connectionString);
+        
+        // Minimal logging for production
+        options.LogTo(Console.WriteLine, LogLevel.Warning);
     }
 });
 
@@ -47,16 +75,28 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.User.RequireUniqueEmail = true;
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
     
-    // Password requirements (relaxed for development)
-    options.Password.RequiredLength = 6;
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric = false;
+    // Password requirements 
+    if (builder.Environment.IsDevelopment())
+    {
+        options.Password.RequiredLength = 6;
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+    }
+    else
+    {
+        // Stronger passwords for production
+        options.Password.RequiredLength = 8;
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+    }
     
     // Lockout settings
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-    options.Lockout.MaxFailedAccessAttempts = 10;
+    options.Lockout.MaxFailedAccessAttempts = builder.Environment.IsDevelopment() ? 10 : 5;
     options.Lockout.AllowedForNewUsers = false;
 })
 .AddEntityFrameworkStores<MealStackDbContext>()
@@ -73,7 +113,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
     options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() 
+        ? CookieSecurePolicy.SameAsRequest 
+        : CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.Name = "MealStack.Auth";
 });
@@ -103,15 +145,33 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() 
+        ? CookieSecurePolicy.SameAsRequest 
+        : CookieSecurePolicy.Always;
 });
 
 // Anti-forgery token configuration
 builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = "X-CSRF-TOKEN";
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() 
+        ? CookieSecurePolicy.SameAsRequest 
+        : CookieSecurePolicy.Always;
 });
+
+// CORS for development 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
+    });
+}
 
 var app = builder.Build();
 
@@ -128,6 +188,7 @@ app.UseRequestLocalization(localizationOptions);
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
+    app.UseCors(); 
     LogStartupInfo(app);
 }
 else
@@ -165,18 +226,43 @@ static async Task InitializeDatabaseAsync(WebApplication app)
     
     try
     {
-        // Apply migrations
         var dbContext = services.GetRequiredService<MealStackDbContext>();
-        await dbContext.Database.MigrateAsync();
-        logger.LogInformation("Database migration completed successfully");
+        
+        if (app.Environment.IsDevelopment())
+        {
+            // In development, ensure database is created and migrated
+            logger.LogInformation(" Development mode: Ensuring database exists and is up to date...");
+            await dbContext.Database.EnsureCreatedAsync();
+            
+            // Apply any pending migrations
+            var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+            if (pendingMigrations.Any())
+            {
+                logger.LogInformation(" Applying {Count} pending migrations: {Migrations}", 
+                    pendingMigrations.Count(), string.Join(", ", pendingMigrations));
+                await dbContext.Database.MigrateAsync();
+            }
+            else
+            {
+                logger.LogInformation(" Database is up to date");
+            }
+        }
+        else
+        {
+            // In production, only apply migrations
+            logger.LogInformation(" Production mode: Applying database migrations...");
+            await dbContext.Database.MigrateAsync();
+        }
+        
+        logger.LogInformation(" Database migration completed successfully");
 
         // Initialize roles and users
         await SeedRolesAndUsersAsync(services, logger);
-        logger.LogInformation("Database seeding completed successfully");
+        logger.LogInformation(" Database seeding completed successfully");
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "An error occurred while initializing the database");
+        logger.LogError(ex, " An error occurred while initializing the database");
         throw;
     }
 }
@@ -186,25 +272,22 @@ static async Task SeedRolesAndUsersAsync(IServiceProvider services, ILogger logg
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     
-    // Create roles
     var roles = new[] { "Admin", "User" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
         {
             await roleManager.CreateAsync(new IdentityRole(role));
-            logger.LogInformation("Created role: {Role}", role);
+            logger.LogInformation(" Created role: {Role}", role);
         }
     }
 
-    // Create admin user
     await CreateUserIfNotExistsAsync(userManager, logger, 
         email: "admin@mealstack.com",
         username: "Admin",
         password: "admin123",
         role: "Admin");
 
-    // Create test user
     await CreateUserIfNotExistsAsync(userManager, logger,
         email: "test@mealstack.com", 
         username: "testuser",
@@ -223,7 +306,7 @@ static async Task CreateUserIfNotExistsAsync(UserManager<ApplicationUser> userMa
         {
             existingUser.EmailConfirmed = true;
             await userManager.UpdateAsync(existingUser);
-            logger.LogInformation("Updated email confirmation for user: {Email}", email);
+            logger.LogInformation(" Updated email confirmation for user: {Email}", email);
         }
         return;
     }
@@ -240,11 +323,11 @@ static async Task CreateUserIfNotExistsAsync(UserManager<ApplicationUser> userMa
     if (result.Succeeded)
     {
         await userManager.AddToRoleAsync(user, role);
-        logger.LogInformation("Created {Role} user: {Email}", role, email);
+        logger.LogInformation(" Created {Role} user: {Email}", role, email);
     }
     else
     {
-        logger.LogError("Failed to create user {Email}: {Errors}", 
+        logger.LogError(" Failed to create user {Email}: {Errors}", 
             email, string.Join(", ", result.Errors.Select(e => e.Description)));
     }
 }
@@ -252,15 +335,29 @@ static async Task CreateUserIfNotExistsAsync(UserManager<ApplicationUser> userMa
 static void LogStartupInfo(WebApplication app)
 {
     var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    var urls = app.Configuration["ASPNETCORE_URLS"] ?? "http://localhost:5261";
+    var urls = app.Configuration["ASPNETCORE_URLS"] ?? "https://localhost:7261;http://localhost:5261";
     
     logger.LogInformation("🚀 MealStack Development Server Started!");
-    logger.LogInformation("📱 Application URL: {Urls}", urls);
+    logger.LogInformation("📱 Application URLs: {Urls}", urls);
     logger.LogInformation("👨‍💼 Admin Login: admin@mealstack.com / admin123");
     logger.LogInformation("👤 Test User: test@mealstack.com / test123");
-    logger.LogInformation("🔗 Login: {Urls}/Account/Login", urls);
-    logger.LogInformation("🔗 Register: {Urls}/Account/Register", urls);
     logger.LogInformation("⚡ Features: Recipe Management, Meal Planning, Admin Dashboard");
+    logger.LogInformation("🔧 Environment: Development");
+    
+    // Log database type being used
+    var connectionString = app.Configuration.GetConnectionString("DefaultConnection");
+    if (connectionString?.Contains("localdb") == true)
+    {
+        logger.LogInformation("💾 Database: SQL Server LocalDB");
+    }
+    else if (connectionString?.Contains("localhost") == true)
+    {
+        logger.LogInformation("💾 Database: Local PostgreSQL");
+    }
+    else
+    {
+        logger.LogInformation("💾 Database: Remote PostgreSQL");
+    }
 }
 
 public partial class Program { }

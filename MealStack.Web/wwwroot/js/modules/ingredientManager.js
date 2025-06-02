@@ -8,18 +8,20 @@ const IngredientManager = {
         newIngredientModalSelector: '#addIngredientModal',
         newIngredientBtnSelector: '#add-new-ingredient-btn',
         saveNewIngredientSelector: '#save-new-ingredient',
-        ingredientsTextareaSelector: '#Ingredients', 
+        ingredientsTextareaSelector: '#Ingredients',
         autocompleteUrl: '/Ingredient/SearchIngredients',
         createIngredientUrl: '/Ingredient/AddIngredientAjax'
     },
 
     ingredients: [],
     initialized: false,
+    isProcessing: false, // ADD THIS - it was missing!
     currentIndex: 0,
+    lastClickTime: 0, // ADD THIS for click throttling
 
     init: function(customConfig = {}) {
         if (this.initialized) {
-            console.log("IngredientManager already initialized");
+            console.log("IngredientManager already initialized - SKIPPING");
             return true;
         }
 
@@ -44,20 +46,37 @@ const IngredientManager = {
     setupEventListeners: function() {
         const self = this;
 
-        $(document).off('click.ingredientManager', this.config.addButtonSelector)
-            .on('click.ingredientManager', this.config.addButtonSelector, function(e) {
-                e.preventDefault();
-                self.addIngredient();
-            });
+        // Remove ALL existing event listeners to prevent duplicates
+        $(document).off('.ingredientManager');
+        $(this.config.addButtonSelector).off('.ingredientManager');
+        $(this.config.ingredientInputSelector).off('.ingredientManager');
+        $(this.config.quantityInputSelector).off('.ingredientManager');
 
-        $(document).off('click.ingredientManager', '.remove-ingredient-btn')
-            .on('click.ingredientManager', '.remove-ingredient-btn', function(e) {
-                e.preventDefault();
-                self.removeIngredient($(this).closest('.ingredient-item'));
-            });
+        // Add button click with throttling
+        $(document).on('click.ingredientManager', this.config.addButtonSelector, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
+            // Throttle clicks to prevent rapid firing
+            if (self.lastClickTime && (Date.now() - self.lastClickTime) < 500) {
+                console.log("Ignoring rapid click");
+                return;
+            }
+            self.lastClickTime = Date.now();
+
+            console.log("Add ingredient button clicked");
+            self.addIngredient();
+        });
+
+        // Remove ingredient button
+        $(document).on('click.ingredientManager', '.remove-ingredient-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            self.removeIngredient($(this).closest('.ingredient-item'));
+        });
+
+        // Enter key handlers
         $(this.config.ingredientInputSelector + ', ' + this.config.quantityInputSelector)
-            .off('keypress.ingredientManager')
             .on('keypress.ingredientManager', function(e) {
                 if (e.which === 13) {
                     e.preventDefault();
@@ -65,11 +84,12 @@ const IngredientManager = {
                 }
             });
 
-        $(document).off('click.ingredientManager', this.config.newIngredientBtnSelector)
-            .on('click.ingredientManager', this.config.newIngredientBtnSelector, function(e) {
-                e.preventDefault();
-                self.openNewIngredientModal();
-            });
+        // New ingredient modal button
+        $(document).on('click.ingredientManager', this.config.newIngredientBtnSelector, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            self.openNewIngredientModal();
+        });
 
         console.log("Event listeners setup complete");
     },
@@ -94,7 +114,7 @@ const IngredientManager = {
                 }
             });
 
-            this.renderIngredients();
+            this.renderIngredientsQuiet(); // Use quiet version
         }
 
         console.log(`Loaded ${this.ingredients.length} ingredients`);
@@ -107,6 +127,12 @@ const IngredientManager = {
         }
 
         const self = this;
+
+        // Remove existing autocomplete first
+        if ($(this.config.ingredientInputSelector).hasClass('ui-autocomplete-input')) {
+            $(this.config.ingredientInputSelector).autocomplete('destroy');
+        }
+
         $(this.config.ingredientInputSelector).autocomplete({
             source: function(request, response) {
                 $.ajax({
@@ -118,6 +144,9 @@ const IngredientManager = {
                             value: item.name,
                             measurement: item.measurement
                         })));
+                    },
+                    error: function() {
+                        response([]);
                     }
                 });
             },
@@ -133,57 +162,61 @@ const IngredientManager = {
     },
 
     addIngredient: function() {
-        const name = $(this.config.ingredientInputSelector).val().trim();
-        const quantity = parseFloat($(this.config.quantityInputSelector).val() || '1');
-        const unit = $(this.config.unitSelectSelector).val() || 'cup';
-
-        if (!name) {
-            this.showMessage('Please enter an ingredient name.', 'warning');
+        // Prevent multiple calls during processing
+        if (this.isProcessing) {
+            console.log("IngredientManager is processing, ignoring duplicate call");
             return;
         }
+        this.isProcessing = true;
 
-        if (isNaN(quantity) || quantity <= 0) {
-            this.showMessage('Please enter a valid quantity.', 'warning');
-            return;
-        }
+        try {
+            const name = $(this.config.ingredientInputSelector).val().trim();
+            const quantity = parseFloat($(this.config.quantityInputSelector).val() || '1');
+            const unit = $(this.config.unitSelectSelector).val() || 'cup';
 
-        if (this.ingredients.some(ing => ing.name.toLowerCase() === name.toLowerCase())) {
-            this.showMessage('This ingredient is already added.', 'warning');
-            return;
-        }
-
-        this.ingredients.push({
-            name: name,
-            quantity: quantity,
-            unit: unit,
-            tempId: this.currentIndex++
-        });
-
-        this.clearIngredientForm();
-        this.renderIngredients();
-        this.updateIngredientsTextarea();
-        this.showMessage(`Added ${quantity} ${unit} ${name}`, 'success');
-    },
-
-    removeIngredient: function($element) {
-        const tempId = $element.data('temp-id');
-        const name = $element.find('.ingredient-name').text();
-
-        this.ingredients = this.ingredients.filter(ing => ing.tempId !== tempId);
-
-        $element.fadeOut(300, () => {
-            $element.remove();
-            this.updateIngredientsTextarea();
-
-            if (this.ingredients.length === 0) {
-                this.renderIngredients();
+            if (!name) {
+                this.showMessage('Please enter an ingredient name.', 'warning');
+                return;
             }
-        });
 
-        this.showMessage(`Removed ${name}`, 'info');
+            if (isNaN(quantity) || quantity <= 0) {
+                this.showMessage('Please enter a valid quantity.', 'warning');
+                return;
+            }
+
+            if (this.ingredients.some(ing => ing.name.toLowerCase() === name.toLowerCase())) {
+                this.showMessage('This ingredient is already added.', 'warning');
+                return;
+            }
+
+            this.ingredients.push({
+                name: name,
+                quantity: quantity,
+                unit: unit,
+                tempId: this.currentIndex++
+            });
+
+            // Clear form BEFORE updating display to prevent retriggering
+            this.clearIngredientForm();
+
+            // Update display without triggering events
+            this.renderIngredientsQuiet();
+            this.updateIngredientsTextareaQuiet();
+
+            this.showMessage(`Added ${quantity} ${unit} ${name}`, 'success');
+
+        } catch (error) {
+            console.error("Error in addIngredient:", error);
+        } finally {
+            // Reset processing flag after a short delay
+            setTimeout(() => {
+                this.isProcessing = false;
+            }, 100);
+        }
     },
 
-    renderIngredients: function() {
+    // QUIET methods that don't trigger events
+    renderIngredientsQuiet: function() {
         const $container = $(this.config.containerSelector);
         $container.empty();
 
@@ -200,8 +233,62 @@ const IngredientManager = {
         this.ingredients.forEach(ingredient => {
             $container.append(this.createIngredientHTML(ingredient));
         });
+    },
 
-        this.updateIngredientsTextarea();
+    updateIngredientsTextareaQuiet: function() {
+        const $textarea = $(this.config.ingredientsTextareaSelector);
+
+        if (!$textarea.length) {
+            console.error("Ingredients textarea not found!");
+            return;
+        }
+
+        const ingredientsText = this.ingredients
+            .map(ing => `${ing.quantity} ${ing.unit} ${ing.name}`)
+            .join('\n');
+
+        // Update value WITHOUT triggering change events
+        $textarea.prop('value', ingredientsText);
+
+        // Hide the textarea (it's for form submission only)
+        $textarea.removeClass('d-none').hide();
+
+        console.log(`Updated ingredients textarea with ${this.ingredients.length} ingredients (quiet mode)`);
+    },
+
+    removeIngredient: function($element) {
+        if (this.isProcessing) {
+            console.log("Currently processing, ignoring remove request");
+            return;
+        }
+        this.isProcessing = true;
+
+        try {
+            const tempId = $element.data('temp-id');
+            const name = $element.find('.ingredient-name').text();
+
+            this.ingredients = this.ingredients.filter(ing => ing.tempId !== tempId);
+
+            $element.fadeOut(300, () => {
+                $element.remove();
+                this.updateIngredientsTextareaQuiet(); // Use quiet version
+
+                if (this.ingredients.length === 0) {
+                    this.renderIngredientsQuiet(); // Use quiet version
+                }
+            });
+
+            this.showMessage(`Removed ${name}`, 'info');
+        } finally {
+            setTimeout(() => {
+                this.isProcessing = false;
+            }, 100);
+        }
+    },
+
+    // Keep the old methods for backwards compatibility but make them safer
+    renderIngredients: function() {
+        this.renderIngredientsQuiet();
     },
 
     createIngredientHTML: function(ingredient) {
@@ -229,22 +316,7 @@ const IngredientManager = {
     },
 
     updateIngredientsTextarea: function() {
-        const $textarea = $(this.config.ingredientsTextareaSelector);
-
-        if (!$textarea.length) {
-            console.error("Ingredients textarea not found!");
-            return;
-        }
-
-        const ingredientsText = this.ingredients
-            .map(ing => `${ing.quantity} ${ing.unit} ${ing.name}`)
-            .join('\n');
-
-        $textarea.val(ingredientsText);
-
-        $textarea.removeClass('d-none').hide();
-
-        console.log(`Updated ingredients textarea with ${this.ingredients.length} ingredients`);
+        this.updateIngredientsTextareaQuiet();
     },
 
     clearIngredientForm: function() {
@@ -410,20 +482,10 @@ const IngredientManager = {
 
     setIngredients: function(ingredients) {
         this.ingredients = ingredients || [];
-        this.renderIngredients();
-        this.updateIngredientsTextarea();
+        this.renderIngredientsQuiet();
+        this.updateIngredientsTextareaQuiet();
     }
 };
 
-$(document).ready(function() {
-    if ($('#ingredients-container').length &&
-        (window.location.pathname.includes('/Recipe/Create') ||
-            window.location.pathname.includes('/Recipe/Edit'))) {
-
-        setTimeout(() => {
-            IngredientManager.init();
-        }, 100);
-    }
-});
-
+// Export to global scope - NO automatic initialization
 window.IngredientManager = IngredientManager;
