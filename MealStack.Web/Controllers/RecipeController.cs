@@ -29,7 +29,6 @@ namespace MealStack.Web.Controllers
             _logger = logger;
         }
         
-        // GET: Recipe
         public async Task<IActionResult> Index(RecipeSearchViewModel searchModel, int page = 1)
         {
             return await TryExecuteAsync(async () =>
@@ -63,7 +62,6 @@ namespace MealStack.Web.Controllers
             }, "Error loading recipes. Please try again later.");
         }
 
-        // GET: Recipe/MyRecipes
         [Authorize]
         public async Task<IActionResult> MyRecipes(RecipeSearchViewModel searchModel, int page = 1)
         {
@@ -100,7 +98,6 @@ namespace MealStack.Web.Controllers
             }, "Error loading your recipes. Please try again later.");
         }
 
-        // GET: Recipe/MyFavorites
         [Authorize]
         public async Task<IActionResult> MyFavorites(RecipeSearchViewModel searchModel, int page = 1)
         {
@@ -141,7 +138,6 @@ namespace MealStack.Web.Controllers
             }, "Error loading your favorite recipes. Please try again later.");
         }
 
-        // POST: Recipe/ToggleFavorite
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -187,7 +183,6 @@ namespace MealStack.Web.Controllers
             }
         }
 
-        // POST: Recipe/RateRecipe
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -248,7 +243,6 @@ namespace MealStack.Web.Controllers
             }
         }
 
-        // GET: Recipe/Details/5
         public async Task<IActionResult> Details(int id)
         {
             var recipe = await _context.Recipes
@@ -268,7 +262,6 @@ namespace MealStack.Web.Controllers
             return View(recipe);
         }
 
-        // GET: Recipe/Create
         [Authorize]
         public async Task<IActionResult> Create()
         {
@@ -288,7 +281,6 @@ namespace MealStack.Web.Controllers
             }, "Error loading recipe form. Please try again later.");
         }
 
-        // CRITICAL FIX: POST: Recipe/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -309,12 +301,10 @@ namespace MealStack.Web.Controllers
                 recipe.CreatedById = _userManager.GetUserId(User) ?? string.Empty;
                 recipe.CreatedDate = DateTime.UtcNow;
                 
-                // Remove validation for auto-set fields
                 ModelState.Remove("CreatedById");
                 ModelState.Remove("CreatedDate");
                 ModelState.Remove("CreatedBy");
                 
-                // Ensure required fields have defaults
                 recipe.Ingredients = recipe.Ingredients ?? string.Empty;
                 recipe.Description = recipe.Description ?? string.Empty;
                 recipe.Notes = recipe.Notes ?? string.Empty;
@@ -335,7 +325,6 @@ namespace MealStack.Web.Controllers
                     }
                 }
                 
-                // Validate model state and log any errors
                 if (!ModelState.IsValid)
                 {
                     _logger.LogWarning("ModelState is invalid for recipe creation");
@@ -372,7 +361,6 @@ namespace MealStack.Web.Controllers
                     
                     _logger.LogInformation("Recipe saved with ID: {RecipeId}", recipe.Id);
                     
-                    // Add categories if any were selected
                     if (selectedCategories != null && selectedCategories.Length > 0)
                     {
                         await AddCategoriesToRecipe(recipe.Id, selectedCategories);
@@ -397,7 +385,6 @@ namespace MealStack.Web.Controllers
             }, "Error creating recipe. Please check your input and try again.");
         }
 
-        // GET: Recipe/Edit/5
         [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
@@ -425,7 +412,6 @@ namespace MealStack.Web.Controllers
             }, "Error loading recipe for editing. Please try again later.");
         }
 
-        // POST: Recipe/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -441,7 +427,6 @@ namespace MealStack.Web.Controllers
                     return NotFound();
                 }
                 
-                // Load an existing recipe with all related data
                 var existingRecipe = await _context.Recipes
                     .Include(r => r.RecipeCategories)
                     .FirstOrDefaultAsync(r => r.Id == id);
@@ -459,7 +444,6 @@ namespace MealStack.Web.Controllers
                     return Forbid();
                 }
                 
-                // Clean up ingredients data - remove blank lines
                 if (!string.IsNullOrEmpty(recipe.Ingredients))
                 {
                     var cleanIngredients = recipe.Ingredients
@@ -472,7 +456,6 @@ namespace MealStack.Web.Controllers
                     _logger.LogInformation("Cleaned ingredients: {IngredientsCount} lines", cleanIngredients.Count);
                 }
                 
-                // Clean up instructions - remove blank lines  
                 if (!string.IsNullOrEmpty(recipe.Instructions))
                 {
                     var cleanInstructions = recipe.Instructions
@@ -489,7 +472,6 @@ namespace MealStack.Web.Controllers
                 ModelState.Remove("CreatedDate");
                 ModelState.Remove("CreatedBy");
                 
-                // Set safe defaults
                 recipe.Ingredients = recipe.Ingredients ?? string.Empty;
                 recipe.Description = recipe.Description ?? string.Empty;
                 recipe.Notes = recipe.Notes ?? string.Empty;
@@ -541,7 +523,6 @@ namespace MealStack.Web.Controllers
                     recipe.ImagePath = existingRecipe.ImagePath;
                 }
                 
-                // Use transaction for atomic operation
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 
                 try
@@ -612,7 +593,6 @@ namespace MealStack.Web.Controllers
             }
         }
 
-        // POST: Recipe/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -632,7 +612,6 @@ namespace MealStack.Web.Controllers
                     return Forbid();
                 }
                 
-                // Delete associated image if exists
                 if (!string.IsNullOrEmpty(recipe.ImagePath))
                 {
                     DeleteRecipeImage(recipe.ImagePath);
@@ -646,7 +625,6 @@ namespace MealStack.Web.Controllers
             }, "Error deleting recipe. Please try again later.", "MyRecipes");
         }
 
-        // API endpoint for recipe name autocomplete
         [HttpGet]
         public async Task<IActionResult> GetRecipeSuggestions(string term)
         {
@@ -699,7 +677,6 @@ namespace MealStack.Web.Controllers
                     .Take(5)
                     .ToListAsync();
                 
-                // Combine and return 
                 var allSuggestions = recipeSuggestions
                     .Union(ingredientSuggestions)
                     .OrderBy(s => s)
@@ -716,7 +693,6 @@ namespace MealStack.Web.Controllers
 
         #region Helper Methods
 
-        // UPDATE your existing SetupViewDataForSearch method:
         private void SetupViewDataForSearch(RecipeSearchViewModel searchModel)
         {
             ViewData["SearchTerm"] = searchModel.SearchTerm;
@@ -725,10 +701,9 @@ namespace MealStack.Web.Controllers
             ViewData["SortBy"] = searchModel.SortBy ?? "newest";
             ViewData["MatchAllIngredients"] = searchModel.MatchAllIngredients.ToString().ToLower();
             ViewData["CategoryId"] = searchModel.CategoryId;
-            ViewData["CreatedBy"] = searchModel.CreatedBy; // ADD THIS LINE
+            ViewData["CreatedBy"] = searchModel.CreatedBy; 
         }
 
-        // UPDATE your existing SetupPaginationAndCategories method:
         private async Task SetupPaginationAndCategories(int page, int totalRecipes, int pageSize, int? categoryId)
         {
             ViewBag.CurrentPage = page;
@@ -736,7 +711,6 @@ namespace MealStack.Web.Controllers
             ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
             ViewBag.SelectedCategoryId = categoryId;
             
-            // ADD THESE LINES for Authors list:
             ViewBag.Authors = await _context.Recipes
                 .Include(r => r.CreatedBy)
                 .Where(r => r.CreatedBy != null)
@@ -746,7 +720,6 @@ namespace MealStack.Web.Controllers
                 .ToListAsync();
         }
 
-        // UPDATE your existing ApplyAdditionalFilters method by adding this filter:
         private IQueryable<RecipeEntity> ApplyAdditionalFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
         {
             if (searchModel.Ingredients != null && searchModel.Ingredients.Any())
@@ -762,7 +735,6 @@ namespace MealStack.Web.Controllers
                 }
             }
             
-            // ADD THIS BLOCK for Created By filter:
             if (!string.IsNullOrEmpty(searchModel.CreatedBy))
             {
                 query = query.Where(r => r.CreatedById == searchModel.CreatedBy);
@@ -888,7 +860,6 @@ namespace MealStack.Web.Controllers
 
         private async Task UpdateRecipeCategories(int recipeId, int[] selectedCategories)
         {
-            // Remove existing categories
             var existingCategories = await _context.RecipeCategories
                 .Where(rc => rc.RecipeId == recipeId)
                 .ToListAsync();
@@ -896,7 +867,6 @@ namespace MealStack.Web.Controllers
             _context.RecipeCategories.RemoveRange(existingCategories);
             await _context.SaveChangesAsync();
             
-            // Add new categories if selected
             if (selectedCategories.Length > 0)
             {
                 await AddCategoriesToRecipe(recipeId, selectedCategories);
@@ -912,7 +882,6 @@ namespace MealStack.Web.Controllers
                 .ToListAsync();
         }
 
-        // Search filter methods remain the same
         private IQueryable<RecipeEntity> ApplySearchFilters(IQueryable<RecipeEntity> query, RecipeSearchViewModel searchModel)
         {
             if (!string.IsNullOrEmpty(searchModel.SearchTerm))

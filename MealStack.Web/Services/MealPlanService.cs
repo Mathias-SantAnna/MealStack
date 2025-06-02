@@ -102,7 +102,6 @@ namespace MealStack.Web.Services
                 Name        = model.Name,
                 Description = model.Description,
 
-                // Force UTC kind on user‐entered dates:
                 StartDate   = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc),
                 EndDate     = DateTime.SpecifyKind(model.EndDate,   DateTimeKind.Utc),
 
@@ -128,7 +127,6 @@ namespace MealStack.Web.Services
             e.Name        = model.Name;
             e.Description = model.Description;
 
-            // Again, ensure UTC kind:
             e.StartDate   = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
             e.EndDate     = DateTime.SpecifyKind(model.EndDate,   DateTimeKind.Utc);
 
@@ -153,7 +151,6 @@ namespace MealStack.Web.Services
                 .FirstOrDefaultAsync(mp => mp.Id == mealPlanId && mp.UserId == userId);
             if (plan == null) throw new InvalidOperationException("Meal plan not found or access denied.");
 
-            // Remove existing
             var existing = await _context.ShoppingListItems
                 .Where(si => si.MealPlanId == mealPlanId)
                 .ToListAsync();
@@ -219,11 +216,9 @@ namespace MealStack.Web.Services
         {
             if (DateTime.TryParse(dateString, out DateTime result))
             {
-                // Ensure UTC kind for database storage
                 return DateTime.SpecifyKind(result.Date, DateTimeKind.Utc);
             }
             
-            // Try specific formats if standard parsing fails
             string[] formats = { "yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy" };
             
             foreach (var format in formats)
@@ -236,7 +231,6 @@ namespace MealStack.Web.Services
                 }
             }
             
-            // If all parsing attempts fail, use current date
             return DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
         }
 
@@ -251,7 +245,6 @@ namespace MealStack.Web.Services
             
             var plannedDate = model.PlannedDate;
             
-            // Check if the date is within plan range
             if (plannedDate.Date < plan.StartDate.Date || plannedDate.Date > plan.EndDate.Date)
             {
                 throw new InvalidOperationException($"The selected date must be between {plan.StartDate:d} and {plan.EndDate:d}");
@@ -563,7 +556,6 @@ namespace MealStack.Web.Services
 
             var item = new ShoppingListItemViewModel();
 
-            // Try to parse quantity and unit
             if (parts.Length >= 2 && IsNumeric(parts[0]))
             {
                 item.Quantity = parts[0];
@@ -679,7 +671,6 @@ namespace MealStack.Web.Services
             };
         }
 
-        // Helper class for statistics
         public class ShoppingListStatistics
         {
             public int TotalItems { get; set; }

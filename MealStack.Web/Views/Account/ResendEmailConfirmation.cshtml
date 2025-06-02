@@ -1,0 +1,195 @@
+@{
+ViewData["Title"] = "Resend Email Confirmation";
+Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resend Email Confirmation - MealStack</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/base.css" />
+    <link rel="stylesheet" href="~/css/components.css" />
+    <link rel="stylesheet" href="~/css/theme.css" />
+</head>
+<body class="auth-body">
+<div class="auth-container">
+    <div class="brand-header">
+        <h1>
+            <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                <i class="bi bi-journal-richtext me-2"></i>MealStack
+            </a>
+        </h1>
+        <p class="tagline">Confirm your email address</p>
+    </div>
+
+    <div class="auth-card">
+        <div class="auth-form active">
+            <h3 class="text-center mb-4">
+                <i class="bi bi-envelope-check me-2 text-primary"></i>Resend Confirmation
+            </h3>
+
+            <p class="text-center text-muted mb-4">
+                Didn't receive your confirmation email? We can send you a new one.
+            </p>
+
+            <div class="alert alert-info">
+                <h6><i class="bi bi-info-circle me-2"></i>Check your email first:</h6>
+                <ul class="mb-0 mt-2">
+                    <li>Look in your spam/junk folder</li>
+                    <li>Check promotions tab (Gmail)</li>
+                    <li>Wait a few minutes for delivery</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success d-none" id="successAlert">
+                <i class="bi bi-check-circle me-2"></i>
+                <strong>Confirmation email sent!</strong> Please check your inbox and spam folder.
+            </div>
+
+            <div class="alert alert-info d-none" id="alreadyConfirmedAlert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>Your email is already confirmed!</strong> You can log in now.
+            </div>
+
+            <div class="alert alert-danger d-none" id="errorAlert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <span id="errorMessage">Something went wrong. Please try again.</span>
+            </div>
+
+            <form id="resendConfirmationForm">
+                <div class="mb-4">
+                    <label for="email" class="form-label">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-envelope"></i>
+                        </span>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email address" required>
+                    </div>
+                    <small class="form-text text-muted">
+                        We'll send a new confirmation link to your email
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-primary mb-3" id="submitButton">
+                    <i class="bi bi-send me-2"></i>Resend Confirmation Email
+                </button>
+            </form>
+
+            <hr class="my-4">
+
+            <div class="auth-links text-center">
+                <p class="mb-2">Already confirmed your email?</p>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-outline-success mb-2">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Login to Your Account
+                </a>
+
+                <div class="mt-3">
+                    <small class="text-muted">
+                        Don't have an account?
+                        <a asp-controller="Account" asp-action="Register" class="text-decoration-none">Sign up here</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-footer">
+        <p>&copy; @DateTime.Now.Year MealStack -
+            <a asp-controller="Home" asp-action="Privacy">Privacy</a> |
+            <a href="#">Terms</a> |
+            <a href="#">Help</a>
+        </p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('resendConfirmationForm');
+        const submitButton = document.getElementById('submitButton');
+        const emailInput = document.getElementById('email');
+
+        // Simple email check for mockup
+        function isValidEmail(email) {
+            return email.includes('@@') && email.includes('.');
+        }
+
+        function hideAllAlerts() {
+            document.getElementById('successAlert').classList.add('d-none');
+            document.getElementById('alreadyConfirmedAlert').classList.add('d-none');
+            document.getElementById('errorAlert').classList.add('d-none');
+        }
+
+        function showSuccess() {
+            hideAllAlerts();
+            document.getElementById('successAlert').classList.remove('d-none');
+        }
+
+        function showAlreadyConfirmed() {
+            hideAllAlerts();
+            document.getElementById('alreadyConfirmedAlert').classList.remove('d-none');
+        }
+
+        function showError(message) {
+            hideAllAlerts();
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorAlert').classList.remove('d-none');
+        }
+
+        // Clear alerts when typing
+        emailInput.addEventListener('input', function() {
+            hideAllAlerts();
+        });
+
+        // Form submission - MOCKUP ONLY
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+
+            if (!email) {
+                showError('Please enter your email address.');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                showError('Please enter a valid email address.');
+                return;
+            }
+
+            // Show loading
+            const originalText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sending...';
+
+            // Simulate API call with random responses for demo
+            setTimeout(() => {
+                const random = Math.random();
+                
+                if (email.toLowerCase().includes('confirmed')) {
+                    // Simulate already confirmed
+                    showAlreadyConfirmed();
+                } else if (random > 0.2) {
+                    // 80% success rate for demo
+                    showSuccess();
+                    form.reset();
+                } else {
+                    // 20% error rate for demo
+                    showError('Unable to send confirmation email. Please try again.');
+                }
+
+                // Reset button
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            }, 1500);
+        });
+    });
+</script>
+</body>
+</html>

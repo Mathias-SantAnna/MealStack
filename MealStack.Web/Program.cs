@@ -1,161 +1,257 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using MealStack.Infrastructure.Data;
 using MealStack.Infrastructure.Data.Entities;
 using MealStack.Web.Services;
 using MealStack.Web.Services.Interface;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
-// Allow Npgsql to accept UTC dates without "Kind=Unspecified" errors
+// Enable legacy timestamp behavior for Npgsql
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
-IConfiguration Configuration = builder.Configuration;
 
-// 1. EF Core + PostgreSQL
+// Database Configuration
 builder.Services.AddDbContext<MealStackDbContext>(options =>
     options.UseNpgsql(
-            Configuration.GetConnectionString("DefaultConnection"),
-            x => x.MigrationsAssembly("MealStack.Infrastructure")
-        )
-        .EnableSensitiveDataLogging()
-        .LogTo(Console.WriteLine, LogLevel.Information)
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        x => x.MigrationsAssembly("MealStack.Infrastructure"))
+        .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
+        .LogTo(builder.Environment.IsDevelopment() ? Console.WriteLine : null, LogLevel.Information)
 );
 
-// 2. Application services
+// Application Services
 builder.Services.AddScoped<IMealPlanService, MealPlanService>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-// 3. Identity Configuration - FIXED
-builder.Services.AddDefaultIdentity<ApplicationUser>(opts =>
-    {
-        opts.SignIn.RequireConfirmedAccount    = false;
-        opts.User.RequireUniqueEmail           = true;
-        opts.Password.RequiredLength           = 8;
-        opts.Password.RequireDigit             = true;
-        opts.Password.RequireLowercase         = true;
-        opts.Password.RequireUppercase         = true;
-        opts.Password.RequireNonAlphanumeric   = true;
-    })
-    .AddRoles<IdentityRole>() // Add this line for role support
-    .AddEntityFrameworkStores<MealStackDbContext>()
-    .AddDefaultTokenProviders()
-    .AddDefaultUI();
-
-builder.Services.ConfigureApplicationCookie(opts =>
+// Identity Configuration
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    opts.LoginPath        = "/Identity/Account/Login";
-    opts.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    // Sign-in requirements
+    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedEmail = false;
+    
+    // User requirements
+    options.User.RequireUniqueEmail = true;
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    
+    // Password requirements (relaxed for development)
+    options.Password.RequiredLength = 6;
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    
+    // Lockout settings
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 10;
+    options.Lockout.AllowedForNewUsers = false;
+})
+.AddEntityFrameworkStores<MealStackDbContext>()
+.AddDefaultTokenProviders();
+
+// Authentication Cookie Configuration
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/Login";
+    options.ReturnUrlParameter = "returnUrl";
+    
+    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+    options.SlidingExpiration = true;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.Name = "MealStack.Auth";
 });
 
-// 4. Localization: en-GB default
-var gbCulture = new CultureInfo("en-GB");
+// Localization (GB format for dates)
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
-    options.DefaultRequestCulture   = new RequestCulture(gbCulture);
-    options.SupportedCultures       = new List<CultureInfo> { gbCulture };
-    options.SupportedUICultures     = new List<CultureInfo> { gbCulture };
+    var gbCulture = new CultureInfo("en-GB");
+    options.DefaultRequestCulture = new RequestCulture(gbCulture);
+    options.SupportedCultures = new List<CultureInfo> { gbCulture };
+    options.SupportedUICultures = new List<CultureInfo> { gbCulture };
 });
 
-// 5. MVC & Razor Pages
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
+// MVC with JSON configuration for AJAX endpoints
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.WriteIndented = builder.Environment.IsDevelopment();
+    });
+
+// Session support for shopping lists and temporary data
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
+
+// Anti-forgery token configuration
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
 
 var app = builder.Build();
 
-// 6. Auto-migrate & seed roles/admin
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var db       = services.GetRequiredService<MealStackDbContext>();
-    db.Database.Migrate();
+// Database initialization and seeding
+await InitializeDatabaseAsync(app);
 
-    var logger = services.GetRequiredService<ILogger<Program>>();
-    try
-    {
-        var rm = services.GetRequiredService<RoleManager<IdentityRole>>();
-        var um = services.GetRequiredService<UserManager<ApplicationUser>>();
-        
-        // Create roles if they don't exist
-        foreach (var role in new[] { "Admin", "User", "Guest" })
-        {
-            if (!await rm.RoleExistsAsync(role))
-            {
-                await rm.CreateAsync(new IdentityRole(role));
-                logger.LogInformation("Created role: {Role}", role);
-            }
-        }
-
-        // Create admin user if doesn't exist
-        var adminEmail = "admin@mealstack.com";
-        var adminUser = await um.FindByEmailAsync(adminEmail);
-        if (adminUser == null)
-        {
-            var admin = new ApplicationUser
-            {
-                UserName       = "admin",
-                Email          = adminEmail,
-                EmailConfirmed = true
-            };
-            var result = await um.CreateAsync(admin, "Admin@123");
-            if (result.Succeeded)
-            {
-                await um.AddToRoleAsync(admin, "Admin");
-                logger.LogInformation("Created admin user: {Email}", adminEmail);
-            }
-            else
-            {
-                logger.LogError("Failed to create admin user: {Errors}", 
-                    string.Join(", ", result.Errors.Select(e => e.Description)));
-            }
-        }
-        else
-        {
-            // Ensure existing admin has Admin role
-            if (!await um.IsInRoleAsync(adminUser, "Admin"))
-            {
-                await um.AddToRoleAsync(adminUser, "Admin");
-                logger.LogInformation("Added Admin role to existing user: {Email}", adminEmail);
-            }
-        }
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Error during role/admin seeding");
-    }
-}
-
-// 7. Middleware pipeline
-var locOpts = app.Services
+// Request localization
+var localizationOptions = app.Services
     .GetRequiredService<Microsoft.Extensions.Options.IOptions<RequestLocalizationOptions>>()
     .Value;
-app.UseRequestLocalization(locOpts);
+app.UseRequestLocalization(localizationOptions);
 
-if (!app.Environment.IsDevelopment())
+// Development vs Production middleware
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    LogStartupInfo(app);
+}
+else
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
+// Middleware pipeline
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 8. Endpoints
+// Route configuration
+app.MapControllerRoute(
+    name: "admin",
+    pattern: "Admin/{action=Index}/{id?}",
+    defaults: new { controller = "Admin" });
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}"
-);
-app.MapRazorPages();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+// Helper methods
+static async Task InitializeDatabaseAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        // Apply migrations
+        var dbContext = services.GetRequiredService<MealStackDbContext>();
+        await dbContext.Database.MigrateAsync();
+        logger.LogInformation("Database migration completed successfully");
+
+        // Initialize roles and users
+        await SeedRolesAndUsersAsync(services, logger);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while initializing the database");
+        throw;
+    }
+}
+
+static async Task SeedRolesAndUsersAsync(IServiceProvider services, ILogger logger)
+{
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    
+    // Create roles
+    var roles = new[] { "Admin", "User" };
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+            logger.LogInformation("Created role: {Role}", role);
+        }
+    }
+
+    // Create admin user
+    await CreateUserIfNotExistsAsync(userManager, logger, 
+        email: "admin@mealstack.com",
+        username: "Admin",
+        password: "admin123",
+        role: "Admin");
+
+    // Create test user
+    await CreateUserIfNotExistsAsync(userManager, logger,
+        email: "test@mealstack.com", 
+        username: "testuser",
+        password: "test123",
+        role: "User");
+}
+
+static async Task CreateUserIfNotExistsAsync(UserManager<ApplicationUser> userManager, 
+    ILogger logger, string email, string username, string password, string role)
+{
+    var existingUser = await userManager.FindByEmailAsync(email);
+    if (existingUser != null)
+    {
+        // Ensure email is confirmed for existing users
+        if (!existingUser.EmailConfirmed)
+        {
+            existingUser.EmailConfirmed = true;
+            await userManager.UpdateAsync(existingUser);
+            logger.LogInformation("Updated email confirmation for user: {Email}", email);
+        }
+        return;
+    }
+
+    var user = new ApplicationUser
+    {
+        UserName = username,
+        Email = email,
+        EmailConfirmed = true,
+        ThemePreference = "light"
+    };
+
+    var result = await userManager.CreateAsync(user, password);
+    if (result.Succeeded)
+    {
+        await userManager.AddToRoleAsync(user, role);
+        logger.LogInformation("Created {Role} user: {Email}", role, email);
+    }
+    else
+    {
+        logger.LogError("Failed to create user {Email}: {Errors}", 
+            email, string.Join(", ", result.Errors.Select(e => e.Description)));
+    }
+}
+
+static void LogStartupInfo(WebApplication app)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    var urls = app.Configuration["ASPNETCORE_URLS"] ?? "http://localhost:5261";
+    
+    logger.LogInformation("🚀 MealStack Development Server Started!");
+    logger.LogInformation("📱 Application URL: {Urls}", urls);
+    logger.LogInformation("👨‍💼 Admin Login: admin@mealstack.com / admin123");
+    logger.LogInformation("👤 Test User: test@mealstack.com / test123");
+    logger.LogInformation("🔗 Login: {Urls}/Account/Login", urls);
+    logger.LogInformation("🔗 Register: {Urls}/Account/Register", urls);
+    logger.LogInformation("⚡ Features: Recipe Management, Meal Planning, Admin Dashboard");
+}
+
+public partial class Program { }

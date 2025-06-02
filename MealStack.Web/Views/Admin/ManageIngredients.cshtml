@@ -340,7 +340,7 @@ ViewData["ActionButtonController"] = "Ingredient";
                                 @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || ingredient.CreatedById == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
                                 {
                                 <a asp-action="Edit" asp-route-id="@ingredient.Id"
-                                   class="btn btn-sm btn-outline-alert" title="Edit ingredient">
+                                   class="btn btn-sm btn-outline-warning" title="Edit ingredient">
                                     <i class="bi bi-pencil"></i>
                                     <span class="d-none d-lg-inline ms-1">Edit</span>
                                 </a>

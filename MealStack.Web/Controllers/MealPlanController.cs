@@ -258,7 +258,6 @@ namespace MealStack.Web.Controllers
             return View(mealPlan);
         }
 
-        //  AJAX: Add Meal Item 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMealItem(
             [Bind("MealPlanId,RecipeId,PlannedDate,MealType,Servings,Notes")]
@@ -287,7 +286,6 @@ namespace MealStack.Web.Controllers
             {
                 model.UserId = GetUserId();
 
-                // Check if same meal already exists
                 var existingMeal = await _context.MealPlanItems
                     .FirstOrDefaultAsync(mp => 
                         mp.MealPlanId == model.MealPlanId && 
@@ -331,7 +329,6 @@ namespace MealStack.Web.Controllers
             }
         }
 
-        //  AJAX: Update Meal Item 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateMealItem(
             [Bind("Id,MealPlanId,RecipeId,PlannedDate,MealType,Servings,Notes")]
@@ -378,7 +375,6 @@ namespace MealStack.Web.Controllers
             }
         }
 
-        // === AJAX: Remove Meal Item ===
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveMealItem(int itemId, int mealPlanId)
         {
@@ -593,7 +589,6 @@ namespace MealStack.Web.Controllers
             return "Other";
         }
 
-        //  AJAX: Recipe lookup for Select2
         [HttpGet]
         public async Task<IActionResult> GetRecipes(string term)
         {

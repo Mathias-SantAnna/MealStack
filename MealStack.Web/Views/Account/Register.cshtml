@@ -1,0 +1,230 @@
+@model MealStack.Web.Models.RegisterViewModel
+@{
+ViewData["Title"] = "Sign Up";
+ViewData["BodyClass"] = "auth-page";
+Layout = null; // Using custom layout for auth pages
+}
+
+<!DOCTYPE html>
+<html lang="en" data-theme="@(User.Identity.IsAuthenticated ? (ViewBag.UserTheme ?? "light") : "light")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MealStack</title>
+
+    <!-- Bootstrap CSS & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+
+    <!-- MealStack CSS -->
+    <link rel="stylesheet" href="~/css/base.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+</head>
+<body class="auth-body">
+<div class="auth-container">
+    <!-- Brand Header -->
+    <div class="brand-header">
+        <h1 class="display-4 fw-bold mb-3 text-shadow">
+            <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                <i class="bi bi-journal-richtext me-2"></i>MealStack
+            </a>
+        </h1>
+        <p class="tagline">Discover, create, and organize your favorite recipes</p>
+    </div>
+
+    <!-- Auth Card -->
+    <div class="auth-card">
+        <!-- Tab Navigation -->
+        <div class="auth-tabs">
+            <a asp-controller="Account" asp-action="Login" class="auth-tab text-decoration-none">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
+            </a>
+            <button class="auth-tab active">
+                <i class="bi bi-person-plus me-1"></i>Sign Up
+            </button>
+        </div>
+
+        <!-- Register Form -->
+        <div class="auth-form active">
+            <h3 class="text-center mb-4">Join MealStack!</h3>
+
+            <!-- Validation Summary -->
+            @if (!ViewData.ModelState.IsValid)
+            {
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <div asp-validation-summary="ModelOnly" class="mb-0"></div>
+            </div>
+            }
+
+            <!-- Success Message -->
+            @if (TempData["Message"] != null)
+            {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>@TempData["Message"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            }
+
+            <!-- Register Form -->
+            <form id="registerForm" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label asp-for="UserName" class="form-label">Username</label>
+                    <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-person"></i>
+                            </span>
+                        <input asp-for="UserName" class="form-control" placeholder="Choose a username" autocomplete="username" />
+                    </div>
+                    <span asp-validation-for="UserName" class="text-danger"></span>
+                    <small class="form-text text-muted">3-10 letters only, no numbers or special characters</small>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">Email Address</label>
+                    <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                        <input asp-for="Email" class="form-control" placeholder="Enter your email" autocomplete="email" />
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label">Password</label>
+                    <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                        <input asp-for="Password" class="form-control" placeholder="Create a strong password" autocomplete="new-password" />
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                    <small class="form-text text-muted">Must be at least 6 characters long</small>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+                    <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+                        <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm your password" autocomplete="new-password" />
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                        <label class="form-check-label" for="agreeTerms">
+                            I agree to the
+                            <a asp-controller="Home" asp-action="Terms" class="text-decoration-none">Terms of Service</a> and
+                            <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none">Privacy Policy</a>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Return URL -->
+                @if (!string.IsNullOrEmpty(Model?.ReturnUrl))
+                {
+                <input type="hidden" asp-for="ReturnUrl" />
+                }
+
+                <button type="submit" class="btn btn-primary mb-3" id="registerButton">
+                    <i class="bi bi-person-plus me-2"></i>Create Account
+                </button>
+            </form>
+
+            <div class="auth-links">
+                <p class="mb-2">Already have an account?
+                    <a asp-controller="Account" asp-action="Login" class="text-decoration-none">
+                        Sign in here
+                    </a>
+                </p>
+                <p class="mb-0">
+                    <a asp-controller="Account" asp-action="ResendEmailConfirmation" class="text-decoration-none">
+                        Resend email confirmation
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+        <p>&copy; @DateTime.Now.Year MealStack -
+            <a asp-controller="Home" asp-action="Privacy">Privacy</a> |
+            <a href="#">Terms</a> |
+            <a href="#">Help</a>
+        </p>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Username validation
+        const usernameInput = document.querySelector('input[name="UserName"]');
+        if (usernameInput) {
+            usernameInput.addEventListener('input', function() {
+                const value = this.value;
+                const isValid = /^[a-zA-Z]{3,10}$/.test(value);
+
+                if (value && !isValid) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+            });
+        }
+
+        // Password confirmation validation
+        const passwordInput = document.querySelector('input[name="Password"]');
+        const confirmInput = document.querySelector('input[name="ConfirmPassword"]');
+
+        if (confirmInput && passwordInput) {
+            confirmInput.addEventListener('input', function() {
+                if (this.value && this.value !== passwordInput.value) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+            });
+        }
+
+        // Form submission with loading state
+        document.getElementById('registerForm').addEventListener('submit', function() {
+            const button = document.getElementById('registerButton');
+            const originalText = button.innerHTML;
+
+            button.disabled = true;
+            button.classList.add('btn-loading');
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating account...';
+
+            // Re-enable button after 10 seconds as fallback
+            setTimeout(() => {
+                button.disabled = false;
+                button.classList.remove('btn-loading');
+                button.innerHTML = originalText;
+            }, 10000);
+        });
+
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert-dismissible');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    });
+</script>
+
+</body>
+</html>

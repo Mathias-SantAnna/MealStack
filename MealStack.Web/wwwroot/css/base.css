@@ -9,7 +9,7 @@ html {
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin-bottom: 100px; 
+    margin-bottom: 100px;
     color: var(--text-primary);
     background: var(--warm-gradient);
     line-height: 1.6;
@@ -42,7 +42,7 @@ body {
 
 /* Main content area */
 main {
-    padding-bottom: 40px !important; /* REDUCED from 80px since we increased body margin */
+    padding-bottom: 40px !important;
     clear: both;
     overflow: hidden;
 }
@@ -130,7 +130,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Back to Home button spacing */
 .btn-back-home,
 .text-center.mt-4 {
-    margin-bottom: 3rem !important; 
+    margin-bottom: 3rem !important;
     padding-bottom: 1rem !important;
 }
 
@@ -257,7 +257,7 @@ body.modal-open {
     }
 
     body {
-        margin-bottom: 140px; 
+        margin-bottom: 140px;
     }
 
     .search-container {

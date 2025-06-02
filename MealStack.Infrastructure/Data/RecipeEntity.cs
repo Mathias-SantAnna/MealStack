@@ -60,6 +60,6 @@ namespace MealStack.Infrastructure.Data
     {
         Easy,
         Medium,
-        Hard
+        Masterchef
     }
 }

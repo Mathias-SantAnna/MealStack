@@ -52,14 +52,12 @@ namespace MealStack.Web.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(CategoryEntity category, IFormFile ImageFile)
         {
-            // Remove validation for auto-set fields
             ModelState.Remove("RecipeCategories");
             
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // Check for duplicate names
                     var existingCategory = await _context.Categories
                         .FirstOrDefaultAsync(c => c.Name.ToLower() == category.Name.ToLower());
                     
@@ -133,7 +131,6 @@ namespace MealStack.Web.Controllers
                 _logger.LogInformation("Current ColorClass: {CurrentColor}, New ColorClass: {NewColor}", 
                     existingCategory.ColorClass, category.ColorClass);
 
-                // Check for duplicate names (excluding current category)
                 var duplicateCategory = await _context.Categories
                     .FirstOrDefaultAsync(c => c.Name.ToLower() == category.Name.ToLower() && c.Id != id);
                 
@@ -144,10 +141,8 @@ namespace MealStack.Web.Controllers
                     return View(category);
                 }
 
-                // Handle image upload
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
-                    // Delete old image if exists
                     if (!string.IsNullOrEmpty(existingCategory.ImagePath))
                     {
                         DeleteCategoryImage(existingCategory.ImagePath);
@@ -157,7 +152,6 @@ namespace MealStack.Web.Controllers
                     _logger.LogInformation("Updated image for category {CategoryId}", id);
                 }
                 
-                // Update all properties explicitly
                 existingCategory.Name = category.Name;
                 existingCategory.Description = category.Description;
                 existingCategory.ColorClass = category.ColorClass;
@@ -165,7 +159,6 @@ namespace MealStack.Web.Controllers
                 _logger.LogInformation("About to save changes for category {CategoryId}. New ColorClass: {ColorClass}", 
                     id, existingCategory.ColorClass);
                 
-                // Mark entity as modified and save
                 _context.Entry(existingCategory).State = EntityState.Modified;
                 var changeCount = await _context.SaveChangesAsync();
                 
@@ -210,7 +203,6 @@ namespace MealStack.Web.Controllers
                 return NotFound();
             }
 
-            // Check if category is in use
             ViewBag.RecipeCount = category.RecipeCategories.Count;
             return View(category);
         }
@@ -231,14 +223,12 @@ namespace MealStack.Web.Controllers
                     return NotFound();
                 }
 
-                // Check if category is being used by recipes
                 if (category.RecipeCategories.Any())
                 {
                     TempData["Error"] = $"Cannot delete category '{category.Name}' because it is being used by {category.RecipeCategories.Count} recipe(s).";
                     return RedirectToAction(nameof(Index));
                 }
 
-                // Delete the image file if it exists
                 if (!string.IsNullOrEmpty(category.ImagePath))
                 {
                     DeleteCategoryImage(category.ImagePath);
@@ -356,7 +346,6 @@ namespace MealStack.Web.Controllers
                 { "sky", "Sky Blue" }
             };
         }
-        // Add this method to CategoryController.cs for debugging
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
@@ -401,7 +390,6 @@ namespace MealStack.Web.Controllers
 
                 _logger.LogInformation("Quick update completed. Changes saved: {ChangeCount}", changes);
 
-                // Verify the change was saved
                 var updatedCategory = await _context.Categories.FindAsync(id);
         
                 return Json(new
@@ -440,7 +428,6 @@ namespace MealStack.Web.Controllers
                 _context.Entry(category).State = EntityState.Modified;
                 var changes = await _context.SaveChangesAsync();
 
-                // Reload to verify
                 await _context.Entry(category).ReloadAsync();
 
                 return Json(new

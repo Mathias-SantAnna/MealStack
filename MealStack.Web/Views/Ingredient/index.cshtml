@@ -249,7 +249,7 @@ ViewData["ShowButtonForAnonymous"] = "false";
                                 if (User.IsInRole("Admin") || ingredient.CreatedById == currentUserId)
                                 {
                                 <a asp-action="Edit" asp-route-id="@ingredient.Id"
-                                   class="btn btn-sm btn-outline-primary" title="Edit ingredient">
+                                   class="btn btn-sm btn-outline-warning" title="Edit ingredient">
                                     <i class="bi bi-pencil"></i>
                                     <span class="d-none d-lg-inline ms-1">Edit</span>
                                 </a>

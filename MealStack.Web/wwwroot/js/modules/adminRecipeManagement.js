@@ -83,7 +83,7 @@ const AdminRecipeManagement = (function() {
             submitButton.prop('disabled', true)
                 .html('<span class="spinner-border spinner-border-sm me-1"></span>Searching...');
 
-            
+            // Let the form submit naturally
             return true;
         });
 

@@ -28,6 +28,6 @@ namespace MealStack.Domain.Models
     {
         Easy,
         Medium,
-        Hard
+        Masterchef
     }
 }

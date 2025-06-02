@@ -493,16 +493,6 @@ body {
     transform: translateY(-2px);
 }
 
-/* Recipe card buttons - WHITE BACKGROUND WITH CONSISTENT COLORS 
-.recipe-card .btn,
-.recipe-card-wrapper .btn,
-.card .btn-group .btn {
-    background-color: white !important;
-    border: 2px solid !important;
-    font-weight: 600;
-    transition: all var(--transition-speed) ease;
-}*/
-
 .recipe-card .btn:hover,
 .recipe-card-wrapper .btn:hover,
 .card .btn-group .btn:hover {
@@ -526,15 +516,15 @@ body {
 }
 
 /* Edit button - Yellow */
-.recipe-card .btn-outline-primary,
-.recipe-card-wrapper .btn-outline-primary {
+.recipe-card .btn-outline-warning,
+.recipe-card-wrapper .btn-outline-warning {
     border-color: #ffc107 !important;
-    color: #856404 !important;
+    color: #4c3800 !important;
     background-color: white !important;
 }
 
-.recipe-card .btn-outline-primary:hover,
-.recipe-card-wrapper .btn-outline-primary:hover {
+.recipe-card .btn-outline-warning:hover,
+.recipe-card-wrapper .btn-outline-warning:hover {
     background-color: #ffc107 !important;
     color: #212529 !important;
     border-color: #ffc107 !important;
@@ -601,20 +591,6 @@ body {
     background-color: var(--primary-hover) !important;
     color: white !important;
 }
-
-/* Shopping List button in meal plans - Green 
-.meal-plan-card .btn-outline-success,
-.card-footer .btn-outline-success {
-    border-color: #28a745 !important;
-    color: #28a745 !important;
-    background-color: white !important;
-}
-
-.meal-plan-card .btn-outline-success:hover,
-.card-footer .btn-outline-success:hover {
-    background-color: #28a745 !important;
-    color: white !important;
-}*/
 
 /* Admin dashboard card buttons */
 .admin-card .btn,
@@ -724,7 +700,7 @@ body {
     border-color: #28a745 !important;
 }
 
-.management-table .btn-outline-primary,
+.management-table .btn-outline-warning,
 .management-table .btn[title="Edit recipe"],
 .management-table .btn[title="Edit ingredient"] {
     border-color: #ffc107 !important;
@@ -732,7 +708,7 @@ body {
     background-color: white !important;
 }
 
-.management-table .btn-outline-primary:hover,
+.management-table .btn-outline-warning:hover,
 .management-table .btn[title="Edit recipe"]:hover,
 .management-table .btn[title="Edit ingredient"]:hover {
     background-color: #ffc107 !important;
@@ -950,12 +926,12 @@ textarea.form-control:focus {
 
 /*      CATEGORY NAVIGATION - GLASS STYLE WITH DYNAMIC COLORS      */
 
-/* Dynamic category buttons - Remove hardcoded colors, use Bootstrap classes */
+/* Dynamic category buttons */
 .category-pill {
     display: inline-block;
-    background: rgba(255, 255, 255, 0.9) !important; /* Default background, overridden by bg-{colorClass} */
+    background: rgba(255, 255, 255, 0.9) !important; 
     color: #2c1810 !important;
-    border: 2px solid #dee2e6 !important; /* Default border, enhanced per color below */
+    border: 2px solid #dee2e6 !important; 
     border-radius: 2rem;
     padding: 0.6rem 1.5rem;
     font-weight: 600;

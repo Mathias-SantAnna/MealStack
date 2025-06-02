@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MealStack.Domain", "MealSta
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MealStack.Infrastructure", "MealStack.Infrastructure\MealStack.Infrastructure.csproj", "{6B816D4C-9A09-4B0F-8B87-748C1121E25C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MealStack.Tests", "MealStack.Tests\MealStack.Tests.csproj", "{87270274-AB94-473B-8EC9-276B8D3A56BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,10 @@ Global
 		{6B816D4C-9A09-4B0F-8B87-748C1121E25C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B816D4C-9A09-4B0F-8B87-748C1121E25C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B816D4C-9A09-4B0F-8B87-748C1121E25C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87270274-AB94-473B-8EC9-276B8D3A56BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87270274-AB94-473B-8EC9-276B8D3A56BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87270274-AB94-473B-8EC9-276B8D3A56BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87270274-AB94-473B-8EC9-276B8D3A56BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

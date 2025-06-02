@@ -42,10 +42,10 @@
             <h2 class="display-5 mb-3">Ready to start your recipe collection?</h2>
             <p class="lead mb-4 text-dark">Join MealStack today and start organizing your favorite recipes.</p>
             <div class="d-flex justify-content-center gap-3">
-                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-cta-large">
+                <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-cta-large">
                     <i class="bi bi-person-plus"></i>Sign Up Now
                 </a>
-                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-custom-login">
+                <a asp-controller="Account" asp-action="Login" class="btn btn-custom-login">
                     <i class="bi bi-box-arrow-in-right"></i>Log In
                 </a>
             </div>

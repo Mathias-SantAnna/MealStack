@@ -24,5 +24,10 @@ namespace MealStack.Web.Models
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; }
+        
+        [Display (Name = "Remember me?")]
+        public bool RememberMe { get; set; }
+        
+        public string ReturnUrl { get; set; }
     }
 }

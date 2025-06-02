@@ -1,10 +1,442 @@
 /* HOMEPAGE COMPONENTS */
 
+/* Auth Container */
+.auth-container {
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+.auth-container2 {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(255, 107, 53, 0.15);
+    border: 2px solid #ffa366;
+    padding: 2rem;
+    max-width: 400px;
+    width: 100%;
+}
+
+.auth-page h1,
+body[class*="Sign In"] h1,
+body[class*="Sign Up"] h1 {
+    font-size: 3rem !important;              /* Increased from 2.5rem */
+    font-weight: 800 !important;             /* Increased from 700 */
+    margin-bottom: 1.5rem !important;        /* Increased from 1rem */
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3) !important; /* Softer shadow */
+    color: #d73502 !important;               /* Darker orange */
+    font-family: 'Arial Black', Arial, sans-serif !important; /* Different font */
+    text-transform: uppercase !important;    /* All caps */
+    letter-spacing: 1px !important;          /* Letter spacing */
+}
+
+.auth-page h1 {
+    font-size: 3rem !important;
+    font-weight: 800 !important;
+    margin-bottom: 1.5rem !important;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3) !important;
+    color: #d73502 !important;
+    font-family: 'Arial Black', Arial, sans-serif !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+}
+
+.auth-page h1 i {
+    color: #d73502 !important;               /* Match the text color */
+    font-size: 2.8rem !important;            /* Slightly smaller than text */
+    margin-right: 0.5rem !important;
+}
+
+/* Brand Header */
+.brand-header h1 {
+    color: #ff6b35 !important;  /* Add !important */
+    font-weight: 700 !important;
+    font-size: 2.5rem !important;
+    text-shadow: 2px 2px 4px rgba(44, 24, 16, 0.1) !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.brand-header h1 a {
+    color: #ff6b35 !important;
+    text-decoration: none !important;
+}
+
+.brand-header h1 i {
+    color: #ff6b35 !important;
+}
+
+/* Auth Card */
+.auth-card {
+    background: linear-gradient(135deg, #ffffff 0%, var(--bg-secondary) 100%);
+    border: 2px solid var(--border-light);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px var(--shadow);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--orange-gradient);
+}
+
+/* Auth Form Styling - Enhanced from existing form controls */
+.auth-card .form-control {
+    background-color: #ffffff !important;
+    border: 2px solid var(--border-light) !important;
+    border-radius: 8px !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.auth-card .form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 107, 53, 0.25) !important;
+    transform: translateY(-1px) !important;
+}
+
+.auth-card .form-label {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Auth Button Styling - Enhanced from existing buttons */
+.auth-card .btn-primary {
+    background: var(--orange-gradient);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+    width: 100%;
+    font-size: 1.1rem;
+}
+
+.auth-card .btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+.auth-card .btn-outline-secondary {
+    color: var(--secondary-color);
+    border: 2px solid var(--secondary-color);
+    background: transparent;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.auth-card .btn-outline-secondary:hover {
+    background: var(--secondary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Tab Navigation */
+.auth-tabs {
+    display: flex;
+    margin-bottom: 2rem;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 0.5rem;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.auth-tab.active {
+    background: var(--orange-gradient);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.auth-tab:hover:not(.active) {
+    background: rgba(255, 107, 53, 0.1);
+    color: var(--primary-color);
+}
+
+/* Form Sections */
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+    animation: authFadeIn 0.3s ease-in-out;
+}
+
+@keyframes authFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Input Groups - Enhanced styling */
+.auth-card .input-group-text {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-light);
+    border-right: none;
+    color: var(--primary-color);
+    border-radius: 8px 0 0 8px;
+}
+
+.auth-card .input-group .form-control {
+    border-left: none !important;
+    border-radius: 0 8px 8px 0 !important;
+}
+
+.auth-card .input-group:focus-within .input-group-text {
+    border-color: var(--primary-color);
+}
+
+/* Checkbox Styling - Enhanced from existing form styling */
+.auth-card .form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.auth-card .form-check-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 107, 53, 0.25);
+}
+
+/* Auth Links */
+.auth-links {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.auth-links a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.auth-links a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+/* Auth Footer */
+.auth-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 1rem;
+    color: var(--text-secondary);
+}
+
+.auth-footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+    color: var(--primary-hover);
+}
+
+/* Auth Page Body Styling */
+.auth-body {
+    background: var(--warm-gradient);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 2rem 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Validation States - Enhanced from existing form validation */
+.auth-card .form-control.is-invalid {
+    border-color: var(--danger-color) !important;
+    background-image: none;
+}
+
+.auth-card .form-control.is-valid {
+    border-color: var(--success-color) !important;
+    background-image: none;
+}
+
+.auth-card .invalid-feedback {
+    color: var(--danger-color);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.auth-card .valid-feedback {
+    color: var(--success-color);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+/* Responsive Design for Auth Components */
+@media (max-width: 576px) {
+    .auth-container {
+        padding: 0 0.5rem;
+    }
+
+    .auth-card {
+        padding: 2rem 1.5rem;
+        margin: 1rem 0;
+    }
+
+    .brand-header h1 {
+        font-size: 2rem;
+    }
+
+    .brand-header .tagline {
+        font-size: 1rem;
+    }
+
+    .auth-tabs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .auth-tab {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .brand-header h1 {
+        font-size: 1.75rem;
+    }
+}
+
+/* Dark Theme Support for Auth Components */
+[data-theme="dark"] .auth-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fff5f0 100%);
+    color: #2c1810;
+}
+
+[data-theme="dark"] .auth-card .form-control,
+[data-theme="dark"] .auth-card .input-group-text {
+    background-color: #ffffff !important;
+    color: #2c1810 !important;
+}
+
+[data-theme="dark"] .auth-card .form-label {
+    color: #2c1810 !important;
+}
+
+[data-theme="dark"] .auth-body {
+    background-color: #2c1810 !important;
+    color: #fef7f0 !important;
+}
+
+[data-theme="dark"] .brand-header h1 {
+    color: var(--primary-color) !important;
+}
+
+[data-theme="dark"] .brand-header .tagline {
+    color: #fef7f0 !important;
+}
+
+[data-theme="dark"] .auth-footer {
+    color: #fef7f0 !important;
+}
+
+/* Loading States for Auth Forms */
+.auth-card .btn-primary:disabled {
+    background: #6c757d;
+    border-color: #6c757d;
+    transform: none;
+    box-shadow: none;
+}
+
+.auth-card .btn-loading {
+    position: relative;
+    color: transparent;
+}
+
+.auth-card .btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    top: 50%;
+    left: 50%;
+    margin-left: -0.5rem;
+    margin-top: -0.5rem;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Social Login Buttons (for future use) */
+.auth-social-buttons {
+    margin: 1.5rem 0;
+    text-align: center;
+}
+
+.auth-social-divider {
+    position: relative;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.auth-social-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-light);
+}
+
+.auth-social-divider span {
+    background: #ffffff;
+    padding: 0 1rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    position: relative;
+    z-index: 1;
+}
+
 /* Cook & Organize with Ease icons - PRIMARY COLOR (orange) */
 .features-section .display-5,
 .features-section .card-body .display-5,
 .features-section .display-5 i {
-    color: var(--primary-color) !important; 
+    color: var(--primary-color) !important;
 }
 
 /* Title styling */
@@ -69,148 +501,6 @@
     box-shadow: 0 16px 40px rgba(255, 107, 53, 0.2);
     transform: translateY(-8px) scale(1.02);
     border-color: var(--primary-color);
-}
-
-/* Dynamic category pill styles - NO hardcoded colors */
-.category-pill {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.9);
-    color: #2c1810;
-    border: 2px solid #dee2e6;
-    border-radius: 12px;
-    padding: 0.5rem 1.25rem;
-    font-weight: 600;
-    margin: 0 0.5rem 0.5rem 0;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.category-pill:hover,
-.category-pill:focus,
-.category-pill.active {
-    background: rgba(255, 255, 255, 1);
-    color: #2c1810;
-    text-decoration: none;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Bootstrap color classes will automatically apply through bg-{colorClass} */
-/* No hardcoded category-specific rules needed */
-
-/* BUTTON SYSTEM */
-
-/* All buttons base */
-.btn, button, input[type="submit"], input[type="button"] {
-    font-weight: 600;
-    border-radius: 8px;
-    transition: all var(--transition-speed, 0.3s) ease;
-    box-shadow: 0 2px 8px var(--shadow, rgba(255, 107, 53, 0.15));
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-    background: var(--btn-bg, white);
-    color: var(--btn-text, var(--primary-color));
-}
-
-/* Primary button */
-.btn-primary {
-    background: var(--orange-gradient);
-    border-color: var(--primary-color);
-    color: white;
-}
-
-.btn-primary:hover, .btn-primary:focus {
-    background: var(--primary-hover);
-    border-color: var(--primary-hover);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px var(--shadow-hover, rgba(255, 107, 53, 0.25));
-}
-
-/* Secondary button */
-.btn-secondary {
-    background-color: var(--secondary-color);
-    border-color: var(--secondary-color);
-    color: white;
-}
-
-.btn-secondary:hover {
-    background-color: var(--secondary-hover);
-    border-color: var(--secondary-hover);
-    color: white;
-    transform: translateY(-2px);
-}
-
-/* My Recipes button */
-.btn-my-recipes, .btn[href*="MyRecipes"] {
-    background-color: #8d5524 !important;
-    color: white !important;
-    border: none;
-    font-weight: 600;
-    transition: all var(--transition-speed) ease;
-}
-.btn-my-recipes:hover, .btn[href*="MyRecipes"]:hover {
-    background-color: #6b4423 !important;
-    color: white !important;
-    transform: translateY(-2px);
-}
-
-/* OUTLINE BUTTONS - FOR CARDS, ADMIN, MANAGEMENT */
-
-/* Success outline - GREEN */
-.btn-outline-success {
-    border-color: #28a745 !important;
-    color: #28a745 !important;
-    background-color: white !important;
-}
-.btn-outline-success:hover {
-    background-color: #28a745 !important;
-    color: white !important;
-    border-color: #28a745 !important;
-    transform: translateY(-2px);
-}
-
-/* Alert outline - YELLOW */
-.btn-outline-alert {
-    border-color: #ffc107 !important;
-    color: #856404 !important;
-    background-color: white !important;
-}
-.btn-outline-alert:hover {
-    background-color: #ffc107 !important;
-    color: #212529 !important;
-    border-color: #ffc107 !important;
-    transform: translateY(-2px);
-}
-
-/* Danger outline - RED */
-.btn-outline-danger {
-    border-color: #dc3545 !important;
-    color: #dc3545 !important;
-    background-color: white !important;
-}
-.btn-outline-danger:hover {
-    background-color: #dc3545 !important;
-    color: white !important;
-    border-color: #dc3545 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(220, 53, 69, 0.3);
-}
-
-/* Secondary outline - BROWN */
-.btn-outline-secondary {
-    color: var(--secondary-color, #8d5524) !important;
-    border-color: var(--secondary-color, #8d5524) !important;
-    background-color: white !important;
-}
-.btn-outline-secondary:hover {
-    background-color: var(--secondary-color, #8d5524) !important;
-    border-color: var(--secondary-color, #8d5524) !important;
-    color: white !important;
-    transform: translateY(-2px);
 }
 
 /* Enhanced Sign Up Button - Bigger and more prominent */
@@ -282,239 +572,22 @@
     font-size: 1.2em !important;
 }
 
-/* RECIPE/MEAL/ADMIN CARD BUTTONS */
-
-.admin-card .btn,
-.admin-dashboard .card .btn,
-.admin-panel .btn {
-    background-color: white !important;
-    color: #2c1810 !important;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-}
-
-.recipe-card .btn:hover,
-.recipe-card-wrapper .btn:hover,
-.card .btn-group .btn:hover,
-.meal-plan-card .btn:hover,
-.card-footer .btn:hover,
-.admin-card .btn:hover,
-.admin-dashboard .card .btn:hover,
-.admin-panel .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-/* Recipe Card Footer Centering */
-.recipe-card .card-footer,
-.recipe-card-wrapper .card-footer,
-.card-footer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-}
-
-.recipe-card .btn-group,
-.recipe-card-wrapper .btn-group {
-    display: flex;
-}
-
-/* Specific button color overrides in recipe/meal cards */
-.recipe-card .btn-outline-success, .recipe-card-wrapper .btn-outline-success {
-    border-color: #28a745 !important;
-    color: #28a745 !important;
-    background-color: white !important;
-}
-.recipe-card .btn-outline-success:hover, .recipe-card-wrapper .btn-outline-success:hover {
-    background-color: #28a745 !important;
-    color: white !important;
-    border-color: #28a745 !important;
-}
-
-.recipe-card .btn-outline-alert, .recipe-card-wrapper .btn-outline-alert {
-    border-color: #ffc107 !important;
-    color: #856404 !important;
-    background-color: white !important;
-}
-.recipe-card .btn-outline-alert:hover, .recipe-card-wrapper .btn-outline-alert:hover {
-    background-color: #ffc107 !important;
-    color: white !important;
-    border-color: #ffc107 !important;
-}
-
-.recipe-card .btn-outline-danger, .recipe-card-wrapper .btn-outline-danger {
-    border-color: #dc3545 !important;
-    color: #dc3545 !important;
-    background-color: white !important;
-}
-.recipe-card .btn-outline-danger:hover, .recipe-card-wrapper .btn-outline-danger:hover {
-    background-color: #dc3545 !important;
-    color: white !important;
-    border-color: #dc3545 !important;
-}
-
-.card-footer.meal-plan-footer {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 0.5rem 0 !important;
-    background: #fff !important;
-    border-top: 0 !important;
-}
-
-.card-footer.meal-plan-footer .row {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    width: 100% !important;
-    display: flex !important;
-    flex-wrap: nowrap !important;
-}
-
-.card-footer.meal-plan-footer .col-6 {
-    flex: 1 1 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    display: flex !important;
-    justify-content: center !important;
-}
-
-.meal-plan-footer .meal-plan-footer-btn {
-    width: 100% !important;
-    max-width: 180px;
-    font-size: 1rem !important;
-    font-weight: 600 !important;
-    border-width: 2px !important;
-    box-sizing: border-box !important;
-    text-align: center !important;
-    padding: 0.375rem 0.75rem !important;
-    transition: all 0.3s ease !important;
-    margin: 0 !important;
-}
-
-.meal-plan-footer .meal-plan-footer-btn + .meal-plan-footer-btn {
-    margin-left: 1rem !important;
-}
-
-.meal-plan-footer-btn.btn-outline-primary {
-    border-color: var(--primary-color, #0d6efd) !important;
-    color: var(--primary-color, #0d6efd) !important;
-    background: white !important;
-}
-.meal-plan-footer-btn.btn-outline-primary:hover,
-.meal-plan-footer-btn.btn-outline-primary:focus {
-    background: var(--primary-color, #0d6efd) !important;
-    color: white !important;
-}
-
-.meal-plan-footer-btn.btn-outline-success {
-    border-color: #28a745 !important;
-    color: #28a745 !important;
-    background: white !important;
-}
-.meal-plan-footer-btn.btn-outline-success:hover,
-.meal-plan-footer-btn.btn-outline-success:focus {
-    background: #28a745 !important;
-    color: white !important;
-}
-
-/* Admin dashboard card buttons with category-matched borders */
-.admin-card .btn-primary,
-.admin-card .btn[href*="Users"],
-.admin-dashboard .btn-danger {
-    border-color: #dc3545 !important;
-    color: #dc3545 !important;
-}
-.admin-card .btn-primary:hover,
-.admin-card .btn[href*="Users"]:hover,
-.admin-dashboard .btn-danger:hover {
-    background-color: #dc3545 !important;
-    color: white !important;
-}
-
-.admin-card .btn[href*="ManageRecipes"], .admin-dashboard .btn-primary {
-    border-color: #007bff !important;
-    color: #007bff !important;
-}
-.admin-card .btn[href*="ManageRecipes"]:hover, .admin-dashboard .btn-primary:hover {
-    background-color: #007bff !important;
-    color: white !important;
-}
-
-/* Manage Ingredients button - BROWN ACCENT (hover goes full brown) */
-.admin-card .btn[href*="Ingredient"], .admin-dashboard .btn-success, .admin-card .btn-outline-secondary[href*="ManageIngredients"] {
-    border-color: #8d5524 !important;
-    color: #8d5524 !important;
-    background-color: white !important;
-}
-.admin-card .btn[href*="Ingredient"]:hover, .admin-dashboard .btn-success:hover, .admin-card .btn-outline-secondary[href*="ManageIngredients"]:hover {
-    background-color: #8d5524 !important;
-    color: white !important;
-    border-color: #8d5524 !important;
-}
-
-.admin-card .btn[href*="Category"], .admin-dashboard .btn-warning {
-    border-color: #ffc107 !important;
-    color: #856404 !important;
-}
-.admin-card .btn[href*="Category"]:hover, .admin-dashboard .btn-warning:hover {
-    background-color: #ffc107 !important;
-    color: #212529 !important;
-}
-
-.admin-card .btn[href*="MealPlan"], .admin-dashboard .btn-info {
-    border-color: #17a2b8 !important;
-    color: #17a2b8 !important;
-}
-.admin-card .btn[href*="MealPlan"]:hover, .admin-dashboard .btn-info:hover {
-    background-color: #17a2b8 !important;
-    color: white !important;
-}
-
-/* MANAGEMENT TABLE BUTTONS (smaller, green for view) */
-.management-table .btn-outline-info, .management-table .btn[title="View details"], .management-table .btn[title="View ingredient"] {
-    border-color: #28a745 !important;
-    color: #28a745 !important;
-    background-color: white !important;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-}
-.management-table .btn-outline-info:hover, .management-table .btn[title="View details"]:hover, .management-table .btn[title="View ingredient"]:hover {
-    background-color: #28a745 !important;
-    color: white !important;
-    border-color: #28a745 !important;
-}
-
-.management-table .btn-outline-primary, .management-table .btn[title="Edit recipe"], .management-table .btn[title="Edit ingredient"] {
-    border-color: #ffc107 !important;
-    color: #856404 !important;
-    background-color: white !important;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-}
-.management-table .btn-outline-primary:hover, .management-table .btn[title="Edit recipe"]:hover, .management-table .btn[title="Edit ingredient"]:hover {
-    background-color: #ffc107 !important;
-    color: #212529 !important;
-    border-color: #ffc107 !important;
-}
-
-.management-table .btn-outline-danger, .management-table .btn[title="Delete recipe"], .management-table .btn[title="Delete ingredient"] {
-    border-color: #dc3545 !important;
-    color: #dc3545 !important;
-    background-color: white !important;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-}
-.management-table .btn-outline-danger:hover, .management-table .btn[title="Delete recipe"]:hover, .management-table .btn[title="Delete ingredient"]:hover {
-    background-color: #dc3545 !important;
-    color: white !important;
-    border-color: #dc3545 !important;
-}
-
 .btn-back-home {
     margin-bottom: 2rem !important;
+}
+
+/* Print Styles for Auth Pages */
+@media print {
+    .auth-card,
+    .brand-header {
+        box-shadow: none !important;
+        background: white !important;
+    }
+
+    .auth-tabs,
+    .auth-footer {
+        display: none !important;
+    }
 }
 
 /* Responsive adjustments */

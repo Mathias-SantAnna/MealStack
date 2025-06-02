@@ -13,7 +13,6 @@ namespace MealStack.Domain.Models
     }
 }
 
-// Individual meal items in a plan
 namespace MealStack.Domain.Models
 {
     public class MealPlanItem
@@ -39,7 +38,6 @@ namespace MealStack.Domain.Models
     }
 }
 
-// Aggregated ingredients for shopping
 namespace MealStack.Domain.Models
 {
     public class ShoppingListItem
