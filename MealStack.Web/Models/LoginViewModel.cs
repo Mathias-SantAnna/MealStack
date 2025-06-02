@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MealStack.Web.Models
 {
-    public class LoginViewModel
+    public class LoginViewModelNew
     {
         [Required]
         [EmailAddress]
@@ -16,6 +16,7 @@ namespace MealStack.Web.Models
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
 
-        public string ReturnUrl { get; set; }
+        // NO VALIDATION ATTRIBUTES AT ALL
+        public string? ReturnUrl { get; set; }
     }
 }

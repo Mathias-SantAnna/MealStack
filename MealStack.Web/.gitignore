@@ -1,0 +1,110 @@
+## IDEs
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+## .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## MealStack specific Properties 
+**/Properties/launchSettings.json
+
+## User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## NuGet Packages
+*.nupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.assets.json
+
+## Database files (local development)
+*.db
+*.sqlite
+*.sqlite3
+**/Data/backups/
+
+## MealStack.Infrastructure specific
+/MealStack.Infrastructure/Migrations/backup/
+
+## Connection Strings & Secrets
+**/secrets.json
+UserSecrets/
+*.pfx
+*.p12
+
+## Logs
+logs/
+*.log
+
+## Test Results 
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+## Azure & Deployment
+PublishProfiles/
+*.PublishSettings
+*.pubxml
+*.pubxml.user
+
+## Runtime & Temp files
+*.tmp
+*.temp
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+## Mac/Linux
+.DS_Store
+*~
+
+## MealStack.Web specific uploads & temp content
+/MealStack.Web/wwwroot/images/uploads/
+/MealStack.Web/wwwroot/temp/
+/MealStack.Web/wwwroot/images/recipes/temp/
+/MealStack.Web/wwwroot/images/categories/temp/
+
+## Keep existing images but ignore temp/user uploads
+!/MealStack.Web/wwwroot/images/recipes/*.jpg
+!/MealStack.Web/wwwroot/images/recipes/*.png
+!/MealStack.Web/wwwroot/images/categories/*.jpg
+!/MealStack.Web/wwwroot/images/categories/*.png
+!/MealStack.Web/wwwroot/images/heroes/*.jpg
+!/MealStack.Web/wwwroot/images/heroes/*.png
+
+## Environment Variables
+.env
+.env.local
+
+## SSL Certificates
+*.crt
+*.key
+*.pem
