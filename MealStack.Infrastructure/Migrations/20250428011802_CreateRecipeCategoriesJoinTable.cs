@@ -10,34 +10,27 @@ namespace MealStack.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "RecipeCategories",
-                columns: table => new
-                {
-                    RecipeId = table.Column<int>(type: "integer", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RecipeCategories", x => new { x.RecipeId, x.CategoryId });
-                    table.ForeignKey(
-                        name: "FK_RecipeCategories_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_RecipeCategories_Recipes_RecipeId",
-                        column: x => x.RecipeId,
-                        principalTable: "Recipes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RecipeCategories_CategoryId",
-                table: "RecipeCategories",
-                column: "CategoryId");
+            // Check if RecipeCategories table already exists
+            migrationBuilder.Sql(@"
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'RecipeCategories') THEN
+                        CREATE TABLE ""RecipeCategories"" (
+                            ""RecipeId"" integer NOT NULL,
+                            ""CategoryId"" integer NOT NULL,
+                            CONSTRAINT ""PK_RecipeCategories"" PRIMARY KEY (""RecipeId"", ""CategoryId""),
+                            CONSTRAINT ""FK_RecipeCategories_Categories_CategoryId"" FOREIGN KEY (""CategoryId"") REFERENCES ""Categories"" (""Id"") ON DELETE RESTRICT,
+                            CONSTRAINT ""FK_RecipeCategories_Recipes_RecipeId"" FOREIGN KEY (""RecipeId"") REFERENCES ""Recipes"" (""Id"") ON DELETE CASCADE
+                        );
+                        
+                        CREATE INDEX ""IX_RecipeCategories_CategoryId"" ON ""RecipeCategories"" (""CategoryId"");
+                        
+                        RAISE NOTICE 'RecipeCategories table created successfully';
+                    ELSE
+                        RAISE NOTICE 'RecipeCategories table already exists, skipping creation';
+                    END IF;
+                END $$;
+            ");
         }
 
         /// <inheritdoc />

@@ -15,14 +15,22 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Get connection string from configuration
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
 // Database Configuration
 builder.Services.AddDbContext<MealStackDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        x => x.MigrationsAssembly("MealStack.Infrastructure"))
-        .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
-        .LogTo(builder.Environment.IsDevelopment() ? Console.WriteLine : null, LogLevel.Information)
-);
+{
+    options.UseNpgsql(connectionString);
+    
+    // Only enable detailed logging in development
+    if (builder.Environment.IsDevelopment())
+    {
+        options.LogTo(Console.WriteLine, LogLevel.Information);
+        options.EnableSensitiveDataLogging();
+    }
+});
 
 // Application Services
 builder.Services.AddScoped<IMealPlanService, MealPlanService>();
@@ -164,6 +172,7 @@ static async Task InitializeDatabaseAsync(WebApplication app)
 
         // Initialize roles and users
         await SeedRolesAndUsersAsync(services, logger);
+        logger.LogInformation("Database seeding completed successfully");
     }
     catch (Exception ex)
     {
